@@ -1,15 +1,81 @@
 <template>
-  <div class="camera-container">
-    <button @click="startCamera">Open Camera</button>
+  <div class="camera-container relative h-full max-h-full">
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-[rgba(0, 0, 0, 0.4)] flex items-center justify-center z-[9999]"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
+        <div class="mb-4">
+          <p class="text-xl font-semibold">Performing {{ exerciseType }}</p>
+          <p class="text-sm text-gray-600">
+            Prepare to perform {{ exerciseType }} effectively.
+            <video
+              src="../../public/pushups.mp4"
+              autoplay
+              muted
+              loop
+              class="w-full h-40"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </p>
+        </div>
+
+        <div class="border-t border-blue-60 my-4"></div>
+        <p class="text-xl font-semibold">Position</p>
+
+        <p v-if="exerciseType === 'pushups'" class="text-sm text-gray-600">
+          Place your mobile device half a meter in front of you pointing your
+          way.
+        </p>
+        <div class="border-t border-blue-60 my-4"></div>
+
+        <div class="mb-4">
+          <p class="text-xl font-semibold">Tips</p>
+          <p v-if="exerciseType === 'pushups'" class="text-sm text-gray-600">
+            Keep hands aligned with shoulder, elbows against waist and slowly
+            push down
+          </p>
+        </div>
+
+        <button
+          @click="closeModalAndStartCountdown"
+          class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42"
+        >
+          I understand.
+        </button>
+      </div>
+    </div>
+
+    <p
+      class="absolute right-0 bottom-0 bg-blue-60 bg-opacity-20 px-10 p-5 rounded-md text-3xl"
+    >
+      {{ pushUpCount }}
+    </p>
+    <p
+      v-if="countdown > 0"
+      class="absolute top-10 left-1/2 transform -translate-x-1/2 bg-blue-42 text-white px-4 py-2 rounded-md text-3xl"
+    >
+      Starting exercise in {{ countdown }}...
+    </p>
+
     <video
       id="video"
       ref="video"
       autoplay
       playsinline
-      style="display: none"
+      class="hidden"
+      :style="{ height: videoHeight + 'px', width: 'auto' }"
     ></video>
-    <canvas ref="canvas" id="output_canvas"></canvas>
-    <button v-if="isCameraOn" @click="stopCamera">Stop Camera</button>
+    <canvas ref="canvas" id="output_canvas" class="mt-4"></canvas>
+
+    <button
+      v-if="isCameraOn"
+      @click="stopCamera"
+      class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+    >
+      Stop Camera
+    </button>
   </div>
 </template>
 
@@ -25,16 +91,42 @@ const video = ref(null);
 const canvas = ref(null);
 const stream = ref(null);
 const isCameraOn = ref(false);
+const showModal = ref(true);
+const countdown = ref(0);
+const countdownInterval = ref(null);
+
+const videoHeight = ref(window.innerHeight);
 
 let pose;
 const pushUpCount = ref(0);
 let isDownPosition = false;
 
+const closeModalAndStartCountdown = () => {
+  showModal.value = false;
+  countdown.value = 3;
+
+  countdownInterval.value = setInterval(() => {
+    if (countdown.value > 0) {
+      countdown.value--;
+    } else {
+      clearInterval(countdownInterval.value);
+      startCamera();
+    }
+  }, 1000);
+};
+
 const startCamera = async () => {
   if (isCameraOn.value) return;
   try {
+    stream.value = await navigator.mediaDevices.getUserMedia({
+      video: { width: 1000, height: videoHeight },
+      audio: false,
+    });
+
+    video.value.srcObject = stream.value;
     isCameraOn.value = true;
-    initPoseDetection(); // Let MediaPipe handle the camera
+
+    initPoseDetection();
   } catch (err) {
     console.error("Error accessing camera:", err);
     alert("Camera access was denied or not available.");
@@ -93,7 +185,7 @@ const initPoseDetection = async () => {
         color: "#FF0000",
         lineWidth: 2,
       });
-      if (exerciseType === "pushup") {
+      if (exerciseType === "pushups") {
         detectPushUp(results.poseLandmarks);
       }
     }
@@ -104,8 +196,8 @@ const initPoseDetection = async () => {
     onFrame: async () => {
       await pose.send({ image: video.value });
     },
-    width: 640,
-    height: 480,
+    width: window.innerWidth,
+    height: videoHeight.value,
   });
 
   camera.start();
@@ -124,10 +216,14 @@ const detectPushUp = (landmarks) => {
 
   if (leftDistance < threshold && rightDistance < threshold) {
     if (!isDownPosition) {
+      console.log("pushed down");
+
       isDownPosition = true;
     }
   } else {
     if (isDownPosition) {
+      console.log("pushed up");
+
       pushUpCount.value++;
       isDownPosition = false;
     }
