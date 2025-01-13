@@ -7,8 +7,11 @@ export default {
         caveat: 'Caveat'
       },
       container: {
-        padding: '5px',
-        margin: 'auto'
+        padding: '24px',
+        margin: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
       },
       colors: {
         purple: {
@@ -73,6 +76,9 @@ export default {
           95: '#1a1a1a',
           100: '#0d0d0d'
         }
+      },
+      boxShadow: {
+        nav: '0 0 16px 0 rgba(0, 0, 0, 0.1)'
       }
     }
   },
