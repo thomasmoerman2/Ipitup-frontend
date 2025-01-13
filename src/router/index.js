@@ -13,6 +13,16 @@ const router = createRouter({
       name: "homepage",
       component: () => import("../views/homepage.vue"),
     },
+    {
+      path: "/workout",
+      name: "workoutpage",
+      component: () => import("../views/workoutpage.vue"),
+    },
+    {
+      path: "/workoutactive",
+      name: "workoutactive",
+      component: () => import("../views/workoutactive.vue"),
+    },
   ],
 });
 
