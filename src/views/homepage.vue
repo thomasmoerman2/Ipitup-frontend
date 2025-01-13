@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <AppHeader />
-    <div class="flex items-center bg-blue-6 p-2 rounded-full">
+    <div class="mt-4 flex items-center bg-blue-6 p-2 rounded-full">
       <div
         class="w-20 h-20 bg-gradient-to-t from-blue-18 to-blue-12 rounded-full flex items-center justify-center aspect-square"
       >
@@ -21,13 +21,14 @@
     <h1 class="text-blue-60 text-4xl pb-8">
       Klaar voor de volgende <span class="font-bold"> training?</span>
     </h1>
+    <p class="text-blue-48 font-bold pb-2 pt-10">Vandaag heb je al...</p>
     <div class="card-container flex justify-between gap-4">
       <a
         href="#"
         class="flex flex-col items-center text-center p-4 bg-blue-6 rounded w-60"
       >
         <img src="" alt="Timer" class="w-10 h-10 mb-2" />
-        <p><strong>Totale tijd</strong></p>
+        <p class="pb-4 font-bold">Totale tijd</p>
         <p>02:10</p>
         <p>uur</p>
       </a>
@@ -37,7 +38,7 @@
         class="flex flex-col items-center text-center p-4 bg-blue-6 rounded w-60"
       >
         <img src="" alt="Repeat" class="w-10 h-10 mb-2" />
-        <p><strong>Herhalingen</strong></p>
+        <p class="pb-4 font-bold">Herhalingen</p>
         <p>456</p>
       </a>
 
@@ -46,13 +47,13 @@
         class="flex flex-col items-center text-center p-4 bg-blue-6 rounded w-60"
       >
         <img src="" alt="Dumbbell" class="w-10 h-10 mb-2" />
-        <p><strong>Oefeningen</strong></p>
+        <p class="pb-4 font-bold">Oefeningen</p>
         <p>4 soorten oefeningen</p>
       </a>
     </div>
 
     <div class="rounded-md bg-black-15 p-4 mt-10 flex flex-col gap-4">
-      <div class="pt-5 flex justify-between">
+      <div class="flex justify-between">
         <p>Meest gebruikte oefeningen</p>
         <p class="text-blue-60">Zie alles</p>
       </div>
@@ -68,6 +69,13 @@
         level="beginner"
         time="10"
       />
+    </div>
+
+    <div class="bg-black-10 mt-10 p-4">
+      <div class="flex justify-between">
+        <p>Recent vrijgespeelde badges</p>
+        <p class="text-blue-60">Zie alles</p>
+      </div>
     </div>
   </div>
 </template>
