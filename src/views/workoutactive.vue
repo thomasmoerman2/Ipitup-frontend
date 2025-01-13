@@ -1,15 +1,25 @@
 <template>
   <div class="camera-container">
     <button @click="startCamera">Open Camera</button>
-    <video id="video" ref="video" autoplay playsinline></video>
+    <video
+      id="video"
+      ref="video"
+      autoplay
+      playsinline
+      style="display: none"
+    ></video>
     <canvas ref="canvas" id="output_canvas"></canvas>
     <button v-if="isCameraOn" @click="stopCamera">Stop Camera</button>
-    <h2>Push-Ups Count: {{ pushUpCount }}</h2>
   </div>
 </template>
 
 <script setup>
 import { ref, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const exerciseType = route.query.exercise;
+console.log(exerciseType);
 
 const video = ref(null);
 const canvas = ref(null);
@@ -17,29 +27,20 @@ const stream = ref(null);
 const isCameraOn = ref(false);
 
 let pose;
-const pushUpCount = ref(0); // 🔢 Push-Up Counter
-let isDownPosition = false; // ⬇️ Track down position
+const pushUpCount = ref(0);
+let isDownPosition = false;
 
-// 🟢 Start Camera
 const startCamera = async () => {
+  if (isCameraOn.value) return;
   try {
-    stream.value = await navigator.mediaDevices.getUserMedia({
-      video: { width: 640, height: 480 },
-      audio: false,
-    });
-
-    video.value.srcObject = stream.value;
-    await video.value.play();
     isCameraOn.value = true;
-
-    initPoseDetection();
+    initPoseDetection(); // Let MediaPipe handle the camera
   } catch (err) {
     console.error("Error accessing camera:", err);
     alert("Camera access was denied or not available.");
   }
 };
 
-// 🔴 Stop Camera
 const stopCamera = () => {
   if (stream.value) {
     stream.value.getTracks().forEach((track) => track.stop());
@@ -48,22 +49,17 @@ const stopCamera = () => {
   if (pose) pose.close();
 };
 
-// 📐 Helper: Calculate Angle Between Joints
-const calculateAngle = (a, b, c) => {
-  const radians =
-    Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-  let angle = (radians * 180.0) / Math.PI;
-  if (angle < 0) angle += 360;
-  return angle;
+const calculateDistance = (pointA, pointB) => {
+  const dx = pointA.x - pointB.x;
+  const dy = pointA.y - pointB.y;
+  const dz = pointA.z - pointB.z;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
-// 🧠 Pose Detection Logic
 const initPoseDetection = async () => {
   const { Pose } = await import("@mediapipe/pose");
   const { Camera } = await import("@mediapipe/camera_utils");
-  const { drawLandmarks, drawConnectors, POSE_CONNECTIONS } = await import(
-    "@mediapipe/drawing_utils"
-  );
+  const { drawLandmarks } = await import("@mediapipe/drawing_utils");
 
   pose = new Pose({
     locateFile: (file) =>
@@ -73,7 +69,6 @@ const initPoseDetection = async () => {
   pose.setOptions({
     modelComplexity: 1,
     smoothLandmarks: true,
-    enableSegmentation: false,
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5,
   });
@@ -85,7 +80,6 @@ const initPoseDetection = async () => {
 
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-
     canvasCtx.drawImage(
       results.image,
       0,
@@ -95,18 +89,13 @@ const initPoseDetection = async () => {
     );
 
     if (results.poseLandmarks) {
-      // 🟢 Draw Skeleton
-      drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
-        color: "#00FF00",
-        lineWidth: 4,
-      });
-
       drawLandmarks(canvasCtx, results.poseLandmarks, {
         color: "#FF0000",
         lineWidth: 2,
       });
-
-      detectPushUp(results.poseLandmarks);
+      if (exerciseType === "pushup") {
+        detectPushUp(results.poseLandmarks);
+      }
     }
     canvasCtx.restore();
   });
@@ -122,29 +111,26 @@ const initPoseDetection = async () => {
   camera.start();
 };
 
-// 🤖 Detect Push-Ups
 const detectPushUp = (landmarks) => {
   const leftShoulder = landmarks[11];
-  const leftElbow = landmarks[13];
-  const leftWrist = landmarks[15];
-
   const rightShoulder = landmarks[12];
-  const rightElbow = landmarks[14];
+  const leftWrist = landmarks[15];
   const rightWrist = landmarks[16];
 
-  const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
-  const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+  const leftDistance = calculateDistance(leftShoulder, leftWrist);
+  const rightDistance = calculateDistance(rightShoulder, rightWrist);
 
-  const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
+  const threshold = 0.5;
 
-  if (avgElbowAngle < 90) {
-    isDownPosition = true;
-  }
-
-  if (avgElbowAngle > 160 && isDownPosition) {
-    pushUpCount.value += 1;
-    isDownPosition = false;
-    console.log("Push-Up Count:", pushUpCount.value);
+  if (leftDistance < threshold && rightDistance < threshold) {
+    if (!isDownPosition) {
+      isDownPosition = true;
+    }
+  } else {
+    if (isDownPosition) {
+      pushUpCount.value++;
+      isDownPosition = false;
+    }
   }
 };
 
