@@ -52,13 +52,13 @@
     >
       {{ pushUpCount }}
     </p>
-    <p
-      v-if="countdown > 0"
-      class="absolute top-10 left-1/2 transform -translate-x-1/2 bg-blue-42 text-white px-4 py-2 rounded-md text-3xl"
-    >
-      Starting exercise in {{ countdown }}...
-    </p>
 
+    <p
+      class="absolute bg-blue-24 rounded-lg px-10 p-5 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
+      v-if="isCameraOn"
+    >
+      Get into position
+    </p>
     <video
       id="video"
       ref="video"
@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -93,26 +93,40 @@ const stream = ref(null);
 const isCameraOn = ref(false);
 const showModal = ref(true);
 const countdown = ref(0);
-const countdownInterval = ref(null);
+let isInPosition = false;
+const URL = "./my_model/";
 
 const videoHeight = ref(window.innerHeight);
 
-let pose;
+let pose, model, maxPredictions;
 const pushUpCount = ref(0);
 let isDownPosition = false;
+
+const loadExternalScripts = () => {
+  const script1 = document.createElement("script");
+  script1.src =
+    "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+  script1.onerror = (error) =>
+    console.error("Error loading TensorFlow.js", error);
+
+  const script2 = document.createElement("script");
+  script2.src =
+    "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
+  script2.onerror = (error) =>
+    console.error("Error loading Teachable Machine", error);
+
+  document.head.appendChild(script1);
+  document.head.appendChild(script2);
+};
+
+onMounted(() => {
+  loadExternalScripts();
+});
 
 const closeModalAndStartCountdown = () => {
   showModal.value = false;
   countdown.value = 3;
-
-  countdownInterval.value = setInterval(() => {
-    if (countdown.value > 0) {
-      countdown.value--;
-    } else {
-      clearInterval(countdownInterval.value);
-      startCamera();
-    }
-  }, 1000);
+  startCamera();
 };
 
 const startCamera = async () => {
@@ -125,13 +139,50 @@ const startCamera = async () => {
 
     video.value.srcObject = stream.value;
     isCameraOn.value = true;
-
     initPoseDetection();
+
+    initPositionDetection();
   } catch (err) {
     console.error("Error accessing camera:", err);
     alert("Camera access was denied or not available.");
   }
 };
+
+const initPositionDetection = async () => {
+  const modelURL = URL + "model.json";
+  const metadataURL = URL + "metadata.json";
+
+  model = await tmImage.load(modelURL, metadataURL);
+  maxPredictions = model.getTotalClasses();
+
+  // Start the loop
+  window.requestAnimationFrame(loop);
+};
+
+async function loop() {
+  await predict();
+  window.requestAnimationFrame(loop);
+}
+
+async function predict() {
+  if (!video.value) return;
+
+  // Get the video element as input for the Teachable Machine model
+  const prediction = await model.predict(video.value);
+  for (let i = 0; i < maxPredictions; i++) {
+    if (prediction[0].probability.toFixed(2) > 0.8) {
+      console.log(
+        prediction[0].probability.toFixed(2),
+        "Person is in position"
+      );
+      isInPosition = true;
+    } else {
+      isInPosition = false;
+
+      console.log("Get in position");
+    }
+  }
+}
 
 const stopCamera = () => {
   if (stream.value) {
@@ -185,8 +236,12 @@ const initPoseDetection = async () => {
         color: "#FF0000",
         lineWidth: 2,
       });
-      if (exerciseType === "pushups") {
-        detectPushUp(results.poseLandmarks);
+      if (isInPosition) {
+        console.log("pushup detection is running.");
+
+        if (exerciseType === "pushups") {
+          detectPushUp(results.poseLandmarks);
+        }
       }
     }
     canvasCtx.restore();
@@ -217,13 +272,11 @@ const detectPushUp = (landmarks) => {
   if (leftDistance < threshold && rightDistance < threshold) {
     if (!isDownPosition) {
       console.log("pushed down");
-
       isDownPosition = true;
     }
   } else {
     if (isDownPosition) {
       console.log("pushed up");
-
       pushUpCount.value++;
       isDownPosition = false;
     }
