@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center w-full bg-blue-6 rounded-md p-1 gap-10">
+    <div class="flex justify-center w-full bg-blue-6 text-xs rounded-md p-1 gap-1.5">
         <label v-for="option in options" class="flex items-center gap-2 option" :class="{ 'selected': chosenOption === option }" @click="func_chooseOption(option)" :for="option">
             <input type="radio" :checked="chosenOption === option" class="hidden" :value="option" :id="option">
             {{ option }}
@@ -48,6 +48,6 @@ defineExpose({
 }
 
 .option {
-    @apply py-2 px-4 rounded-md w-full flex justify-center items-center;
+    @apply py-1.5 rounded-md w-full flex justify-center items-center;
 }
 </style>

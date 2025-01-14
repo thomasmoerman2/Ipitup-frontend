@@ -1,8 +1,8 @@
 <template>
     <label :for="props.id" class="flex flex-col gap-1">
-        <span class="text-sm">{{ props.label }}</span>
+        <span class="text-xs">{{ props.label }}</span>
         <div class="relative">
-            <input :type="type" class="border border-black-40 rounded-md p-2 w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="props.id" @change="func_change" />
+            <input :type="type" class="border border-black-40 rounded-md px-2.5 py-3 w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="props.id" @change="func_change" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
                 <EyeOff v-if="props.type === 'password' && showPassword" @click="func_showPassword" class="text-black-40" />
                 <Eye v-else-if="props.type === 'password' && !showPassword" @click="func_showPassword" class="text-black-40" />

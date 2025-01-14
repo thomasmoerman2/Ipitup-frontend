@@ -13,6 +13,13 @@ export default {
         flexDirection: 'column',
         gap: '10px'
       },
+      fontSize: {
+        '2xs': '.625rem',
+        'xs': '.75rem',
+        'sm': '.9375rem',
+        'base': '1rem',
+        'lg': '1.5rem',
+      },
       colors: {
         purple: {
           6: "#f7e6f2",

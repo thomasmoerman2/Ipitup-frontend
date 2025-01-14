@@ -1,9 +1,9 @@
 <template>
     <label v-for="(item, key) in props.items" :key="key" :for="`toggle-${key}`" class="flex items-center gap-2 w-max">
         <input type="checkbox" :id="`toggle-${key}`" class="hidden" v-model="toggleStates[key]" @change="emitChange(key)" />
-        <span class="py-2 px-3 rounded-xl transition" :class="{
-            'bg-blue-54 text-blue-6': toggleStates[key],
-            'bg-blue-6 text-blue-84': !toggleStates[key]
+        <span class="py-2 px-2.5 rounded-xl transition" :class="{
+            'bg-blue-54 text-black-5': toggleStates[key],
+            'bg-blue-18 text-blue-84': !toggleStates[key]
         }">
             {{ item }}
         </span>
