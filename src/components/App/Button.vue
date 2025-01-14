@@ -1,19 +1,18 @@
 <template>
-  <button
-    :class="[
-      'rounded-[10px] flex gap-3 items-center justify-center w-full py-3',
-      {
-        'bg-blue-60 text-white':
-          props.version === 'primary' || props.version === '1',
-        'bg-purple-60 text-white':
-          props.version === 'secondary' || props.version === '2',
-        'bg-black-40 text-white':
-          props.version === 'tertiary' || props.version === '3',
-        'bg-blue-18 text-blue-84':
-          props.version === 'outline' || props.version === '4',
-      },
-    ]"
-  >
+  <button :class="[
+    {
+      'bg-blue-54 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+        props.version === 'primary' || props.version === '1',
+      'bg-purple-60 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+        props.version === 'secondary' || props.version === '2',
+      'bg-black-40 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+        props.version === 'tertiary' || props.version === '3',
+      'bg-blue-18 text-blue-84 rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+        props.version === 'outline' || props.version === '4',
+      'text-blue-84 underline py-0 w-max':
+        props.version === 'link' || props.version === '5',
+    },
+  ]">
     <ArrowUpRight v-if="props.icon == 'true'" />
     {{ props.text }}
   </button>
@@ -40,10 +39,12 @@ const props = defineProps({
         "secondary",
         "tertiary",
         "outline",
+        "link",
         "1",
         "2",
         "3",
         "4",
+        "5",
       ].includes(value);
     },
   },
