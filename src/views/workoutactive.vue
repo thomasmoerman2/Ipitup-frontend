@@ -14,7 +14,7 @@
               autoplay
               muted
               loop
-              class="w-full h-40"
+              class="top-0 left-0 w-full h-full object-cover"
             >
               Your browser does not support the video tag.
             </video>
@@ -65,10 +65,22 @@
       ref="video"
       autoplay
       playsinline
-      class="hidden"
-      :style="{ height: videoHeight + 'px', width: 'auto' }"
+      class="hidden object-cover w-full h-full"
+      :style="{
+        height: videoHeight + 'px',
+        width: '100%',
+        objectFit: 'cover',
+      }"
     ></video>
-    <canvas ref="canvas" id="output_canvas" class="mt-4"></canvas>
+    <canvas
+      ref="canvas"
+      id="output_canvas"
+      class="mt-4 w-full h-full object-cover"
+      :style="{
+        width: '100%',
+        height: '100%',
+      }"
+    ></canvas>
 
     <button
       v-if="isCameraOn"
@@ -140,11 +152,15 @@ const startCamera = async () => {
         facingMode: "environment",
         width: { ideal: 1280 },
         height: { ideal: 720 },
+        aspectRatio: { ideal: 1.777777778 },
+        zoom: 1,
+        resizeMode: "crop-and-scale",
       },
       audio: false,
     });
 
     video.value.srcObject = stream.value;
+    video.value.style.transform = "scaleX(1)"; // Prevent mirroring
     isCameraOn.value = true;
     initPoseDetection();
     initPositionDetection();
