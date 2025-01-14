@@ -23,6 +23,11 @@ const router = createRouter({
       name: "workoutactive",
       component: () => import("../views/workoutactive.vue"),
     },
+    {
+      path: "/search",
+      name: "search",
+      component: () => import("../views/search.vue"),
+    },
   ],
 });
 

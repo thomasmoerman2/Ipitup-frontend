@@ -1,19 +1,22 @@
 <template>
     <label :for="props.id" class="flex flex-col gap-1">
         <span class="text-xs">{{ props.label }}</span>
-        <div class="relative">
-            <input :type="type" class="border border-black-40 rounded-md px-2.5 py-3 w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="props.id" @change="func_change" />
+        <div class="relative flex gap-2 border border-black-40 rounded-md px-2.5 py-3">
+            <AppIcon :name="props.icon" color="text-black-40" />
+            <input :type="type" class="border-none w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="props.id" @change="func_change" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
-                <EyeOff v-if="props.type === 'password' && showPassword" @click="func_showPassword" class="text-black-40" />
-                <Eye v-else-if="props.type === 'password' && !showPassword" @click="func_showPassword" class="text-black-40" />
+                <AppIcon name="eyeOff" v-if="props.type === 'password' && showPassword" @click="func_showPassword"  />
+                <AppIcon name="eye" v-else-if="props.type === 'password' && !showPassword" @click="func_showPassword" />
             </div>
         </div>
     </label>
 </template>
 
 <script setup>
-import { Eye, EyeOff } from 'lucide-vue-next';
+import AppIcon from '@/components/App/Icon.vue';
 import { ref } from 'vue';
+
+
 const props = defineProps({
     type: {
         type: String,
@@ -21,7 +24,7 @@ const props = defineProps({
     },
     label: {
         type: String,
-        default: 'Label'
+        default: ''
     },
     placeholder: {
         type: String,
@@ -33,7 +36,7 @@ const props = defineProps({
     },
     icon: {
         type: String,
-        default: 'false'
+        default: ''
     },
     id: {
         type: String,
