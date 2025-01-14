@@ -6,7 +6,7 @@
                 <X class="absolute transition-all duration-300 ease-in-out" :class="blnOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'" />
             </div>
             <!-- Notification Badge -->
-            <div v-show="props.messages.length > 0" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-purple-54 text-white text-xs rounded-full grid place-items-center px-1">
+            <div v-show="props.messages.length > 0" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-blue-12 text-white text-xs rounded-full grid place-items-center px-1">
                 {{ props.messages.length }}
             </div>
         </button>

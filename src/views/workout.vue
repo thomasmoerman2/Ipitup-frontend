@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <AppHeader />
+    <AppHeader title="Workout" />
     <div class="mt-10 mb-10 flex gap-2">
         <AppFilters type="filter"/>
         <AppFilters type="optie" optie="Pushups"/>

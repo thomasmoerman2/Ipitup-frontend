@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between pt-16">
         <h1 class="font-bold text-lg">{{ title }}</h1>
         <div class="w-[39px] h-[39px] grid place-items-center text-white bg-blue-54 rounded-full relative">
             <HeaderNotification />
@@ -16,9 +16,5 @@ const props = defineProps({
         type: String,
         default: 'Header'
     },
-    title: {
-        type: String,
-        default: 'Workout'
-    }
 })
 </script>
