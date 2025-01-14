@@ -46,7 +46,7 @@
         </button>
       </div>
     </div>
-
+    <p>{{ isPushupDetectorRunning }}</p>
     <p
       class="absolute right-0 bottom-0 bg-blue-60 bg-opacity-20 px-10 p-5 rounded-md text-3xl"
     >
@@ -56,6 +56,7 @@
     <p
       class="absolute bg-blue-24 rounded-lg px-10 p-5 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
       v-if="isCameraOn"
+      v-show="!removeLabel"
     >
       Get into position
     </p>
@@ -93,6 +94,8 @@ const stream = ref(null);
 const isCameraOn = ref(false);
 const showModal = ref(true);
 const countdown = ref(0);
+const isPushupDetectorRunning = ref(null);
+const removeLabel = ref(false);
 let isInPosition = false;
 const URL = "./my_model/";
 
@@ -131,21 +134,21 @@ const closeModalAndStartCountdown = () => {
 
 const startCamera = async () => {
   if (isCameraOn.value) return;
-  try {
-    stream.value = await navigator.mediaDevices.getUserMedia({
-      video: { width: 1000, height: videoHeight },
-      audio: false,
-    });
+  //   try {
+  stream.value = await navigator.mediaDevices.getUserMedia({
+    video: { width: 1000, height: videoHeight },
+    audio: false,
+  });
 
-    video.value.srcObject = stream.value;
-    isCameraOn.value = true;
-    initPoseDetection();
+  video.value.srcObject = stream.value;
+  isCameraOn.value = true;
+  initPoseDetection();
 
-    initPositionDetection();
-  } catch (err) {
-    console.error("Error accessing camera:", err);
-    alert("Camera access was denied or not available.");
-  }
+  initPositionDetection();
+  //   } catch (err) {
+  //     console.error("Error accessing camera:", err);
+  //     alert("Camera access was denied or not available.");
+  //   }
 };
 
 const initPositionDetection = async () => {
@@ -237,11 +240,18 @@ const initPoseDetection = async () => {
         lineWidth: 2,
       });
       if (isInPosition) {
-        console.log("pushup detection is running.");
-
+        // console.log("pushup detection is running.");
+        isPushupDetectorRunning.value = "pushup detection is running";
+        removeLabel.value = true;
         if (exerciseType === "pushups") {
           detectPushUp(results.poseLandmarks);
         }
+      } else {
+        removeLabel.value = false;
+
+        isPushupDetectorRunning.value = "pushup detection is NOT running";
+
+        // console.log("pushup detection is NOT running.");
       }
     }
     canvasCtx.restore();
