@@ -24,11 +24,11 @@ const router = createRouter({
       component: () => import('../views/profile-settings.vue')
     },
     {
-      path: '/search',
-      name: 'search',
-      component: () => import('../views/search.vue')
-    }
-  ]
+      path: "/search",
+      name: "search",
+      component: () => import("../views/search.vue"),
+    },
+  ],
 });
 
 export default router;
