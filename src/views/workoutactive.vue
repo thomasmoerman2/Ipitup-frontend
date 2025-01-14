@@ -134,21 +134,24 @@ const closeModalAndStartCountdown = () => {
 
 const startCamera = async () => {
   if (isCameraOn.value) return;
-  //   try {
-  stream.value = await navigator.mediaDevices.getUserMedia({
-    video: { width: 1000, height: videoHeight },
-    audio: false,
-  });
+  try {
+    stream.value = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
 
-  video.value.srcObject = stream.value;
-  isCameraOn.value = true;
-  initPoseDetection();
-
-  initPositionDetection();
-  //   } catch (err) {
-  //     console.error("Error accessing camera:", err);
-  //     alert("Camera access was denied or not available.");
-  //   }
+    video.value.srcObject = stream.value;
+    isCameraOn.value = true;
+    initPoseDetection();
+    initPositionDetection();
+  } catch (err) {
+    console.error("Error accessing camera:", err);
+    alert("Camera access was denied or not available: " + err.message);
+  }
 };
 
 const initPositionDetection = async () => {
