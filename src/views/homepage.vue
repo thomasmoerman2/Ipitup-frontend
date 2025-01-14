@@ -77,9 +77,11 @@
         <p class="text-blue-60">Zie alles</p>
       </div>
     </div>
+    <AppNavigation />
   </div>
 </template>
 <script setup>
-import WorkoutExercise from "@/components/WorkoutExercise.vue";
-import AppHeader from "@/components/AppHeader.vue";
+import WorkoutExercise from "@/components/Workout/Exercise.vue";
+import AppHeader from "@/components/App/Header.vue";
+import AppNavigation from "@/components/App/Navigation.vue";
 </script>

@@ -13,6 +13,11 @@ const router = createRouter({
       name: "homepage",
       component: () => import("../views/homepage.vue"),
     },
+    {
+      path: "/workout",
+      name: "workout",
+      component: () => import("../views/workout.vue"),
+    },
   ],
 });
 
