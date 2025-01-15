@@ -9,6 +9,7 @@
                 </div>
                 <DialogSearch @closeDialog="func_closeDialog" v-if="props.type === 'search'" />
                 <DialogSlider @closeDialog="func_closeDialog" v-if="props.type === 'slider'" />
+                <DialogFilter @closeDialog="func_closeDialog" v-if="props.type === 'filter'" />
             </div>
         </dialog>
     </Transition>
@@ -17,6 +18,7 @@
 <script setup>
 import DialogSearch from '@/components/Dialog/Search.vue';
 import DialogSlider from '@/components/Dialog/Slider.vue';
+import DialogFilter from '@/components/Dialog/Filter.vue';
 import AppButton from '@/components/App/Button.vue';
 import { ref, onUnmounted } from 'vue';
 
