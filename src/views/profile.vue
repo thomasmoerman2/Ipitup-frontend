@@ -1,5 +1,4 @@
 <template>
-
   <div class="flex flex-col  justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar />
@@ -18,9 +17,6 @@
 
     <p class="font-bold">Moving time</p>
   </div>
-
-  <AppNavigation />
-
 </template>
 
 <script setup>

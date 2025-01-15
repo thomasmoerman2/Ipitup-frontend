@@ -21,9 +21,9 @@
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">Profile info</h1>
       <div class="flex justify-center gap-10">
-          <ProfileInfo icon="Award" text="Geld" amount="5" />
-          <ProfileInfo icon="RefreshCw" text="Ander geld" amount="1000" />
-          <ProfileInfo icon="Gem" text="diamanten" amount="2" />
+        <ProfileInfo icon="Award" text="Geld" amount="5" />
+        <ProfileInfo icon="RefreshCw" text="Ander geld" amount="1000" />
+        <ProfileInfo icon="Gem" text="diamanten" amount="2" />
       </div>
     </div>
 
@@ -33,40 +33,23 @@
     </div>
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout exercise</h1>
-      <WorkoutExercise
-        img="https://picsum.photos/100"
-        title="pushups"
-        level="beginner"
-        time="10"
-      />
+      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
     </div>
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">Search profile</h1>
-      <SearchProfile
-        img="https://picsum.photos/100"
-        name="Thibo"
-        username="thibo123"
-      />
+      <SearchProfile img="https://picsum.photos/100" name="Thibo" username="thibo123" />
     </div>
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">group option</h1>
-      <AppOptions
-        :options="['1', '2', '3']"
-        v-model="selectedOption"
-        @change="func_Emit2"
-      />
+      <AppOptions :options="[{ text: '1', value: '1' }, { text: '2', value: '2' }, { text: '3', value: '3' }]" v-model="selectedOption" @change="func_Emit2" />
     </div>
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">checkbox</h1>
       <AppCheckbox />
-      <AppCheckbox
-        url="https://www.google.com"
-        titleUrl="Google"
-        title="External Link"
-      />
+      <AppCheckbox url="https://www.google.com" titleUrl="Google" title="External Link" />
     </div>
 
     <div class="flex flex-col gap-10">
@@ -81,12 +64,7 @@
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">input</h1>
       <AppInput label="Username" placeholder="Username" id="username" />
-      <AppInput
-        label="Password"
-        placeholder="Password"
-        type="password"
-        id="password"
-      />
+      <AppInput label="Password" placeholder="Password" type="password" id="password" />
     </div>
 
     <div class="flex flex-col gap-10">
@@ -98,9 +76,7 @@
       <h1 class="capitalize underline font-caveat">switch</h1>
       <div class="flex flex-col gap-5">
         <AppSwitch v-model="switchState1" id="switch1">Toggle me</AppSwitch>
-        <AppSwitch v-model="switchState2" id="switch2"
-          >Another switch</AppSwitch
-        >
+        <AppSwitch v-model="switchState2" id="switch2">Another switch</AppSwitch>
       </div>
     </div>
 
