@@ -21,6 +21,11 @@
         </div>
 
         <div class="flex flex-col gap-10">
+            <h1 class="capitalize underline font-caveat">Search profile</h1>
+            <SearchProfile img="https://picsum.photos/100" name="Thibo" username="thibo123" />
+        </div>
+
+        <div class="flex flex-col gap-10">
             <h1 class="capitalize underline font-caveat">group option</h1>
             <AppOptions :options="['1', '2', '3']" v-model="selectedOption" @change="func_Emit2" />
         </div>
@@ -78,6 +83,7 @@ import AppDialog from '@/components/App/Dialog.vue';
 import AppInput from '@/components/App/Input.vue';
 import AppToggle from '@/components/App/Toggle.vue';
 import AppSwitch from '@/components/App/Switch.vue';
+import SearchProfile from '@/components/Search/Profile.vue';
 
 import { ref } from 'vue';
 
