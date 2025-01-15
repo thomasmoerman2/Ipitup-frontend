@@ -58,6 +58,4 @@
 </template>
 <script setup>
 import WorkoutExercise from "@/components/Workout/Exercise.vue";
-import AppHeader from "@/components/App/Header.vue";
-import AppNavigation from "@/components/App/Navigation.vue";
 </script>

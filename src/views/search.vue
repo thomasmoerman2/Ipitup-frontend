@@ -10,5 +10,4 @@
 </template>
 <script setup>
 import AppInput from "@/components/App/Input.vue";
-import AppNavigation from "@/components/App/Navigation.vue";
 </script>

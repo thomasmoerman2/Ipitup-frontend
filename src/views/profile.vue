@@ -19,14 +19,10 @@
     <p class="font-bold">Moving time</p>
   </div>
 
-  <AppNavigation />
-
 </template>
 
 <script setup>
-import AppHeader from "@/components/App/Header.vue";
 import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import ProfileInfo from "@/components/Profile/Info.vue";
-import AppNavigation from "@/components/App/Navigation.vue";
 </script>
