@@ -1,12 +1,10 @@
 <template>
   <button class="flex items-center justify-between h-max">
-    <div class="flex items-center justify-between h-max">
-      <div class="flex items-center">
-        <img :src="img" alt="image" class="w-[57px] h-[57px] rounded aspect-circle"/>
-        <p class="font-bold">{{ name }}</p>
-      </div>
-      <p class="text-xs text-black-40">{{ username }}</p>
+    <div class="flex items-center">
+    <img :src="img" alt="image" class="w-[57px] h-[57px] rounded-full mr-2"/>
+    <p class="font-bold">{{ name }}</p>
     </div>
+    <p class="text-xs text-black-40">@{{ username }}</p>
   </button>
 </template>
 
