@@ -6,34 +6,39 @@ const router = createRouter({
     {
       path: '/components',
       name: 'components',
-      component: () => import('../views/components.vue')
+      component: () => import('../views/components.vue'),
     },
     {
       path: '/home',
       name: 'homepage',
-      component: () => import('../views/homepage.vue')
+      component: () => import('../views/homepage.vue'),
     },
     {
       path: '/workout',
       name: 'workout',
-      component: () => import('../views/workout.vue')
+      component: () => import('../views/workout.vue'),
     },
     {
       path: '/search',
       name: 'search',
-      component: () => import('../views/search.vue')
+      component: () => import('../views/search.vue'),
     },
     {
       path: '/profile/settings',
       name: 'profile/settings',
-      component: () => import('../views/profile-settings.vue')
+      component: () => import('../views/profile-settings.vue'),
     },
     {
       path: '/profile/customize',
       name: 'profile/customize',
-      component: () => import('../views/profile-customize.vue')
-    }
-  ]
+      component: () => import('../views/profile-customize.vue'),
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/register.vue'),
+    },
+  ],
 });
 
 export default router;
