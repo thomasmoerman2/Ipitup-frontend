@@ -1,18 +1,25 @@
 <template>
     <div class="container flex flex-col gap-10 mb-32">
         <AppHeader title="Profile Settings" />
-        <div class="w-full flex flex-col items-center justify-center gap-10">
+        <div class="w-full flex flex-col items-center justify-center gap-5">
             <button class="w-max flex justify-center">
                 <SettingsAvatar />
             </button>
             <p class="text-sm text-black-100 lowercase">@Gebruikersnaam</p>
+            <AppSmallButton icon="Globe" version="blue" text="Publieke gebruiker" />
         </div>
-        <AppInput label="Gebruikersnaam" placeholder="Gebruikersnaam" />
-        <AppInput label="E-mail" placeholder="E-mail" />
-        <AppInput label="Voornaam" placeholder="Voornaam" />
-        <AppInput label="Achternaam" placeholder="Achternaam" />
-        <AppInput label="Leeftijd" placeholder="Leeftijd" type="number" />
-        <AppButton text="Wijzigingen opslaan" version="primary" icon="false" />
+
+
+        <div class="flex flex-col gap-5">
+            <AppInput label="Gebruikersnaam" placeholder="Gebruikersnaam" />
+            <AppInput label="E-mail" placeholder="E-mail" />
+            <AppInput label="Voornaam" placeholder="Voornaam" />
+            <AppInput label="Achternaam" placeholder="Achternaam" />
+            <AppInput label="Leeftijd" placeholder="Leeftijd" type="number" />
+            <AppButton text="Wijzigingen opslaan" version="primary" icon="false" />
+        </div>
+
+
         <div class="flex flex-col gap-3">
             <strong>Wachtwoord aanpassen</strong>
             <AppButton text="Wachtwoord wijzigen" version="outline" icon="false" />
@@ -39,6 +46,7 @@
 <script setup>
 import AppHeader from '@/components/App/Header.vue';
 import SettingsAvatar from '@/components/Settings/Avatar.vue';
+import AppSmallButton from '@/components/App/SmallButton.vue';
 import AppButton from '@/components/App/Button.vue';
 import AppInput from '@/components/App/Input.vue';
 import AppNavigation from '@/components/App/Navigation.vue';
