@@ -11,7 +11,7 @@
             </div>
         </button>
 
-        <TransitionGroup name="notification-list" tag="div" class="absolute -right-2 top-[45px] w-[280px] flex flex-col gap-2 z-50">
+        <TransitionGroup name="notification-list" tag="div" class="absolute -right-2 top-[45px] w-[280px] flex flex-col gap-2 z-[60]">
             <div v-if="blnOpen" v-for="(notification, index) in props.messages" :key="index" class="rounded-md border border-blue-90 bg-blue-12 text-black-100 shadow-nav" :style="{ transitionDelay: `${index * 100}ms` }">
                 <div class="flex flex-col gap-1 p-3">
                     <div class="flex items-center w-max gap-2">
