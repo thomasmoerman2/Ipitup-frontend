@@ -1,13 +1,12 @@
 <template>
     <label :for="inputId" class="flex flex-col gap-1">
         <span class="text-xs">{{ props.label }}</span>
-        <div class="relative flex gap-2 border border-black-40 rounded-md px-2.5 py-3">
+        <div class="relative flex items-center gap-2 border border-black-40 rounded-md px-2.5 py-3">
             <AppIcon :name="props.icon" color="text-black-40" />
-            <input :type="type" class="border-none w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="inputId" @change="func_change" />
-            <div class="absolute right-2 top-1/2 -translate-y-1/2">
-                <AppIcon name="eyeOff" v-if="props.type === 'password' && showPassword" @click="func_showPassword" />
-                <AppIcon name="eye" v-else-if="props.type === 'password' && !showPassword" @click="func_showPassword" />
-            </div>
+            <input :type="showPassword ? 'text' : type" class="border-none w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="inputId" @change="func_change" />
+            <button v-if="type === 'password'" type="button" class="absolute right-2 top-1/2 -translate-y-1/2" @click="func_showPassword">
+                <AppIcon :name="showPassword ? 'eyeOff' : 'eye'" color="text-black-100" />
+            </button>
         </div>
     </label>
 </template>
@@ -56,7 +55,6 @@ onMounted(() => {
 
 const func_showPassword = () => {
     showPassword.value = !showPassword.value;
-    type.value = showPassword.value ? 'text' : 'password';
 };
 
 const func_change = (event) => {
@@ -66,6 +64,6 @@ const func_change = (event) => {
 const emit = defineEmits(['input']);
 
 const func_input = (event) => {
-    emit('input', value.value);
+    emit('input', event.target.value);
 };
 </script>

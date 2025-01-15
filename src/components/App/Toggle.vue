@@ -1,68 +1,52 @@
 <template>
-  <label v-for="(item, key) in props.items" :key="key" :for="generateId(key)" class="flex items-center gap-2 w-max">
-    <input type="checkbox" :id="generateId(key)" class="hidden" v-model="toggleStates[key]" @change="emitChange(key)" />
-    <span
-      class="py-2 px-2.5 rounded-xl transition"
-      :class="{
-        'bg-blue-54 text-black-5': toggleStates[key],
-        'bg-blue-18 text-blue-84': !toggleStates[key],
-      }"
-    >
-      {{ item }}
-    </span>
-  </label>
+  <div class="flex gap-2">
+    <label v-for="(item, key) in items" :key="key" :for="`toggle_${toggleId}_${key}`" class="flex items-center gap-2 w-max cursor-pointer">
+      <input type="checkbox" :id="`toggle_${toggleId}_${key}`" class="hidden" :checked="modelValue.includes(item)" @change="toggleItem(item)" />
+      <span class="py-2 px-2.5 rounded-xl transition" :class="modelValue.includes(item) ? 'bg-blue-54 text-black-5' : 'bg-blue-18 text-blue-84'">
+        {{ item }}
+      </span>
+    </label>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   items: {
     type: Array,
-    default: () => ['items', 'items', 'items'],
+    default: () => ['items', 'items', 'items']
   },
   modelValue: {
     type: Array,
-    default: () => [],
-  },
+    default: () => []
+  }
 });
 
-const emit = defineEmits(['update:modelValue', 'change', 'selected-items']);
+const emit = defineEmits(['update:modelValue', 'change']);
 
-const toggleStates = ref([]);
-
-const selectedItems = computed(() => props.items.filter((_, i) => toggleStates.value[i]));
-
-const generateId = (key) => {
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 10000);
-  return `toggle_${timestamp}_${key}_${random}`;
-};
+// Generate unique ID for this toggle instance
+const toggleId = ref('');
 
 onMounted(() => {
-  toggleStates.value = props.modelValue.length ? [...props.modelValue] : props.items.map(() => false);
-  emit('selected-items', selectedItems.value);
+  toggleId.value = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 });
 
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (newValue.length) {
-      toggleStates.value = [...newValue];
-      emit('selected-items', selectedItems.value);
-    }
-  },
-  { deep: true }
-);
+const toggleItem = (item) => {
+  const newValue = [...props.modelValue];
+  const index = newValue.indexOf(item);
 
-const emitChange = (index) => {
-  emit('update:modelValue', toggleStates.value);
+  if (index === -1) {
+    newValue.push(item);
+  } else {
+    newValue.splice(index, 1);
+  }
+
+  emit('update:modelValue', newValue);
   emit('change', {
-    index,
-    value: toggleStates.value[index],
-    states: toggleStates.value,
-    selectedItems: selectedItems.value,
+    item,
+    selected: index === -1,
+    selectedItems: newValue
   });
-  emit('selected-items', selectedItems.value);
 };
 </script>

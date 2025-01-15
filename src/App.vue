@@ -1,7 +1,8 @@
 <template>
-  <div class="flex flex-col gap-10 container">
+  <div class="flex flex-col gap-5 container">
     <AppHeader class="pt-16" />
-    <RouterView class="pb-32" />
+    <RouterView />
+    <div class="pb-20"></div>
     <AppNavigation />
   </div>
 </template>
