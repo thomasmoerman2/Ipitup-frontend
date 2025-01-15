@@ -1,7 +1,7 @@
 <template>
     <label :for="inputId" class="flex flex-col gap-1">
         <span class="text-xs">{{ props.label }}</span>
-        <div class="relative flex gap-2 border border-black-40 rounded-md px-2.5 py-3">
+        <div class="relative flex gap-2 items-center border border-black-40 rounded-md px-2.5 py-3">
             <AppIcon :name="props.icon" color="text-black-40" />
             <input :type="type" class="border-none w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="inputId" @change="func_change" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
