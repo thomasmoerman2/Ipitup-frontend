@@ -17,7 +17,7 @@
         </p>
       </div>
     </div>
-    <p class="text-purple-42 font-bold pb-4 pt-4">Welkom terug!</p>
+    <p class="text-orange-35 font-bold pb-4 pt-4">Welkom terug!</p>
     <h1 class="text-blue-60 text-4xl pb-8">
       Klaar voor de volgende <span class="font-bold"> training?</span>
     </h1>

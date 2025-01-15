@@ -1,0 +1,28 @@
+<template>
+    <div class="flex flex-col gap-4 items-center">
+        <AppIcon :name="props.icon" color="text-blue-48" :size="28"/>
+        <p class="text-xs font-bold">{{ text }}</p>
+        <p class="text-xs">{{ amount }}</p>
+    </div>
+  </template>
+  
+<script setup>
+import AppIcon from "@/components/App/Icon.vue";
+
+const props = defineProps
+    ({
+    icon: {
+        type: String,
+        required: true,
+    },
+    text: {
+        type: String,
+        required: true,
+    },
+    amount: {
+        type: Number,
+        required: true,
+    },
+    });
+</script>
+  

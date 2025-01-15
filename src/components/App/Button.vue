@@ -3,7 +3,7 @@
     {
       'bg-blue-54 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
         props.version === 'primary' || props.version === '1',
-      'bg-purple-60 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+      'bg-orange-50 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
         props.version === 'secondary' || props.version === '2',
       'bg-black-40 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
         props.version === 'tertiary' || props.version === '3',
