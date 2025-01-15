@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('../views/workout.vue')
     },
     {
+      path: '/search',
+      name: 'search',
+      component: () => import('../views/search.vue')
+    },
+    {
       path: '/profile/settings',
       name: 'profile/settings',
       component: () => import('../views/profile-settings.vue')
@@ -27,11 +32,6 @@ const router = createRouter({
       path: '/profile/customize',
       name: 'profile/customize',
       component: () => import('../views/profile-customize.vue')
-    },
-    {
-      path: '/search',
-      name: 'search',
-      component: () => import('../views/search.vue')
     }
   ]
 });
