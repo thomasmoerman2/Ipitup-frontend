@@ -1,20 +1,31 @@
 <template>
-    <div class="flex items-center justify-between pt-16">
-        <h1 class="font-bold text-lg">{{ title }}</h1>
-        <div class="w-[39px] h-[39px] grid place-items-center text-white bg-blue-54 rounded-full relative">
-            <HeaderNotification />
-        </div>
-    </div>
+    <header class="flex justify-between items-center py-5">
+        <h1 class="text-lg font-semibold">{{ pageTitle }}</h1>
+        <Notification :messages="[]" />
+    </header>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import HeaderNotification from '../Header/Notification.vue';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import Notification from '@/components/Header/Notification.vue';
 
-const props = defineProps({
-    title: {
-        type: String,
-        default: 'Header'
-    },
-})
+const route = useRoute();
+
+const pageTitle = computed(() => {
+    const segments = route.path.split('/').filter(Boolean);
+
+    if (segments.length === 0) return 'Home';
+
+    // Map of parent routes to their display names
+    const routeNames = {
+        'workout': 'Workout',
+        'podium': 'Podium',
+        'search': 'Search',
+        'profile': 'Profile'
+    };
+
+    // Always return the parent route name
+    return routeNames[segments[0]] || segments[0];
+});
 </script>

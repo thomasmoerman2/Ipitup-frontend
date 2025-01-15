@@ -1,105 +1,102 @@
 <template>
-    <div class="container">
-        <AppHeader title="Profile Customize" />
 
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Avatar Preview -->
-            <div class="w-full bg-white flex justify-center items-start sticky top-0 z-[55]">
-                <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
-            </div>
-
-            <!-- Customization Panel -->
-            <div class="w-full md:w-1/2 flex flex-col gap-4 pb-5">
-                <!-- Category Tabs -->
-                <div class="flex gap-2 p-2 bg-blue-6 rounded-md overflow-x-scroll">
-                    <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" class="flex items-center gap-2 p-2 rounded-md transition-colors whitespace-nowrap" :class="activeTab === tab.id ? 'bg-blue-54 text-white' : 'text-blue-84'">
-                        <component :is="tab.icon" class="w-4 h-4" />
-                        <span class="text-sm">{{ tab.name }}</span>
-                    </button>
-                </div>
-
-                <!-- Options Panel -->
-                <div class="flex flex-col gap-4">
-                    <!-- Appearance Options -->
-                    <div v-if="activeTab === 'appearance'" class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Skin Tone</h3>
-                            <AppOptions :options="skinOptions" v-model="skin" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Body Type</h3>
-                            <AppOptions :options="bodyOptions" v-model="body" class="flex-1" />
-                        </div>
-                    </div>
-
-                    <!-- Face Options -->
-                    <div v-if="activeTab === 'face'" class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Eye Style</h3>
-                            <AppOptions :options="eyeOptions" v-model="eye" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Eyebrow Style</h3>
-                            <AppOptions :options="eyebrowOptions" v-model="eyebrows" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Mouth Style</h3>
-                            <AppOptions :options="mouthOptions" v-model="mouth" class="flex-1" />
-                        </div>
-                        <div v-if="mouth === 'lips'" class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Lip Color</h3>
-                            <AppOptions :options="lipColorOptions" v-model="lipColor" class="flex-1" />
-                        </div>
-                    </div>
-
-                    <!-- Hair Options -->
-                    <div v-if="activeTab === 'hair'" class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Hairstyle</h3>
-                            <AppOptions :options="hairOptions" v-model="hair" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2" v-if="hair !== 'none'">
-                            <h3 class="text-sm font-semibold text-blue-84">Hair Color</h3>
-                            <AppOptions :options="hairColorOptions" v-model="hairColor" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Facial Hair</h3>
-                            <AppOptions :options="facialHairOptions" v-model="facialHair" class="flex-1" />
-                        </div>
-                    </div>
-
-                    <!-- Clothing Options -->
-                    <div v-if="activeTab === 'clothing'" class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Style</h3>
-                            <AppOptions :options="clothingOptions" v-model="clothing" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Color</h3>
-                            <AppOptions :options="colorOptions" v-model="clothingColor" class="flex-1" />
-                        </div>
-                    </div>
-
-                    <!-- Accessories Options -->
-                    <div v-if="activeTab === 'accessories'" class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Hat Style</h3>
-                            <AppOptions :options="hatOptions" v-model="hat" class="flex-1" />
-                        </div>
-                        <div v-if="hat !== 'none'" class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Hat Color</h3>
-                            <AppOptions :options="colorOptions" v-model="hatColor" class="flex-1" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <h3 class="text-sm font-semibold text-blue-84">Glasses</h3>
-                            <AppOptions :options="accessoryOptions" v-model="accessory" class="flex-1" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <AppButton text="Save" version="primary" icon="false" />
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Avatar Preview -->
+        <div class="w-full bg-white flex justify-center items-start sticky top-0 z-[55]">
+            <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
         </div>
+
+        <!-- Customization Panel -->
+        <div class="w-full md:w-1/2 flex flex-col gap-4 pb-5">
+            <!-- Category Tabs -->
+            <div class="flex gap-2 p-2 bg-blue-6 rounded-md overflow-x-scroll">
+                <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" class="flex items-center gap-2 p-2 rounded-md transition-colors whitespace-nowrap" :class="activeTab === tab.id ? 'bg-blue-54 text-white' : 'text-blue-84'">
+                    <component :is="tab.icon" class="w-4 h-4" />
+                    <span class="text-sm">{{ tab.name }}</span>
+                </button>
+            </div>
+
+            <!-- Options Panel -->
+            <div class="flex flex-col gap-4">
+                <!-- Appearance Options -->
+                <div v-if="activeTab === 'appearance'" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Skin Tone</h3>
+                        <AppOptions :options="skinOptions" v-model="skin" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Body Type</h3>
+                        <AppOptions :options="bodyOptions" v-model="body" class="flex-1" />
+                    </div>
+                </div>
+
+                <!-- Face Options -->
+                <div v-if="activeTab === 'face'" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Eye Style</h3>
+                        <AppOptions :options="eyeOptions" v-model="eye" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Eyebrow Style</h3>
+                        <AppOptions :options="eyebrowOptions" v-model="eyebrows" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Mouth Style</h3>
+                        <AppOptions :options="mouthOptions" v-model="mouth" class="flex-1" />
+                    </div>
+                    <div v-if="mouth === 'lips'" class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Lip Color</h3>
+                        <AppOptions :options="lipColorOptions" v-model="lipColor" class="flex-1" />
+                    </div>
+                </div>
+
+                <!-- Hair Options -->
+                <div v-if="activeTab === 'hair'" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Hairstyle</h3>
+                        <AppOptions :options="hairOptions" v-model="hair" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2" v-if="hair !== 'none'">
+                        <h3 class="text-sm font-semibold text-blue-84">Hair Color</h3>
+                        <AppOptions :options="hairColorOptions" v-model="hairColor" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Facial Hair</h3>
+                        <AppOptions :options="facialHairOptions" v-model="facialHair" class="flex-1" />
+                    </div>
+                </div>
+
+                <!-- Clothing Options -->
+                <div v-if="activeTab === 'clothing'" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Style</h3>
+                        <AppOptions :options="clothingOptions" v-model="clothing" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Color</h3>
+                        <AppOptions :options="colorOptions" v-model="clothingColor" class="flex-1" />
+                    </div>
+                </div>
+
+                <!-- Accessories Options -->
+                <div v-if="activeTab === 'accessories'" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Hat Style</h3>
+                        <AppOptions :options="hatOptions" v-model="hat" class="flex-1" />
+                    </div>
+                    <div v-if="hat !== 'none'" class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Hat Color</h3>
+                        <AppOptions :options="colorOptions" v-model="hatColor" class="flex-1" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-semibold text-blue-84">Glasses</h3>
+                        <AppOptions :options="accessoryOptions" v-model="accessory" class="flex-1" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <AppButton text="Save" version="primary" icon="false" />
     </div>
 </template>
 

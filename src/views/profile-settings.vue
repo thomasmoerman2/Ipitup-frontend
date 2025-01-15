@@ -1,6 +1,5 @@
 <template>
-    <div class="container flex flex-col gap-10 mb-32">
-        <AppHeader title="Profile Settings" />
+    
         <div class="w-full flex flex-col items-center justify-center gap-5">
             <button class="w-max flex justify-center">
                 <SettingsAvatar />
@@ -39,15 +38,12 @@
             <AppButton text="Cookiebeleid" version="link" icon="false" />
             <AppButton text="Disclaimer" version="link" icon="false" />
         </div>
-    </div>
-    <AppNavigation />
+
 </template>
 
 <script setup>
-import AppHeader from '@/components/App/Header.vue';
 import SettingsAvatar from '@/components/Settings/Avatar.vue';
 import AppSmallButton from '@/components/App/SmallButton.vue';
 import AppButton from '@/components/App/Button.vue';
 import AppInput from '@/components/App/Input.vue';
-import AppNavigation from '@/components/App/Navigation.vue';
 </script>

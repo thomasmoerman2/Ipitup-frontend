@@ -1,28 +1,27 @@
 <template>
-  <div class="container pt-16">
-    <h1 class="text-xl font-bold mb-2">Maak nu een account</h1>
-    <p class="mb-6">Heb je al een account? <RouterLink to="/login" class="text-blue-54">Log in</RouterLink></p>
+  <h1 class="text-xl font-bold mb-2">Maak nu een account</h1>
+  <p class="mb-6">Heb je al een account? <RouterLink to="/login" class="text-blue-54">Log in</RouterLink>
+  </p>
 
-    <form class="flex flex-col gap-6">
-      <AppInput label="Gebruikersnaam (kan later niet worden gewijzigd)" placeholder="@uw-gebruikersnaam" type="text" />
-      <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" />
-      <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" />
-      <AppInput label="Leeftijd" placeholder="Voeg uw leeftijd in" type="number" />
+  <form class="flex flex-col gap-6">
+    <AppInput label="Gebruikersnaam (kan later niet worden gewijzigd)" placeholder="@uw-gebruikersnaam" type="text" />
+    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" />
+    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" />
+    <AppInput label="Leeftijd" placeholder="Voeg uw leeftijd in" type="number" />
 
-      <div class="flex flex-col gap-2">
-        <p class="text-sm">Zichtbaarheid</p>
-        <div class="flex gap-2">
-          <AppButton text="Publiek" version="outline" icon="false" />
-          <AppButton text="Privé" version="outline" icon="false" />
-        </div>
-        <p class="text-xs text-black-40">Je account is <span class="font-bold">openbaar</span></p>
+    <div class="flex flex-col gap-2">
+      <p class="text-sm">Zichtbaarheid</p>
+      <div class="flex gap-2">
+        <AppButton text="Publiek" version="outline" icon="false" />
+        <AppButton text="Privé" version="outline" icon="false" />
       </div>
+      <p class="text-xs text-black-40">Je account is <span class="font-bold">openbaar</span></p>
+    </div>
 
-      <AppCheckbox title="Ik ga akkoord met de " url="/terms" titleUrl="Terms & Conditions" />
+    <AppCheckbox title="Ik ga akkoord met de " url="/terms" titleUrl="Terms & Conditions" />
 
-      <AppButton text="Register" version="primary" icon="false" />
-    </form>
-  </div>
+    <AppButton text="Register" version="primary" icon="false" />
+  </form>
 </template>
 
 <script setup>
