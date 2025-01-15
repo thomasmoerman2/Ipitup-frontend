@@ -29,8 +29,9 @@
           <p>3de Plaats</p>
           <AppSmallButton version="blue" text="Bekijk op leaderboard" />
         </div>
+
         <div
-          class="flex items-center justify-around w-full bg-black-20 gap-5 px-4 py-3 rounded-md"
+          class="inline-flex justify-around bg-black-20 w-full items-center px-4 py-3 rounded-md"
         >
           <div class="flex items-center gap-1.5">
             <p class="bg-blue-6 text-blue-48 px-2 rounded-full">3</p>
@@ -41,7 +42,7 @@
             <p class="text-blue-48">9624</p>
           </div>
         </div>
-        <p class="text-xs pb-20">
+        <p class="text-xs pt-1 pb-5">
           Je staat 115 punten achter Thibo! Ga ervoor!
         </p>
       </div>
