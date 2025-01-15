@@ -2,7 +2,7 @@
   <div class="container">
     <AppHeader title="Profile" />
     <div class="flex flex-col  justify-between gap-10">
-      <div class="flex flex-col items-center gap-10">
+      <div class="flex flex-col items-center gap-5">
         <SettingsAvatar />
         <div class="flex flex-col items-center">
           <p class="font-bold mb-[0.3125rem]">Pietjepuk</p>
