@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-wrap justify-center w-full bg-blue-6 text-xs rounded-md p-1 gap-1.5">
-        <label v-for="option in props.options" :key="option.value" :for="generateId(option.value)" class="flex items-center gap-2 option" :class="{ 'selected': chosenOption === option.value }" @click="func_chooseOption(option.value)">
+        <label v-for="option in props.options" :key="option.value" :for="generateId(option.value)" class="flex flex-1 items-center gap-2 px-3 option" :class="{ 'selected': chosenOption === option.value }" @click="func_chooseOption(option.value)">
             <input type="radio" :checked="chosenOption === option.value" class="hidden" :value="option.value" :id="generateId(option.value)">
             {{ option.text }}
         </label>
