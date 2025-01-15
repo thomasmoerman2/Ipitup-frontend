@@ -1,6 +1,6 @@
 <template>
-    <label v-for="(item, key) in props.items" :key="key" :for="`toggle-${key}`" class="flex items-center gap-2 w-max">
-        <input type="checkbox" :id="`toggle-${key}`" class="hidden" v-model="toggleStates[key]" @change="emitChange(key)" />
+    <label v-for="(item, key) in props.items" :key="key" :for="generateId(key)" class="flex items-center gap-2 w-max">
+        <input type="checkbox" :id="generateId(key)" class="hidden" v-model="toggleStates[key]" @change="emitChange(key)" />
         <span class="py-2 px-2.5 rounded-xl transition" :class="{
             'bg-blue-54 text-black-5': toggleStates[key],
             'bg-blue-18 text-blue-84': !toggleStates[key]
@@ -31,6 +31,12 @@ const toggleStates = ref([]);
 const selectedItems = computed(() =>
     props.items.filter((_, i) => toggleStates.value[i])
 );
+
+const generateId = (key) => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `toggle_${timestamp}_${key}_${random}`;
+};
 
 onMounted(() => {
     toggleStates.value = props.modelValue.length ? [...props.modelValue] : props.items.map(() => false);

@@ -1,8 +1,8 @@
 <template>
-    <div class="flex justify-center w-full bg-blue-6 text-xs rounded-md p-1 gap-1.5">
-        <label v-for="option in options" class="flex items-center gap-2 option" :class="{ 'selected': chosenOption === option }" @click="func_chooseOption(option)" :for="option">
-            <input type="radio" :checked="chosenOption === option" class="hidden" :value="option" :id="option">
-            {{ option }}
+    <div class="flex flex-wrap justify-center w-full bg-blue-6 text-xs rounded-md p-1 gap-1.5">
+        <label v-for="option in props.options" :key="option.value" :for="generateId(option.value)" class="flex flex-1 items-center gap-2 px-3 option" :class="{ 'selected': chosenOption === option.value }" @click="func_chooseOption(option.value)">
+            <input type="radio" :checked="chosenOption === option.value" class="hidden" :value="option.value" :id="generateId(option.value)">
+            {{ option.text }}
         </label>
     </div>
 </template>
@@ -14,7 +14,14 @@ const emit = defineEmits(['chooseOption', 'update:modelValue', 'change'])
 const props = defineProps({
     options: {
         type: Array,
-        required: true
+        required: true,
+        validator: (value) => {
+            return value.every(option =>
+                typeof option === 'object' &&
+                'text' in option &&
+                'value' in option
+            )
+        }
     },
     modelValue: {
         type: String,
@@ -22,7 +29,13 @@ const props = defineProps({
     }
 })
 
-const chosenOption = ref(props.modelValue || props.options[0])
+const generateId = (value) => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `option_${timestamp}_${value}_${random}`;
+};
+
+const chosenOption = ref(props.modelValue || props.options[0]?.value)
 
 watch(() => props.modelValue, (newValue) => {
     if (newValue) {
@@ -30,11 +43,11 @@ watch(() => props.modelValue, (newValue) => {
     }
 });
 
-const func_chooseOption = (option) => {
-    chosenOption.value = option
-    emit('chooseOption', option)
-    emit('update:modelValue', option)
-    emit('change', option)
+const func_chooseOption = (value) => {
+    chosenOption.value = value
+    emit('chooseOption', value)
+    emit('update:modelValue', value)
+    emit('change', value)
 }
 
 defineExpose({
