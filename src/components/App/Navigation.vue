@@ -1,44 +1,31 @@
 <template>
     <div class="fixed z-50 bottom-[24px] w-full px-[16px] left-0 bg-white">
         <div class="flex justify-around shadow-nav py-3 rounded-md">
-            <button v-for="(icon, index) in navigationIcons" :key="index" :to="icon.route" class="relative flex-col gap-1 cursor-pointer grid place-items-center" @click="setActiveIcon(index)" :class="{ 'text-blue-60': activeIcon === index }">
-                <component :is="icon.component" />
-                <span class="text-2xs lowercase">{{ icon.label }}</span>
-            </button>
-            <button key="profile" class="relative flex flex-col gap-1 cursor-pointer place-items-center" :class="{ 'text-blue-60': activeIcon === 3 }" @click="setActiveIcon(3)" v-if="blnIsLoggedIn">
-                <CircleUser />
-                <span class="text-2xs lowercase">Profile</span>
-            </button>
-            <button key="connect" class="relative flex flex-col gap-1 cursor-pointer place-items-center" :class="{ 'text-blue-60': activeIcon === 4 }" @click="setActiveIcon(4)" v-else>
-                <Key />
-                <span class="text-2xs lowercase">Connect</span>
-            </button>
+            <RouterLink v-for="item in navigation" :key="item.path" :to="item.path" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive(item.path) ? 'text-blue-54' : 'text-blue-84'">
+                <component :is="item.icon" class="w-4 h-4" />
+                <span class="text-2xs lowercase">{{ item.label }}</span>
+            </RouterLink>
         </div>
     </div>
-
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { SquareKanban, UserSearch, House, BicepsFlexed, CircleUser, Key } from 'lucide-vue-next';
+import { RouterLink, useRoute } from 'vue-router';
+import { Home, SquareKanban, UserRoundSearch, BicepsFlexed, UserCircle2 } from 'lucide-vue-next';
+const route = useRoute();
 
-const navigationIcons = [
-    { component: House, route: '/', label: 'Home' },
-    { component: BicepsFlexed, route: '/workout', label: 'Workout' },
-    { component: SquareKanban, route: '/dashboard', label: 'podium' },
-    { component: UserSearch, route: '/search', label: 'Search' },
+const navigation = [
+    { path: '/', icon: Home, label: 'Home' },
+    { path: '/workout', icon: BicepsFlexed, label: 'Workout' },
+    { path: '/podium', icon: SquareKanban, label: 'Podium' },
+    { path: '/search', icon: UserRoundSearch, label: 'Search' },
+    { path: '/profile', icon: UserCircle2, label: 'Profile' },
 ];
 
-const activeIcon = ref(0);
-const blnIsLoggedIn = ref(false);
-
-const setActiveIcon = (index) => {
-    activeIcon.value = index;
+const isActive = (path) => {
+    if (path === '/') {
+        return route.path === '/';
+    }
+    return route.path.includes(path);
 };
 </script>
-
-<style scoped>
-.router-link-active {
-    color: theme('colors.blue.60');
-}
-</style>
