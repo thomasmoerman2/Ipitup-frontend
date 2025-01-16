@@ -1,4 +1,5 @@
 <template>
+
   <div class="flex flex-col justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar />
@@ -15,20 +16,8 @@
 
     <div class="flex flex-col gap-5">
       <p class="text-xs">Recente activiteiten</p>
-      <WorkoutRecent
-        img="https://picsum.photos/100"
-        title="pushups"
-        level="1"
-        time="10"
-        amount="251"
-      />
-      <WorkoutRecent
-        img="https://picsum.photos/100"
-        title="pushups"
-        level="1"
-        time="10"
-        amount="251"
-      />
+      <WorkoutRecent img="https://picsum.photos/100" title="pushups" level="1" time="10" amount="251" />
+      <WorkoutRecent img="https://picsum.photos/100" title="pushups" level="1" time="10" amount="251" />
     </div>
 
     <div class="flex flex-col gap-3">
@@ -37,7 +26,7 @@
         <p class="underline underline-offset-8">Leaderboard</p>
       </div>
 
-      <div class="flex flex-col bg-black-8">
+      <div class="flex flex-col full-width-section bg-black-8">
         <div class="flex flex-col items-center my-5 gap-2.5">
           <div class="flex items-center gap-1.5">
             <AppIcon name="Gem" color="text-blue-48" size="24" />
@@ -50,14 +39,13 @@
           <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" position="1" name="Pietjepuk" amount="9739" />
           <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" position="2" name="Thibo" amount="9739" />
         </div>
-        
+
         <p class="text-center text-xs pt-1 pb-5">
           Je staat 115 punten achter Thibo! Ga ervoor!
         </p>
       </div>
-      
-    </div>
 
+    </div>
   </div>
 </template>
 
@@ -68,3 +56,11 @@ import AppIcon from "@/components/App/Icon.vue";
 import WorkoutRecent from "@/components/Workout/Recent.vue";
 import AppLeaderboardPosition from "@/components/App/LeaderboardPosition.vue";
 </script>
+
+<style scoped>
+.full-width-section {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+</style>

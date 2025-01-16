@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-5 container">
+  <div class="flex flex-col gap-5 container overflow-x-hidden">
     <AppHeader class="pt-16 z-[65]" />
     <RouterView />
     <div class="pb-20 z-[65]"></div>
