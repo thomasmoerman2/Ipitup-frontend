@@ -13,14 +13,31 @@
       <AppSmallButton icon="User" version="blue" text="Volgen" />
     </div>
 
-    <p class="text-xs">Recente activiteiten</p>
+    <div class="flex flex-col gap-5">
+      <p class="text-xs">Recente activiteiten</p>
+      <WorkoutRecent
+        img="https://picsum.photos/100"
+        title="pushups"
+        level="1"
+        time="10"
+        amount="251"
+      />
+      <WorkoutRecent
+        img="https://picsum.photos/100"
+        title="pushups"
+        level="1"
+        time="10"
+        amount="251"
+      />
+    </div>
 
     <div class="flex flex-col gap-3">
-      <div class="flex justify-around">
+      <div class="flex justify-between mx-8">
         <p>Badges</p>
-        <p>Leaderboard</p>
+        <p class="underline underline-offset-8">Leaderboard</p>
       </div>
-      <div class="flex flex-col justify-center items-center bg-black-10">
+
+      <div class="flex flex-col bg-black-8">
         <div class="flex flex-col items-center my-5 gap-2.5">
           <div class="flex items-center gap-1.5">
             <AppIcon name="Gem" color="text-blue-48" size="24" />
@@ -29,24 +46,18 @@
           <p>3de Plaats</p>
           <AppSmallButton version="blue" text="Bekijk op leaderboard" />
         </div>
-
-        <div
-          class="inline-flex justify-around bg-black-20 w-full items-center px-4 py-3 rounded-md"
-        >
-          <div class="flex items-center gap-1.5">
-            <p class="bg-blue-6 text-blue-48 px-2 rounded-full">3</p>
-            <p class="text-xs">Thibo</p>
-          </div>
-          <div class="flex items-center gap-1">
-            <AppIcon name="Gem" color="text-blue-48" size="12" />
-            <p class="text-blue-48">9624</p>
-          </div>
+        <div class="flex flex-col gap-[0.3125rem]">
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" position="1" name="Pietjepuk" amount="9739" />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" position="2" name="Thibo" amount="9739" />
         </div>
-        <p class="text-xs pt-1 pb-5">
+        
+        <p class="text-center text-xs pt-1 pb-5">
           Je staat 115 punten achter Thibo! Ga ervoor!
         </p>
       </div>
+      
     </div>
+
   </div>
 </template>
 
@@ -54,4 +65,6 @@
 import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import AppIcon from "@/components/App/Icon.vue";
+import WorkoutRecent from "@/components/Workout/Recent.vue";
+import AppLeaderboardPosition from "@/components/App/LeaderboardPosition.vue";
 </script>

@@ -1,6 +1,6 @@
 <template>
-    <div class="fixed z-50 bottom-[24px] w-full px-[16px] left-0 bg-white">
-        <div class="flex justify-around shadow-nav py-3 rounded-md">
+    <div class="fixed z-50 bottom-[24px] w-full px-4 left-0">
+        <div class="flex justify-around shadow-nav py-3 rounded-md bg-white">
             <RouterLink v-for="item in navigation" :key="item.path" :to="item.path" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive(item.path) ? 'text-blue-54' : 'text-blue-84'">
                 <component :is="item.icon" class="w-4 h-4" />
                 <span class="text-2xs lowercase">{{ item.label }}</span>

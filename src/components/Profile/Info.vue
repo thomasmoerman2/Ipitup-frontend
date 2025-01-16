@@ -20,7 +20,7 @@ const props = defineProps
             required: true,
         },
         amount: {
-            type: String,
+            type: Number,
             required: true,
         },
     });
