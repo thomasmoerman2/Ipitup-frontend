@@ -17,10 +17,10 @@
     <div class="flex justify-between">
       <p class="text-xs text-blue-54">Meest gebruikte oefeningen</p>
     </div>
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
+    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
   </div>
 </template>
 <script setup>
