@@ -3,7 +3,9 @@
         <input type="checkbox" class="hidden" id="checkbox">
         <label for="checkbox" class="flex items-center gap-1" @click="func_toggleChecked">
             <div class="w-[12px] h-[12px] border border-blue-54 bg-white rounded-[4px] overflow-hidden">
-                <Check size="10" :class="{ 'translate-y-0': blnChecked, 'translate-y-3': !blnChecked }" class="transition" />
+                <div :class="{ 'translate-y-0': blnChecked, 'translate-y-3': !blnChecked }" class="transition">
+                    <AppIcon :name="blnChecked ? 'Check' : ''" :size="10" />
+                </div>
             </div>
             <span class="ml-2">{{ title }}</span>
             <a :href="url" target="_blank" v-if="url" class="text-blue-54 underline">{{ titleUrl }}</a>
@@ -13,7 +15,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Check } from 'lucide-vue-next'
+import AppIcon from '@/components/App/Icon.vue'
 
 const props = defineProps({
     checked: {

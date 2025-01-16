@@ -35,7 +35,7 @@ const generateId = (value) => {
     return `option_${timestamp}_${value}_${random}`;
 };
 
-const chosenOption = ref(props.modelValue || props.options[0]?.value)
+const chosenOption = ref(props.options[0]?.value || props.modelValue)
 
 watch(() => props.modelValue, (newValue) => {
     if (newValue) {

@@ -24,16 +24,10 @@
     <!-- Toggle: Badges / Leaderboard -->
     <div class="flex flex-col gap-3">
       <div class="flex justify-between mx-8">
-        <button
-          @click="activeTab = 'badges'"
-          :class="['text-sm', activeTab === 'badges' ? 'font-bold underline underline-offset-8' : 'text-black-50']"
-        >
+        <button @click="activeTab = 'badges'" :class="['text-sm', activeTab === 'badges' ? 'font-bold underline underline-offset-8' : 'text-black-50']">
           Badges
         </button>
-        <button
-          @click="activeTab = 'leaderboard'"
-          :class="['text-sm', activeTab === 'leaderboard' ? 'font-bold underline underline-offset-8' : 'text-black-50']"
-        >
+        <button @click="activeTab = 'leaderboard'" :class="['text-sm', activeTab === 'leaderboard' ? 'font-bold underline underline-offset-8' : 'text-black-50']">
           Leaderboard
         </button>
       </div>

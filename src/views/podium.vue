@@ -2,11 +2,11 @@
   <!-- Filter Buttons -->
   <div class="flex gap-2.5">
     <button class="flex-1 flex items-center justify-center gap-2.5 bg-blue-6 rounded-lg py-2 text-xs">
-      <ChevronDown class="w-3.5 h-3.5" />
+      <AppIcon name="ChevronDown" :size="14" />
       Sorteren op
     </button>
     <button class="flex-1 flex items-center justify-center gap-2.5 bg-blue-6 rounded-lg py-2 text-xs">
-      <Filter class="w-3.5 h-3.5" />
+      <AppIcon name="Filter" :size="14" />
       Filter
     </button>
   </div>
@@ -17,7 +17,7 @@
       <SettingsAvatar class="mb-2.5" />
       <p class="text-xs mb-1">{{ winner.name }}</p>
       <div class="flex items-center gap-1 mb-4">
-        <Gem class="w-2.5 h-2.5 text-blue-54" />
+        <AppIcon name="Gem" :size="12" color="text-blue-54" />
         <p class="text-xs font-bold text-blue-54">{{ winner.score }}</p>
       </div>
       <PodiumSvg :position="winner.position" />
@@ -27,7 +27,7 @@
   <!-- Search -->
   <div class="mb-8">
     <div class="flex items-center gap-3 bg-black-10 border border-black-40 rounded-md px-4 py-3">
-      <Search class="w-4 h-4 text-black-40" />
+      <AppIcon name="Search" :size="16" color="text-black-40" />
       <input type="text" placeholder="Search" class="w-full bg-transparent border-none outline-none text-xs" v-model="searchQuery" />
     </div>
     <p v-if="showNoResults" class="text-center text-black-60 py-5 text-sm">Geen resultaten gevonden</p>
@@ -38,12 +38,12 @@
     <div v-for="player in leaderboardPlayers" :key="player.rank" :class="['flex items-center justify-between mb-8', { '': player.isActive }]">
       <div class="flex items-center gap-3">
         <div :class="['flex items-center justify-center w-6 h-6 text-sm', player.isActive ? 'bg-blue-54 text-white rounded-full' : 'bg-blue-18 text-blue-54 rounded-full border-blue-54']">
-          {{ player.rank }} 
+          {{ player.rank }}
         </div>
         <p class="text-xs">{{ player.name }}</p>
       </div>
       <div class="flex items-center gap-1">
-        <Gem class="w-3 h-3 text-blue-54" />
+        <AppIcon name="Gem" :size="12" color="text-blue-54" />
         <p class="text-xs font-bold text-blue-54">{{ player.score }}</p>
       </div>
     </div>
@@ -52,9 +52,9 @@
 
 <script setup>
 import { ref } from 'vue';
-import { ChevronDown, Filter, Search, Gem } from 'lucide-vue-next';
 import PodiumSvg from '@/components/Podium/PodiumSvg.vue';
 import SettingsAvatar from '@/components/Settings/Avatar.vue';
+import AppIcon from '@/components/App/Icon.vue';
 
 const searchQuery = ref('');
 

@@ -38,7 +38,7 @@
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">Search profile</h1>
-      <SearchProfile img="https://picsum.photos/100" name="Thibo" username="thibo123" />
+      <SearchProfile img="https://picsum.photos/100" name="Thibo" username="thibo123" id="user123" />
     </div>
 
     <div class="flex flex-col gap-10">
@@ -80,17 +80,15 @@
       </div>
     </div>
 
-
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">Badges</h1>
       <div class="flex justify-around gap-3 bg-black-20 py-5">
-        <AppBadge exercise="Pushup" amount="25" />
+        <AppBadge exercise="Pushup" :amount="25" />
         <AppBadge exercise="Squat" />
         <AppBadge exercise="Pullup" />
         <AppBadge exercise="Situp" />
       </div>
     </div>
-
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout</h1>

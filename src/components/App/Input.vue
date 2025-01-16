@@ -3,24 +3,17 @@
         <span class="text-xs">{{ props.label }}</span>
         <div class="items-center relative flex gap-2 border border-black-40 rounded-md px-2.5 py-3">
             <AppIcon :name="props.icon" color="text-black-40" />
-            <input :type="type" class="border-none w-full outline-none" :placeholder="props.placeholder" :value="value" @input="func_input" :id="inputId" @change="func_change" />
-            <div class="absolute right-2 top-1/2 -translate-y-1/2">
-                <AppIcon name="eyeOff" v-if="props.type === 'password' && showPassword" @click="func_showPassword" />
-                <AppIcon name="eye" v-else-if="props.type === 'password' && !showPassword" @click="func_showPassword" />
-            </div>
+            <input :type="inputType" class="border-none w-full outline-none" :placeholder="props.placeholder" v-model="inputValue" :id="inputId" @input="func_input" @change="func_change" />
+            <button v-if="props.type === 'password'" type="button" class="absolute right-2 top-1/2 -translate-y-1/2" @click="func_showPassword">
+                <AppIcon :name="showPassword ? 'eyeOff' : 'eye'" color="text-black-100" />
+            </button>
         </div>
     </label>
 </template>
 
 <script setup>
+import { ref, computed, watch } from 'vue';
 import AppIcon from '@/components/App/Icon.vue';
-import { ref, onMounted } from 'vue';
-
-const generateUniqueId = () => {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 10000);
-    return `input_${timestamp}_${random}`;
-};
 
 const props = defineProps({
     type: {
@@ -45,27 +38,39 @@ const props = defineProps({
     }
 });
 
-const showPassword = ref(false);
-const type = ref(props.type);
-const value = ref(props.value);
-const inputId = ref('');
+const emit = defineEmits(['input', 'change', 'update:value']);
 
-onMounted(() => {
-    inputId.value = generateUniqueId();
+const showPassword = ref(false);
+const inputValue = ref(props.value);
+const inputId = ref(`input_${Date.now()}_${Math.random()}`);
+
+// Watch for external value changes
+watch(() => props.value, (newValue) => {
+    inputValue.value = newValue;
+});
+
+const inputType = computed(() => {
+    if (props.type === 'password') {
+        return showPassword.value ? 'text' : 'password';
+    }
+    return props.type;
 });
 
 const func_showPassword = () => {
     showPassword.value = !showPassword.value;
-    type.value = showPassword.value ? 'text' : 'password';
+};
+
+const func_input = (event) => {
+    const newValue = event.target.value;
+    inputValue.value = newValue;
+    emit('input', newValue);
+    emit('update:value', newValue); // For v-model support
 };
 
 const func_change = (event) => {
-    value.value = event.target.value;
-};
-
-const emit = defineEmits(['input']);
-
-const func_input = (event) => {
-    emit('input', value.value);
+    const newValue = event.target.value;
+    inputValue.value = newValue;
+    emit('change', newValue);
+    emit('update:value', newValue); // For v-model support
 };
 </script>
