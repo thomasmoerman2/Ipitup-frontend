@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex items-center justify-center w-[72px] h-[103px]">
+    <div class="relative flex items-center justify-center mb-2 w-[72px] h-[103px]">
       <!-- SVG Badge -->
       <svg
         width="72"

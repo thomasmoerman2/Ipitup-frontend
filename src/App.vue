@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router';
-import AppHeader from './components/App/Header.vue';
-import AppNavigation from './components/App/Navigation.vue';
+import { RouterView } from "vue-router";
+import AppHeader from "./components/App/Header.vue";
+import AppNavigation from "./components/App/Navigation.vue";
 </script>
