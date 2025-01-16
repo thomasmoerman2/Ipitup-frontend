@@ -1,7 +1,5 @@
 <template>
-  <button
-    class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-8 box-border"
-  >
+  <RouterLink :to="`/workout/e=${url}`" class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border">
   <div class="relative ">
       <img
         :src="img"
@@ -27,10 +25,11 @@
     >
     <AppIcon name="ChevronRight" size="16" />
     </div>
-  </button>
+  </RouterLink>
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router';
 import AppIcon from "@/components/App/Icon.vue";
 
 const props = defineProps({
@@ -47,6 +46,10 @@ const props = defineProps({
     required: true,
   },
   time: {
+    type: String,
+    required: true,
+  },
+  url: {
     type: String,
     required: true,
   },
