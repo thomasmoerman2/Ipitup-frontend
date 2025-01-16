@@ -10,9 +10,9 @@
 
     <div class="flex flex-col gap-3">
       <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="dips" level="1" time="10" />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="pullups" level="1" time="10" />
 
       <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
 

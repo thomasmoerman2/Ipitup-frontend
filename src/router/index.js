@@ -19,9 +19,12 @@ const router = createRouter({
       component: () => import('../views/workout.vue'),
     },
     {
-      path: '/workout/e=:exercise',
-      name: 'workout exercise',
+      path: '/workout/active/:exercise',
+      name: 'workoutactive',
       component: () => import('../views/workoutactive.vue'),
+      meta: {
+        hideNavigation: true
+      }
     },
     {
       path: '/search',
@@ -29,9 +32,16 @@ const router = createRouter({
       component: () => import('../views/search.vue'),
     },
     {
-      path: '/user',
+      path: '/user/:id?',
       name: 'user',
       component: () => import('../views/User.vue'),
+      props: true,
+    },
+    {
+      path: '/u/:username',
+      redirect: to => {
+        return { name: 'user', params: { id: to.params.username } }
+      }
     },
     {
       path: '/profile',
@@ -58,6 +68,18 @@ const router = createRouter({
       name: 'login',
       component: () => import('../views/login.vue'),
     },
+    {
+      path: '/404',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue'),
+      meta: {
+        hideNavigation: true
+      }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404'
+    }
   ],
 });
 

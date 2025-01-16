@@ -6,11 +6,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import Notification from '@/components/Header/Notification.vue';
 
 const route = useRoute();
+
 
 const pageTitle = computed(() => {
     const segments = route.path.split('/').filter(Boolean);

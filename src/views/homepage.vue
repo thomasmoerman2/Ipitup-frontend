@@ -5,8 +5,7 @@
     </div>
     <div class="flex flex-col relative size-full">
       <p class="font-bold text-[.875rem]">Doe zo verder!</p>
-      <p class="text-[.75rem]">Je bent al aan 18 non-stop's!</p>
-      <p class="text-[.75rem]">nog 4 te gaan.</p>
+      <p class="text-[.75rem]">Je bent al aan 18 non-stop's! nog 4 te gaan.</p>
     </div>
   </div>
   <p class="text-orange-35 font-bold pb-4 pt-4">Welkom terug!</p>

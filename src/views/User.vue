@@ -1,14 +1,21 @@
 <template>
+  <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+    <p>Loading...</p>
+  </div>
 
-  <div class="flex flex-col justify-between gap-10">
+  <div v-else-if="error" class="flex justify-center items-center min-h-[50vh]">
+    <p class="text-red-500">{{ error }}</p>
+  </div>
+
+  <div v-else class="flex flex-col justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
-      <SettingsAvatar />
+      <SettingsAvatar :src="userData?.avatar" />
       <div class="flex flex-col items-center">
-        <p class="font-bold mb-[0.3125rem]">Pietjepuk</p>
-        <p class="text-xs">@pietjepuk1998</p>
+        <p class="font-bold mb-[0.3125rem]">{{ userData?.username }}</p>
+        <p class="text-xs">@{{ userData?.handle }}</p>
         <div class="flex pt-2.5">
           <p class="text-2xs italic text-black-50">Gebruiker sinds&nbsp;</p>
-          <p class="text-2xs italic text-blue-36">mei 2024</p>
+          <p class="text-2xs italic text-blue-36">{{ userData?.joinDate }}</p>
         </div>
       </div>
       <AppSmallButton icon="User" version="blue" text="Volgen" />
@@ -50,11 +57,51 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import AppIcon from "@/components/App/Icon.vue";
 import WorkoutRecent from "@/components/Workout/Recent.vue";
 import AppLeaderboardPosition from "@/components/App/LeaderboardPosition.vue";
+
+// Get route and ID parameter
+const route = useRoute();
+const userId = ref(route.params.id);
+
+// Add user data ref
+const userData = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+
+// // Function to fetch user data
+// const fetchUserData = async (id) => {
+//   if (!id) return;
+
+//   isLoading.value = true;
+//   try {
+//     // Replace this with your actual API call
+//     const response = await fetch(`/api/users/${id}`);
+//     if (!response.ok) throw new Error('User not found');
+
+//     userData.value = await response.json();
+//   } catch (err) {
+//     error.value = err.message;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
+
+// Watch for route changes
+watch(() => route.params.id, (newId) => {
+  userId.value = newId;
+  // fetchUserData(newId);
+});
+
+// Initial fetch
+onMounted(() => {
+  // fetchUserData(userId.value);
+});
 </script>
 
 <style scoped>
