@@ -43,6 +43,11 @@ const router = createRouter({
       name: 'login',
       component: () => import('../views/login.vue'),
     },
+    {
+      path: '/podium',
+      name: 'podium',
+      component: () => import('../views/podium.vue'),
+    },
   ],
 });
 
