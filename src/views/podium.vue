@@ -1,8 +1,8 @@
 <template>
   <!-- Filter Buttons -->
-  <div class="flex gap-2 justify-center">
-    <AppFilters icon="ChevronsUpDown" text="Sorteren op" class="w-1/2" />
-    <AppFilters icon="Filter" text="Filter" class="w-1/2" />
+  <div class="flex gap-2 justify-center w-full">
+    <AppFilters icon="ChevronsUpDown" text="Sorteren op" class="w-1/2"/>
+    <AppFilters icon="Filter" text="Filter" class="w-1/2"/>
   </div>
 
   <!-- Podium -->
@@ -26,7 +26,7 @@
   <AppInput icon="search" placeholder="Search" />
 
   <!-- Leaderboard -->
-  <div class="flex flex-col justify-around gap-4">
+  <div class="flex flex-col justify-around gap-7">
     <div v-for="player in leaderboardPlayers" :key="player.rank">
       <AppLeaderboardPostion
         :position="player.rank"
