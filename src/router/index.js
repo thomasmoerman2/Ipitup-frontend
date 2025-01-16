@@ -69,11 +69,11 @@ const router = createRouter({
       component: () => import('../views/login.vue'),
     },
     {
-feature/PodiumPage
       path: '/podium',
       name: 'podium',
       component: () => import('../views/podium.vue'),
     },
+    {
       path: '/404',
       name: 'NotFound',
       component: () => import('../views/NotFound.vue'),
@@ -85,7 +85,6 @@ feature/PodiumPage
       path: '/:pathMatch(.*)*',
       redirect: '/404'
     }
-develop
   ],
 });
 

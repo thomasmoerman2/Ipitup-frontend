@@ -5,7 +5,7 @@
   </svg>
 
   <svg v-else-if="props.position === 1" width="95" height="85" viewBox="0 0 117 105" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.935791" y="11.1729" width="115.521" height="93.8025" fill="url(#paint0_linear_939_6887)" />
+    <rect x="0.7" y="11.1729" width="115.521" height="93.8025" fill="url(#paint0_linear_939_6887)" />
     <path d="M18.4569 0H91.4182L116.358 11.17H0.837158L18.4569 0Z" fill="#B3E5E7" />
     <defs>
       <linearGradient id="paint0_linear_939_6887" x1="58.6961" y1="11.1729" x2="58.6961" y2="104.975" gradientUnits="userSpaceOnUse">
@@ -16,7 +16,7 @@
   </svg>
 
   <svg v-else-if="props.position === 3" width="95" height="51" viewBox="0 0 116 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.674316" y="12" width="115.326" height="50" fill="#35BABF" />
+    <rect x="0.64316" y="12" width="115.326" height="50" fill="#35BABF" />
     <path d="M97.816 0H0.479233V12H116L97.816 0Z" fill="#81D4D7" />
   </svg>
 </template>
@@ -30,3 +30,9 @@ const props = defineProps({
   },
 });
 </script>
+
+<style scoped>
+svg {
+  margin: -.6px;       /* Verwijdert marges */
+}
+</style>
