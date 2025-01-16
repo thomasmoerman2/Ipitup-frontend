@@ -80,10 +80,23 @@
       </div>
     </div>
 
+
+    <div class="flex flex-col gap-10">
+      <h1 class="capitalize underline font-caveat">Badges</h1>
+      <div class="flex justify-around gap-3 bg-black-20 py-5">
+        <AppBadge exercise="Pushup" amount="25" />
+        <AppBadge exercise="Squat" />
+        <AppBadge exercise="Pullup" />
+        <AppBadge exercise="Situp" />
+      </div>
+    </div>
+
+
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout</h1>
       xxxx
     </div>
+
   </div>
 </template>
 
@@ -102,6 +115,7 @@ import AppInput from "@/components/App/Input.vue";
 import AppToggle from "@/components/App/Toggle.vue";
 import AppSwitch from "@/components/App/Switch.vue";
 import SearchProfile from "@/components/Search/Profile.vue";
+import AppBadge from "@/components/App/Badge.vue";
 
 import { ref } from "vue";
 
