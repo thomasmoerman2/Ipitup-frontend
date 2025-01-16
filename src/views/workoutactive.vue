@@ -45,6 +45,14 @@
       </div>
     </div>
 
+    <!-- Add loading indicator -->
+    <div v-if="!modelLoaded" class="loading-overlay">
+      <div class="loading-content">
+        <p>Loading model...</p>
+        <p class="text-sm">{{ formStatus }}</p>
+      </div>
+    </div>
+
     <!-- Existing template content -->
     <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
     <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
@@ -84,16 +92,102 @@ const lastStateChangeTime = ref(Date.now());
 const MIN_TIME_BETWEEN_STATES = 500; // Minimum 500ms between state changes
 const repInProgress = ref(false);
 
-// Initialize model
+// Add debug logging function
+const debugLog = (message, data = null) => {
+  const timestamp = new Date().toISOString().split('T')[1];
+  console.log(`[${timestamp}] ${message}`, data || '');
+};
+
+// Teachable Machine model configuration
+const URL = "/my_model/";
+let model = null;
+let maxPredictions = 0;
+const isInPosition = ref(false);
+const modelLoaded = ref(false);
+
+// Modified initModel function
 const initModel = async () => {
+  debugLog('Starting model initialization...');
+
   try {
-    const URL = "./my_model/"
-    const modelURL = URL + "model.json";
-    const metadataURL = URL + "metadata.json";
-    const model = await window.tmImage.load(modelURL, metadataURL);
-    console.log("Model loaded successfully");
+    // Wait for window.tmImage to be available
+    let attempts = 0;
+    while (!window.tmImage && attempts < 10) {
+      debugLog('Waiting for tmImage to load...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      attempts++;
+    }
+
+    if (!window.tmImage) {
+      throw new Error('Teachable Machine library not loaded');
+    }
+
+    debugLog('tmImage found, loading model...');
+    const modelURL = `${URL}model.json`;
+    const metadataURL = `${URL}metadata.json`;
+
+    // Verify files exist before loading
+    try {
+      const modelResponse = await fetch(modelURL);
+      const metadataResponse = await fetch(metadataURL);
+
+      if (!modelResponse.ok) {
+        throw new Error(`Model file not found: ${modelURL}`);
+      }
+      if (!metadataResponse.ok) {
+        throw new Error(`Metadata file not found: ${metadataURL}`);
+      }
+
+      debugLog('Model files verified, loading model...');
+    } catch (error) {
+      throw new Error(`Failed to fetch model files: ${error.message}`);
+    }
+
+    model = await window.tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+    modelLoaded.value = true;
+
+    debugLog('Model loaded successfully', {
+      classes: maxPredictions,
+      modelURL,
+      metadataURL
+    });
   } catch (error) {
-    console.error("Error loading model:", error);
+    debugLog('Error loading model:', error);
+    console.error("Model initialization error:", error);
+    // You might want to show this error to the user
+    formStatus.value = '⚠️ Error loading model';
+  }
+};
+
+// Modified predict function
+const predict = async () => {
+  if (!modelLoaded.value || !model || !video.value) {
+    debugLog('Predict called but model or video not ready', {
+      modelLoaded: modelLoaded.value,
+      hasModel: !!model,
+      hasVideo: !!video.value
+    });
+    return;
+  }
+
+  try {
+    const prediction = await model.predict(video.value);
+    debugLog('Prediction result:', prediction);
+
+    // Assuming first class is the correct position
+    if (prediction[0].probability.toFixed(2) > 0.8) {
+      isInPosition.value = true;
+      formStatus.value = formStatus.value || 'In correct position';
+      debugLog('Position correct', prediction[0].probability.toFixed(2));
+    } else {
+      isInPosition.value = false;
+      formStatus.value = 'Please get in position';
+      debugLog('Position incorrect', prediction[0].probability.toFixed(2));
+    }
+  } catch (error) {
+    debugLog('Prediction error:', error);
+    console.error("Prediction error:", error);
   }
 };
 
@@ -105,8 +199,10 @@ const closeModalAndStartCamera = () => {
 
 // Camera functions
 const startCamera = async () => {
-  // Stop any existing stream
+  debugLog('Starting camera...');
+
   if (currentStream.value) {
+    debugLog('Stopping existing stream');
     currentStream.value.getTracks().forEach((track) => track.stop());
   }
 
@@ -116,14 +212,22 @@ const startCamera = async () => {
         facingMode: isFrontCamera.value ? "user" : "environment",
       },
     });
+
+    debugLog('Camera stream obtained', {
+      width: stream.getVideoTracks()[0].getSettings().width,
+      height: stream.getVideoTracks()[0].getSettings().height
+    });
+
     video.value.srcObject = stream;
     currentStream.value = stream;
 
     video.value.onloadedmetadata = () => {
       video.value.play();
+      debugLog('Video playback started');
       initPoseDetection();
     };
   } catch (error) {
+    debugLog('Camera error:', error);
     console.error("Camera error:", error);
   }
 };
@@ -141,8 +245,7 @@ const initPoseDetection = () => {
   canvas.value.height = video.value.videoHeight;
 
   const pose = new Pose({
-    locateFile: (file) =>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
   });
 
   pose.setOptions({
@@ -153,7 +256,7 @@ const initPoseDetection = () => {
     minTrackingConfidence: 0.5,
   });
 
-  pose.onResults((results) => {
+  pose.onResults(async (results) => {
     ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
     ctx.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height);
 
@@ -167,7 +270,13 @@ const initPoseDetection = () => {
         lineWidth: 2,
       });
 
-      detectPushUp(results.poseLandmarks);
+      // First check position with Teachable Machine
+      await predict();
+
+      // Only detect pushups if in correct position
+      if (isInPosition.value) {
+        detectPushUp(results.poseLandmarks);
+      }
     }
   });
 
@@ -278,8 +387,55 @@ const detectPushUp = (landmarks) => {
 
 // Lifecycle hooks
 onMounted(async () => {
-  await initModel();
-  startCamera();
+  debugLog('Component mounted');
+  try {
+    // Load TensorFlow.js first
+    const tfScript = document.createElement('script');
+    tfScript.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+
+    // Load Teachable Machine after TensorFlow
+    const tmScript = document.createElement('script');
+    tmScript.src = 'https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js';
+
+    // Create a promise to handle script loading
+    const loadScripts = new Promise((resolve, reject) => {
+      tfScript.onload = () => {
+        debugLog('TensorFlow.js loaded');
+        // Append Teachable Machine script after TensorFlow loads
+        document.head.appendChild(tmScript);
+      };
+
+      tmScript.onload = () => {
+        debugLog('Teachable Machine loaded');
+        resolve();
+      };
+
+      tfScript.onerror = (error) => {
+        debugLog('TensorFlow.js loading error:', error);
+        reject(error);
+      };
+
+      tmScript.onerror = (error) => {
+        debugLog('Teachable Machine loading error:', error);
+        reject(error);
+      };
+    });
+
+    // Append TensorFlow script first
+    document.head.appendChild(tfScript);
+
+    // Wait for both scripts to load
+    await loadScripts;
+    debugLog('All scripts loaded successfully');
+
+    // Initialize model and start camera
+    await initModel();
+    startCamera();
+
+  } catch (error) {
+    debugLog('Initialization error:', error);
+    console.error("Initialization error:", error);
+  }
 });
 </script>
 
@@ -443,5 +599,26 @@ canvas {
 .debug-info p {
   margin: 5px 0;
   font-size: 14px;
+}
+
+/* Add loading indicator */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
 }
 </style>
