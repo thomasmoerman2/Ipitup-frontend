@@ -2,7 +2,7 @@
     <AppButton :text="props.title" @click="func_openDialog" version="1" />
 
     <Transition name="dialog">
-        <dialog v-if="isOpen" @click="handleClickOutside" class="z-[55]">
+        <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
             <div class="dialog-content" @click.stop ref="dialogContent">
                 <div class="drag-handle" ref="dragHandle" @mousedown="startDrag" @touchstart="startDrag">
                     <span class="opacity-0 text-[5px] block">read-only</span>

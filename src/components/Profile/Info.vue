@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col gap-4 items-center">
-        <AppIcon :name="props.icon" color="text-blue-48" :size="28" />
+        <AppIcon :name="props.icon" :size="24" color="text-blue-54" />
         <p class="text-xs font-bold">{{ text }}</p>
         <p class="text-xs">{{ amount }}</p>
     </div>
@@ -20,7 +20,7 @@ const props = defineProps
             required: true,
         },
         amount: {
-            type: Number,
+            type: String,
             required: true,
         },
     });

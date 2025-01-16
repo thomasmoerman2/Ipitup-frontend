@@ -21,7 +21,10 @@
     <div>
       <p class="font-bold">Moving time</p>
       <div class="w-fit whitespace-nowrap">
-        <AppOptions :options="[{ text: 'Deze week', value: 'Deze week' }, { text: 'Deze maand', value: 'Deze maand' }]" v-model="selectedOption" @change="func_Emit2" />
+        <AppOptions :options="[
+          { text: 'Deze week', value: 'Deze week' },
+          { text: 'Deze maand', value: 'Deze maand' }
+        ]" v-model="selectedOption" @change="handleOptionChange" />
       </div>
     </div>
 
@@ -37,4 +40,11 @@ import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import ProfileInfo from "@/components/Profile/Info.vue";
 import AppOptions from "@/components/App/Options.vue";
+import { ref } from 'vue';
+
+const selectedOption = ref('1');
+
+const handleOptionChange = (option) => {
+  console.log('Selected option:', option);
+};
 </script>
