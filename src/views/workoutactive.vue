@@ -163,7 +163,7 @@ const initPoseDetection = () => {
         lineWidth: 4,
       });
       drawLandmarks(ctx, results.poseLandmarks, {
-        color: "red",
+        color: "#1cb2b7",
         lineWidth: 2,
       });
 
