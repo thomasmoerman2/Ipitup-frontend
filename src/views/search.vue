@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="my-10">
+        <div class="mb-10">
             <AppInput icon="search" placeholder="Search" />
         </div>
 
