@@ -1,16 +1,16 @@
 <template>
-  <div class="container">
-    <AppHeader title="Search" />
-    <div class="my-10">
-      <AppInput icon="search" placeholder="Search"/>
-    </div>
+    <div>
+        <div class="my-10">
+            <AppInput icon="search" placeholder="Search" />
+        </div>
 
-    <div class="flex flex-col gap-2.5"></div>
-    <AppNavigation />
-  </div>
+        <div class="flex flex-col gap-2.5">
+            <SearchProfile id="1" img="https://picsum.photos/100" name="Thibo" username="thibo123" />
+        </div>
+
+    </div>
 </template>
 <script setup>
-import AppHeader from "@/components/App/Header.vue";
 import AppInput from "@/components/App/Input.vue";
-import AppNavigation from "@/components/App/Navigation.vue";
+import SearchProfile from "@/components/Search/Profile.vue";
 </script>

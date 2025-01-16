@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-24 container">
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">header</h1>
-      <AppHeader />
+
     </div>
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">button</h1>
@@ -11,9 +11,25 @@
       <AppButton text="Button" version="tertiary" />
       <AppButton text="Button" version="outline" />
     </div>
+
+    <div class="flex flex-col gap-10">
+      <h1 class="capitalize underline font-caveat">small button</h1>
+      <AppSmallButton text="Button" version="blue" />
+      <AppSmallButton text="Button" version="orange" />
+    </div>
+
+    <div class="flex flex-col gap-10">
+      <h1 class="capitalize underline font-caveat">Profile info</h1>
+      <div class="flex justify-center gap-10">
+        <ProfileInfo icon="Award" text="Geld" amount="5" />
+        <ProfileInfo icon="RefreshCw" text="Ander geld" amount="1000" />
+        <ProfileInfo icon="Gem" text="diamanten" amount="2" />
+      </div>
+    </div>
+
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">navigation</h1>
-      <AppNavigation />
+
     </div>
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout exercise</h1>
@@ -27,7 +43,7 @@
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">group option</h1>
-      <AppOptions :options="['1', '2', '3']" v-model="selectedOption" @change="func_Emit2" />
+      <AppOptions :options="[{ text: '1', value: '1' }, { text: '2', value: '2' }, { text: '3', value: '3' }]" v-model="selectedOption" @change="func_Emit2" />
     </div>
 
     <div class="flex flex-col gap-10">
@@ -43,8 +59,6 @@
 
       <hr />
       <AppDialog type="search" title="Open Search" />
-      <hr />
-      <AppDialog type="filter" title="Open Filter" />
     </div>
 
     <div class="flex flex-col gap-10">
@@ -66,30 +80,44 @@
       </div>
     </div>
 
+
+    <div class="flex flex-col gap-10">
+      <h1 class="capitalize underline font-caveat">Badges</h1>
+      <div class="flex justify-around gap-3 bg-black-20 py-5">
+        <AppBadge exercise="Pushup" amount="25" />
+        <AppBadge exercise="Squat" />
+        <AppBadge exercise="Pullup" />
+        <AppBadge exercise="Situp" />
+      </div>
+    </div>
+
+
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout</h1>
       xxxx
     </div>
+
   </div>
 </template>
 
 <script setup>
-import AppButton from '@/components/App/Button.vue';
-import AppHeader from '@/components/App/Header.vue';
-import AppNavigation from '@/components/App/Navigation.vue';
-import WorkoutExercise from '@/components/Workout/Exercise.vue';
-import AppOptions from '@/components/App/Options.vue';
-import AppCheckbox from '@/components/App/Checkbox.vue';
-import AppFilters from '@/components/App/Filters.vue';
-import AppDialog from '@/components/App/Dialog.vue';
-import AppInput from '@/components/App/Input.vue';
-import AppToggle from '@/components/App/Toggle.vue';
-import AppSwitch from '@/components/App/Switch.vue';
-import SearchProfile from '@/components/Search/Profile.vue';
+import AppButton from "@/components/App/Button.vue";
+import AppSmallButton from "@/components/App/SmallButton.vue";
+import ProfileInfo from "@/components/Profile/Info.vue";
+import WorkoutExercise from "@/components/Workout/Exercise.vue";
+import AppOptions from "@/components/App/Options.vue";
+import AppCheckbox from "@/components/App/Checkbox.vue";
+import AppFilters from "@/components/App/Filters.vue";
+import AppDialog from "@/components/App/Dialog.vue";
+import AppInput from "@/components/App/Input.vue";
+import AppToggle from "@/components/App/Toggle.vue";
+import AppSwitch from "@/components/App/Switch.vue";
+import SearchProfile from "@/components/Search/Profile.vue";
+import AppBadge from "@/components/App/Badge.vue";
 
-import { ref } from 'vue';
+import { ref } from "vue";
 
-const selectedOption = ref('1');
+const selectedOption = ref("1");
 const switchState1 = ref(false);
 const switchState2 = ref(false);
 
@@ -97,6 +125,6 @@ const func_Emit = (event) => {
   console.log(event);
 };
 const func_Emit2 = (option) => {
-  console.log('Selected option:', option);
+  console.log("Selected option:", option);
 };
 </script>

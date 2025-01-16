@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,7 +9,7 @@ const router = createRouter({
       component: () => import('../views/components.vue'),
     },
     {
-      path: '/home',
+      path: '/',
       name: 'homepage',
       component: () => import('../views/homepage.vue'),
     },
@@ -19,9 +19,34 @@ const router = createRouter({
       component: () => import('../views/workout.vue'),
     },
     {
+      path: '/workout/active/:exercise',
+      name: 'workoutactive',
+      component: () => import('../views/workoutactive.vue'),
+      meta: {
+        hideNavigation: true
+      }
+    },
+    {
       path: '/search',
       name: 'search',
       component: () => import('../views/search.vue'),
+    },
+    {
+      path: '/user/:id?',
+      name: 'user',
+      component: () => import('../views/User.vue'),
+      props: true,
+    },
+    {
+      path: '/u/:username',
+      redirect: to => {
+        return { name: 'user', params: { id: to.params.username } }
+      }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/profile.vue'),
     },
     {
       path: '/profile/settings',
@@ -44,10 +69,23 @@ const router = createRouter({
       component: () => import('../views/login.vue'),
     },
     {
+feature/PodiumPage
       path: '/podium',
       name: 'podium',
       component: () => import('../views/podium.vue'),
     },
+      path: '/404',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue'),
+      meta: {
+        hideNavigation: true
+      }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404'
+    }
+develop
   ],
 });
 
