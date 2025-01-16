@@ -63,6 +63,7 @@ export default {
         },
         black: {
           5: "#ffffff",
+          8: "#F8F8F8",
           10: "#f2f2f2",
           15: "#e6e6e6",
           20: "#d9d9d9",

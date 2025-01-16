@@ -1,6 +1,6 @@
 <template>
   <button
-    class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border"
+    class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-8 box-border"
   >
   <div class="relative ">
       <img
