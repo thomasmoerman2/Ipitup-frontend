@@ -9,14 +9,14 @@
     <div></div>
 
     <div class="flex flex-col gap-3">
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" url="pushups" />
+      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" url="pushups" />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="pullups" level="beginner" time="10" url="pullups" />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="dips" level="beginner" time="10" url="dips" />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="beginner" time="10" />
+      <WorkoutExercise img="https://picsum.photos/100" title="squats" level="beginner" time="10" url="squats" />
     </div>
 
   </div>

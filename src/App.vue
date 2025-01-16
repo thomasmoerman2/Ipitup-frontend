@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col gap-5 container">
-    <AppHeader class="pt-16" />
+    <AppHeader class="pt-16 z-[65]" />
     <RouterView />
-    <div class="pb-20"></div>
-    <AppNavigation />
+    <div class="pb-20 z-[65]"></div>
+    <AppNavigation class="z-[65]" />
   </div>
 </template>
 
