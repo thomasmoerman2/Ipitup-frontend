@@ -11,10 +11,13 @@
     <RefreshCw v-if="props.name === 'RefreshCw'" :class="color" :size="size" />
     <Gem v-if="props.name === 'Gem'" :class="color" :size="size" />
     <Globe v-if="props.name === 'Globe'" :class="color" :size="size" />
+    <Star v-if="props.name === 'Star'" :class="color" :size="size" />
+    <ChevronRight v-if="props.name === 'ChevronRight'" :class="color" :size="size" />
+    <Timer v-if="props.name === 'Timer'" :class="color" :size="size" />
 </template>
 
 <script setup>
-import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, UserRoundMinus, Award, RefreshCw, Gem, Globe, User} from 'lucide-vue-next';
+import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, Timer} from 'lucide-vue-next';
 
 const props = defineProps({
     name: {
