@@ -29,14 +29,15 @@
       <div class="flex w-full bg-blue-6 h-[10rem] justify-center items-center text-center">[Grafiek]</div>
     </div>
 
-    <div>
-      <p class="font-bold pb-3">Badges</p>
-      <div class="flex flex-wrap justify-center gap-2">
+    <div class="flex flex-col items-center gap-3">
+      <p class="font-bold w-full">Badges</p>
+        <div class="flex flex-wrap justify-center gap-2">
           <AppBadge exercise="Pushup" amount="100" />
           <AppBadge exercise="Squat" amount="500" />
           <AppBadge exercise="Pullup" amount="200" />
           <AppBadge exercise="Situp" amount="50" />
         </div>
+        <AppSmallButton version="blue" text="Alle badges" />
     </div>
   </div>
 
