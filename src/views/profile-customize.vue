@@ -1,5 +1,10 @@
 <template>
 
+    <RouterLink to="/profile/settings" class="flex items-center gap-1">
+        <AppIcon name="ArrowLeft" size="24"/>
+        <p class="font-medium text-[1.25rem]">Back</p>
+    </RouterLink>
+
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Avatar Preview -->
         <div class="w-full bg-white flex justify-center items-start sticky top-0 z-[55]">
@@ -102,7 +107,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import AppHeader from '@/components/App/Header.vue';
+import AppIcon from '@/components/App/Icon.vue';
 import AppOptions from '@/components/App/Options.vue';
 import AppButton from '@/components/App/Button.vue';
 import { Beanhead } from 'beanheads-vue';

@@ -1,4 +1,8 @@
 <template>
+    <RouterLink to="/profile" class="flex items-center gap-1">
+        <AppIcon name="ArrowLeft" size="24"/>
+        <p class="font-medium text-[1.25rem]">Back</p>
+    </RouterLink>
 
     <div class="w-full flex flex-col items-center justify-center gap-5">
         <RouterLink to="/profile/customize" class="w-max flex justify-center">
@@ -44,4 +48,5 @@ import SettingsAvatar from '@/components/Settings/Avatar.vue';
 import AppSmallButton from '@/components/App/SmallButton.vue';
 import AppButton from '@/components/App/Button.vue';
 import AppInput from '@/components/App/Input.vue';
+import AppIcon from '@/components/App/Icon.vue';
 </script>
