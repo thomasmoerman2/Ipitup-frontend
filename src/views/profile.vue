@@ -37,7 +37,10 @@
           <AppBadge exercise="Pullup" amount="200" />
           <AppBadge exercise="Situp" amount="50" />
         </div>
-        <AppSmallButton version="blue" text="Alle badges" />
+        <RouterLink to="/badges">
+          <AppSmallButton version="blue" text="Alle badges" />
+        </RouterLink>
+        
     </div>
   </div>
 

@@ -17,10 +17,11 @@
     <Timer v-if="props.name === 'Timer'" :class="color" :size="size" />
     <X v-if="props.name === 'X'" :class="color" :size="size" />
     <Filter v-if="props.name === 'Filter'" :class="color" :size="size" />
+    <ArrowLeft v-if="props.name === 'ArrowLeft'" :class="color" :size="size" />
 </template>
 
 <script setup>
-import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter} from 'lucide-vue-next';
+import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, ArrowLeft, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter} from 'lucide-vue-next';
 
 const props = defineProps({
     name: {

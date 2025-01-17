@@ -74,6 +74,11 @@ const router = createRouter({
       component: () => import('../views/podium.vue'),
     },
     {
+      path: '/badges',
+      name: 'badges',
+      component: () => import('../views/badges.vue'),
+    },
+    {
       path: '/404',
       name: 'NotFound',
       component: () => import('../views/NotFound.vue'),
