@@ -4,9 +4,9 @@
     <div v-if="showModal" class="fixed inset-0 bg-[rgba(0, 0, 0, 0.4)] flex items-center justify-center z-[9999]">
       <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
         <div class="mb-4">
-          <p class="text-xl font-semibold">Performing pushups</p>
+          <p class="text-xl font-semibold">Performing {{ nameOfWorkout }}</p>
           <p class="text-sm text-gray-600">
-            Prepare to perform pushups effectively.
+            Prepare to perform {{ nameOfWorkout }} effectively.
             <video src="/pushups.mp4" autoplay muted loop class="hidden w-full h-40">
               Your browser does not support the video tag.
             </video>
@@ -63,8 +63,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+
+const route = useRoute();
+const nameOfWorkout = ref('Pushups');
+nameOfWorkout.value = route.params.exercise;
 
 // State
 const isFrontCamera = ref(false);
