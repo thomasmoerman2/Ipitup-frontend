@@ -16,6 +16,7 @@
       <ProfileInfo icon="Award" text="Badges" amount="7" />
       <ProfileInfo icon="RefreshCw" text="Oefeningen" amount="29" />
       <ProfileInfo icon="Gem" text="Punten" amount="544" />
+      
     </div>
 
     <div>
@@ -31,6 +32,7 @@
 
     <div class="flex flex-col items-center gap-3">
       <p class="font-bold w-full">Badges</p>
+
         <div class="flex flex-wrap justify-center gap-2">
           <AppBadge exercise="Pushup" amount="100" />
           <AppBadge exercise="Squat" amount="500" />
@@ -42,6 +44,12 @@
         </RouterLink>
         
     </div>
+
+    <!-- <div class="flex items-center font-bold justify-center">
+      <p >Non-stop</p>
+      <AppIcon name="Flame" color="text-blue-48" size="20"/>
+      <p>8</p>
+    </div> -->
   </div>
 
 </template>
@@ -52,7 +60,9 @@ import AppSmallButton from "@/components/App/SmallButton.vue";
 import ProfileInfo from "@/components/Profile/Info.vue";
 import AppOptions from "@/components/App/Options.vue";
 import AppBadge from "@/components/App/Badge.vue";
+import AppIcon from "@/components/App/Icon.vue";
 import { ref } from 'vue';
+import { AppleIcon } from "lucide-vue-next";
 
 const selectedOption = ref('1');
 
