@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex items-center justify-center mb-2 w-[72px] h-[103px]">
+    <div :style="{ opacity: badgeOpacity }" class="relative flex items-center justify-center mb-2 w-[72px] h-[103px]">
       <!-- SVG Badge -->
       <svg
         width="72"
@@ -33,6 +33,10 @@
   import { computed } from 'vue';
   
   const props = defineProps({
+    state: {
+    type: String,
+    default: "true",
+    },
     exercise: {
       type: String,
       required: true,
@@ -45,6 +49,9 @@
   
   // Dynamische kleur op basis van de oefening
   const badgeColor = computed(() => {
+    if (props.state === "false") {
+    return '#737373'; // Grijs als de state false is
+    }
     return {
       Pushup: '#1F418B',   // Blauw
       Squat: '#8B1F21',    // Rood
@@ -52,5 +59,7 @@
       Situp: '#6C1F8B',    // Paars
     }[props.exercise] || '#737373'; // Standaard grijs als fallback
   });
+
+  const badgeOpacity = computed(() => (props.state === "false" ? 0.3 : 1));
   </script>
   
