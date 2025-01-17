@@ -16,8 +16,8 @@ const route = useRoute();
 
 const navigation = [
     { path: '/', icon: Home, label: 'Home' },
-    { path: '/workout', icon: BicepsFlexed, label: 'Workout' },
     { path: '/search', icon: UserRoundSearch, label: 'Search' },
+    { path: '/workout', icon: BicepsFlexed, label: 'Workout' },
     { path: '/podium', icon: SquareKanban, label: 'Podium' },
     { path: '/profile', icon: UserCircle2, label: 'Profile' },
 ];
