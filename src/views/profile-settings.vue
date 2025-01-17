@@ -2,7 +2,7 @@
 
     <div class="w-full flex flex-col items-center justify-center gap-5">
         <RouterLink to="/profile/customize" class="w-max flex justify-center">
-            <SettingsAvatar />
+            <SettingsAvatar edit="true" />
         </RouterLink>
         <p class="text-sm text-black-100 lowercase">@Gebruikersnaam</p>
         <AppSmallButton icon="Globe" version="blue" text="Publieke gebruiker" />
