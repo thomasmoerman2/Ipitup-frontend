@@ -59,6 +59,7 @@
 
       <hr />
       <AppDialog type="search" title="Open Search" />
+      <AppDialog type="filter" title="Open Filter" />
     </div>
 
     <div class="flex flex-col gap-10">
