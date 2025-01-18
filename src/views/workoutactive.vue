@@ -1,74 +1,71 @@
 <template>
-  <div id="app">
-    <!-- Add Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-[rgba(0, 0, 0, 0.4)] flex items-center justify-center z-[9999]"
+  <!-- Add Modal -->
+  <div
+    v-if="showModal"
+    class="absolute flex flex-col bg-white top-0 left-0 w-full h-full bg-black/50 px-8 justify-center z-[9999]"
+  >
+    <p class="">1. Ga op je handen en knieën op de grond zitten.</p>
+    <p class="">
+      1. Plaats je handen iets breder dan schouderbreedte op de grond..
+    </p>
+    <p class="">3. Strek je benen naar achteren zodat je op je tenen rust</p>
+    <p class="">
+      4. Je lichaam vormt een rechte lijn van je hoofd tot je hielen.
+    </p>
+    <p class="">
+      5. Het spannen van je buikspieren helpt je rug recht te houden.
+    </p>
+    <h1 class="text-2xl py-10 text-center font-bold">
+      Van start binnen
+      <span :key="countdown" class="text-blue-60 countdown-number">
+        {{ countdown }}
+      </span>
+      Seconden
+    </h1>
+    <button
+      @click="closeModalAndStartCamera"
+      class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42"
     >
-      <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
-        <div class="mb-4">
-          <p class="text-xl font-semibold">Performing pushups</p>
-          <p class="text-sm text-gray-600">
-            Prepare to perform pushups effectively.
-          </p>
-        </div>
+      Ik sta klaar, GO!
+    </button>
+  </div>
 
-        <div class="border-t border-blue-60 my-4"></div>
-        <p class="text-xl font-semibold">Position</p>
-        <p class="text-sm text-gray-600">
-          Place your mobile device half a meter in front of you pointing your
-          way.
-        </p>
-
-        <div class="border-t border-blue-60 my-4"></div>
-        <div class="mb-4">
-          <p class="text-xl font-semibold">Tips</p>
-          <p class="text-sm text-gray-600">
-            Keep hands aligned with shoulder, elbows against waist and slowly
-            push down
-          </p>
-        </div>
-
-        <button
-          @click="closeModalAndStartCamera"
-          class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42"
-        >
-          I understand
-        </button>
-      </div>
-    </div>
-
-    <!-- Add debug overlay -->
-    <div v-if="showDebug" class="debug-overlay">
+  <!-- Add debug overlay -->
+  <!-- <div v-if="showDebug" class="debug-overlay">
       <div class="debug-info">
         <p>Left Distance: {{ leftArmDistance.toFixed(3) }}</p>
         <p>Right Distance: {{ rightArmDistance.toFixed(3) }}</p>
         <p>Avg Distance: {{ avgArmDistance }}</p>
         <p>Form Status: {{ formStatus }}</p>
-        <p>Position: {{ currentPosition }}</p>
       </div>
-    </div>
+    </div> -->
 
-    <!-- Add loading indicator -->
-    <div v-if="!modelLoaded" class="loading-overlay">
-      <div class="loading-content">
-        <p>Loading model...</p>
-        <p class="text-sm">{{ formStatus }}</p>
-      </div>
+  <!-- Add loading indicator -->
+  <div v-if="!modelLoaded" class="loading-overlay">
+    <div class="loading-content">
+      <p>Loading model...</p>
+      <p class="text-sm">{{ formStatus }}</p>
     </div>
-
-    <!-- Existing template content -->
-    <video
-      ref="video"
-      autoplay
-      playsinline
-      muted
-      :class="{ 'camera-flipped': isFrontCamera }"
-    ></video>
-    <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
-    <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
-    <div class="pushup-counter">Pushups: {{ pushUpCount }}</div>
   </div>
+
+  <!-- Existing template content -->
+  <video
+    ref="video"
+    autoplay
+    playsinline
+    muted
+    :class="{ 'camera-flipped': isFrontCamera }"
+  ></video>
+  <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
+  <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
+  <!-- make this 7.5rem -->
+  <p
+    class="absolute bottom-14 right-14 z-[9998] text-blue-60 text-7xl font-bold"
+  >
+    <span :key="pushUpCount" class="pushup-counter">
+      {{ pushUpCount }}
+    </span>
+  </p>
 </template>
 
 <script setup>
@@ -84,6 +81,8 @@ const avgArmDistance = ref(0);
 const showModal = ref(true);
 const video = ref(null);
 const canvas = ref(null);
+const countdown = ref(30);
+const isCountingDown = ref(true); // Start counting immediately when component loads
 
 // Add new refs for debugging
 const showDebug = ref(true); // Set to false in production
@@ -126,6 +125,7 @@ const initModel = async () => {
 
   try {
     // Wait for window.tmImage to be available
+
     let attempts = 0;
     while (!window.tmImage && attempts < 10) {
       debugLog("Waiting for tmImage to load...");
@@ -233,6 +233,16 @@ onMounted(async () => {
     debugLog("Initialization error:", error);
     console.error("Initialization error:", error);
   }
+
+  // Start countdown immediately when component is mounted
+  const countdownInterval = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(countdownInterval);
+      isCountingDown.value = false;
+      closeModalAndStartCamera();
+    }
+  }, 1000);
 });
 // Modal handler
 const closeModalAndStartCamera = async () => {
@@ -382,14 +392,6 @@ const detectPushUp = (landmarks) => {
 </script>
 
 <style scoped>
-#app {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
-
 video,
 canvas {
   position: fixed;
@@ -417,18 +419,6 @@ canvas {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-}
-
-.pushup-counter {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 1.2em;
-  z-index: 2;
 }
 
 /* Add modal styles if not using Tailwind */
@@ -563,5 +553,35 @@ canvas {
   padding: 20px;
   border-radius: 8px;
   text-align: center;
+}
+.countdown-number {
+  display: inline-block;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pushup-counter {
+  display: inline-block;
+
+  animation: epicZoomEffect 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes epicZoomEffect {
+  0% {
+    transform: scale(4);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes popIn {
+  0% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>
