@@ -1,15 +1,15 @@
 <template>
   <div id="app">
     <!-- Add Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-[rgba(0, 0, 0, 0.4)] flex items-center justify-center z-[9999]">
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-[rgba(0, 0, 0, 0.4)] flex items-center justify-center z-[9999]"
+    >
       <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
         <div class="mb-4">
           <p class="text-xl font-semibold">Performing pushups</p>
           <p class="text-sm text-gray-600">
             Prepare to perform pushups effectively.
-            <video src="/pushups.mp4" autoplay muted loop class="hidden w-full h-40">
-              Your browser does not support the video tag.
-            </video>
           </p>
         </div>
 
@@ -29,7 +29,10 @@
           </p>
         </div>
 
-        <button @click="closeModalAndStartCamera" class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42">
+        <button
+          @click="closeModalAndStartCamera"
+          class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42"
+        >
           I understand
         </button>
       </div>
@@ -40,6 +43,7 @@
       <div class="debug-info">
         <p>Left Distance: {{ leftArmDistance.toFixed(3) }}</p>
         <p>Right Distance: {{ rightArmDistance.toFixed(3) }}</p>
+        <p>Avg Distance: {{ avgArmDistance }}</p>
         <p>Form Status: {{ formStatus }}</p>
         <p>Position: {{ currentPosition }}</p>
       </div>
@@ -54,7 +58,13 @@
     </div>
 
     <!-- Existing template content -->
-    <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
+    <video
+      ref="video"
+      autoplay
+      playsinline
+      muted
+      :class="{ 'camera-flipped': isFrontCamera }"
+    ></video>
     <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
     <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
     <div class="pushup-counter">Pushups: {{ pushUpCount }}</div>
@@ -62,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 
@@ -70,7 +80,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
 const pushUpCount = ref(0);
-const isDownPosition = ref(false);
+const avgArmDistance = ref(0);
 const showModal = ref(true);
 const video = ref(null);
 const canvas = ref(null);
@@ -79,23 +89,28 @@ const canvas = ref(null);
 const showDebug = ref(true); // Set to false in production
 const leftArmDistance = ref(0);
 const rightArmDistance = ref(0);
-const formStatus = ref('Waiting for pose...');
-const currentPosition = ref('Standing');
+const predictions = ref([
+  { className: "", probability: 0 },
+  { className: "", probability: 0 },
+  { className: "", probability: 0 },
+]);
+const formStatus = ref("Waiting for pose...");
+const currentPosition = ref("Standing");
 
 // Add state tracking refs
 const isInDownPosition = ref(false);
-const isInUpPosition = ref(true);  // Start in up position
-const canCountRep = ref(true);     // Controls when we can count a new rep
 
-// Add additional state tracking
-const lastStateChangeTime = ref(Date.now());
-const MIN_TIME_BETWEEN_STATES = 500; // Minimum 500ms between state changes
-const repInProgress = ref(false);
+// Add timing constants at the top with other state
+const MIN_TIME_BETWEEN_REPS = 500; // Minimum 500ms between reps
+const lastRepTime = ref(Date.now());
+
+// Add new refs for tracking arm lengths
+const baseArmLength = ref(0);
 
 // Add debug logging function
 const debugLog = (message, data = null) => {
-  const timestamp = new Date().toISOString().split('T')[1];
-  console.log(`[${timestamp}] ${message}`, data || '');
+  const timestamp = new Date().toISOString().split("T")[1];
+  // console.log(`[${timestamp}] ${message}`, data || "");
 };
 
 // Teachable Machine model configuration
@@ -107,22 +122,22 @@ const modelLoaded = ref(false);
 
 // Modified initModel function
 const initModel = async () => {
-  debugLog('Starting model initialization...');
+  debugLog("Starting model initialization...");
 
   try {
     // Wait for window.tmImage to be available
     let attempts = 0;
     while (!window.tmImage && attempts < 10) {
-      debugLog('Waiting for tmImage to load...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      debugLog("Waiting for tmImage to load...");
+      await new Promise((resolve) => setTimeout(resolve, 500));
       attempts++;
     }
 
     if (!window.tmImage) {
-      throw new Error('Teachable Machine library not loaded');
+      throw new Error("Teachable Machine library not loaded");
     }
 
-    debugLog('tmImage found, loading model...');
+    debugLog("tmImage found, loading model...");
     const modelURL = `${URL}model.json`;
     const metadataURL = `${URL}metadata.json`;
 
@@ -138,7 +153,7 @@ const initModel = async () => {
         throw new Error(`Metadata file not found: ${metadataURL}`);
       }
 
-      debugLog('Model files verified, loading model...');
+      debugLog("Model files verified, loading model...");
     } catch (error) {
       throw new Error(`Failed to fetch model files: ${error.message}`);
     }
@@ -147,62 +162,90 @@ const initModel = async () => {
     maxPredictions = model.getTotalClasses();
     modelLoaded.value = true;
 
-    debugLog('Model loaded successfully', {
+    debugLog("Model loaded successfully", {
       classes: maxPredictions,
       modelURL,
-      metadataURL
+      metadataURL,
     });
   } catch (error) {
-    debugLog('Error loading model:', error);
+    debugLog("Error loading model:", error);
     console.error("Model initialization error:", error);
     // You might want to show this error to the user
-    formStatus.value = '⚠️ Error loading model';
+    formStatus.value = "⚠️ Error loading model";
   }
 };
 
 // Modified predict function
 const predict = async () => {
   if (!modelLoaded.value || !model || !video.value) {
-    debugLog('Predict called but model or video not ready', {
-      modelLoaded: modelLoaded.value,
-      hasModel: !!model,
-      hasVideo: !!video.value
-    });
+    debugLog("Predict called but model or video not ready");
     return;
   }
 
   try {
     const prediction = await model.predict(video.value);
-    debugLog('Prediction result:', prediction);
-
-    // Assuming first class is the correct position
-    if (prediction[0].probability.toFixed(2) > 0.8) {
-      isInPosition.value = true;
-      formStatus.value = formStatus.value || 'In correct position';
-      debugLog('Position correct', prediction[0].probability.toFixed(2));
-    } else {
-      isInPosition.value = false;
-      formStatus.value = 'Please get in position';
-      debugLog('Position incorrect', prediction[0].probability.toFixed(2));
+    // Store predictions in a more readable format
+    for (let i = 0; i < maxPredictions; i++) {
+      predictions.value[i] = {
+        className: prediction[i].className,
+        probability: prediction[i].probability.toFixed(2),
+      };
     }
+    debugLog("Prediction result:", predictions.value);
   } catch (error) {
-    debugLog('Prediction error:', error);
+    debugLog("Prediction error:", error);
     console.error("Prediction error:", error);
   }
 };
 
+// Lifecycle hooks
+onMounted(async () => {
+  debugLog("Component mounted");
+  try {
+    const tfScript = document.createElement("script");
+    tfScript.src =
+      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+
+    const tmScript = document.createElement("script");
+    tmScript.src =
+      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
+
+    const loadScripts = new Promise((resolve, reject) => {
+      tfScript.onload = () => {
+        // Just append tmScript after tfScript loads
+        document.head.appendChild(tmScript);
+      };
+
+      tmScript.onload = () => {
+        resolve();
+      };
+
+      // Keep error handlers for debugging issues
+      tfScript.onerror = (error) => reject(error);
+      tmScript.onerror = (error) => reject(error);
+    });
+
+    document.head.appendChild(tfScript);
+    await loadScripts;
+    debugLog("All scripts loaded successfully");
+    await initModel();
+  } catch (error) {
+    debugLog("Initialization error:", error);
+    console.error("Initialization error:", error);
+  }
+});
 // Modal handler
-const closeModalAndStartCamera = () => {
+const closeModalAndStartCamera = async () => {
   showModal.value = false;
-  startCamera();
+  await startCamera();
 };
 
 // Camera functions
 const startCamera = async () => {
-  debugLog('Starting camera...');
+  debugLog("Starting camera...");
 
   if (currentStream.value) {
-    debugLog('Stopping existing stream');
+    debugLog("Stopping existing stream");
     currentStream.value.getTracks().forEach((track) => track.stop());
   }
 
@@ -213,9 +256,9 @@ const startCamera = async () => {
       },
     });
 
-    debugLog('Camera stream obtained', {
+    debugLog("Camera stream obtained", {
       width: stream.getVideoTracks()[0].getSettings().width,
-      height: stream.getVideoTracks()[0].getSettings().height
+      height: stream.getVideoTracks()[0].getSettings().height,
     });
 
     video.value.srcObject = stream;
@@ -223,11 +266,11 @@ const startCamera = async () => {
 
     video.value.onloadedmetadata = () => {
       video.value.play();
-      debugLog('Video playback started');
+      debugLog("Video playback started");
       initPoseDetection();
     };
   } catch (error) {
-    debugLog('Camera error:', error);
+    debugLog("Camera error:", error);
     console.error("Camera error:", error);
   }
 };
@@ -245,7 +288,8 @@ const initPoseDetection = () => {
   canvas.value.height = video.value.videoHeight;
 
   const pose = new Pose({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+    locateFile: (file) =>
+      `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
   });
 
   pose.setOptions({
@@ -274,9 +318,15 @@ const initPoseDetection = () => {
       await predict();
 
       // Only detect pushups if in correct position
-      if (isInPosition.value) {
-        detectPushUp(results.poseLandmarks);
-      }
+      // if (isInPosition.value) {
+
+      // if (workoutType === "pushups") {
+      // console.log("pushups page");
+      detectPushUp(results.poseLandmarks);
+      // } else if (workoutType === "pullups") {
+      //   console.log("pullups page");
+      //   detectPullUps(results.poseLandmarks);
+      // }
     }
   });
 
@@ -295,148 +345,40 @@ const calculateDistance = (pointA, pointB) => {
   const dz = pointA.z - pointB.z;
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
-
-// Modified detectPushUp function
+const detectPullUps = (landmarks) => {};
+// Modified detectPushUp function with timing
 const detectPushUp = (landmarks) => {
   const leftShoulder = landmarks[11];
   const rightShoulder = landmarks[12];
   const leftWrist = landmarks[15];
   const rightWrist = landmarks[16];
-  const leftElbow = landmarks[13];
-  const rightElbow = landmarks[14];
 
   // Calculate distances
   leftArmDistance.value = calculateDistance(leftShoulder, leftWrist);
   rightArmDistance.value = calculateDistance(rightShoulder, rightWrist);
+  avgArmDistance.value = (leftArmDistance.value + rightArmDistance.value) / 2;
 
-  const threshold = 0.3;
-  const minThreshold = 0.2;
+  // Calibrate base arm length if not done yet
+
   const currentTime = Date.now();
-
-  // Check elbow alignment
-  const leftElbowAlignment = Math.abs(leftElbow.y - leftShoulder.y);
-  const rightElbowAlignment = Math.abs(rightElbow.y - rightShoulder.y);
-  const goodElbowAlignment = leftElbowAlignment < 0.1 && rightElbowAlignment < 0.1;
-
-  // Prevent rapid state changes
-  if (currentTime - lastStateChangeTime.value < MIN_TIME_BETWEEN_STATES) {
-    return;
+  const DOWN_THRESHOLD = 0.2;
+  // DOWN position
+  if (
+    avgArmDistance.value < DOWN_THRESHOLD &&
+    !isInDownPosition.value &&
+    currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
+  ) {
+    isInDownPosition.value = true;
+    formStatus.value = "Down position";
+    pushUpCount.value++;
+    lastRepTime.value = currentTime;
   }
-
-  // DOWN POSITION
-  if (leftArmDistance.value < threshold && rightArmDistance.value < threshold) {
-    if (leftArmDistance.value < minThreshold || rightArmDistance.value < minThreshold) {
-      formStatus.value = '⚠️ Going too low!';
-      return;
-    }
-
-    if (!goodElbowAlignment) {
-      formStatus.value = '⚠️ Keep elbows closer to body';
-      return;
-    }
-
-    // Only register down position if we're coming from a valid up position
-    if (isInUpPosition.value && canCountRep.value && !repInProgress.value) {
-      console.log("✅ Starting rep - going down");
-      formStatus.value = '✅ Good form - Down position';
-      currentPosition.value = 'Down';
-      isInDownPosition.value = true;
-      isInUpPosition.value = false;
-      repInProgress.value = true;
-      lastStateChangeTime.value = currentTime;
-    }
-  }
-  // UP POSITION
-  else if (leftArmDistance.value > threshold * 1.2 && rightArmDistance.value > threshold * 1.2) {
-    // Only count rep if we completed a down position
-    if (isInDownPosition.value && repInProgress.value) {
-      if (Math.abs(leftArmDistance.value - rightArmDistance.value) > 0.1) {
-        formStatus.value = '⚠️ Push up evenly with both arms';
-        return;
-      }
-
-      console.log("✅ Completed rep - full up");
-      formStatus.value = '✅ Good form - Complete rep';
-      currentPosition.value = 'Up';
-      pushUpCount.value++;
-
-      // Reset all states
-      isInDownPosition.value = false;
-      isInUpPosition.value = true;
-      repInProgress.value = false;
-      canCountRep.value = false;
-      lastStateChangeTime.value = currentTime;
-
-      // Allow next rep after a delay
-      setTimeout(() => {
-        canCountRep.value = true;
-        formStatus.value = 'Ready for next rep';
-      }, MIN_TIME_BETWEEN_STATES);
-    }
-    // If we're just in the up position
-    else if (!isInDownPosition.value && !repInProgress.value) {
-      currentPosition.value = 'Standing';
-      formStatus.value = canCountRep.value ? 'Ready for next rep' : 'Stabilizing...';
-    }
-  }
-  // TRANSITION ZONE - Neither fully up nor down
-  else {
-    formStatus.value = repInProgress.value ? 'Complete the movement' : 'Get ready';
+  // UP position (arms straight)
+  else if (avgArmDistance.value >= DOWN_THRESHOLD && isInDownPosition.value) {
+    isInDownPosition.value = false;
+    formStatus.value = "Up position";
   }
 };
-
-// Lifecycle hooks
-onMounted(async () => {
-  debugLog('Component mounted');
-  try {
-    // Load TensorFlow.js first
-    const tfScript = document.createElement('script');
-    tfScript.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
-
-    // Load Teachable Machine after TensorFlow
-    const tmScript = document.createElement('script');
-    tmScript.src = 'https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js';
-
-    // Create a promise to handle script loading
-    const loadScripts = new Promise((resolve, reject) => {
-      tfScript.onload = () => {
-        debugLog('TensorFlow.js loaded');
-        // Append Teachable Machine script after TensorFlow loads
-        document.head.appendChild(tmScript);
-      };
-
-      tmScript.onload = () => {
-        debugLog('Teachable Machine loaded');
-        resolve();
-      };
-
-      tfScript.onerror = (error) => {
-        debugLog('TensorFlow.js loading error:', error);
-        reject(error);
-      };
-
-      tmScript.onerror = (error) => {
-        debugLog('Teachable Machine loading error:', error);
-        reject(error);
-      };
-    });
-
-    // Append TensorFlow script first
-    document.head.appendChild(tfScript);
-
-    // Wait for both scripts to load
-    await loadScripts;
-    debugLog('All scripts loaded successfully');
-
-    // Initialize model and start camera
-    await initModel();
-    startCamera();
-
-  } catch (error) {
-    debugLog('Initialization error:', error);
-    console.error("Initialization error:", error);
-  }
-});
 </script>
 
 <style scoped>
@@ -456,6 +398,7 @@ canvas {
   width: 100vw;
   height: 100vh;
   object-fit: cover;
+  transform: rotateY(180deg);
 }
 
 .camera-flipped {
