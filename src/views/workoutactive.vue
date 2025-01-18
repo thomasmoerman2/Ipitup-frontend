@@ -46,12 +46,7 @@
     </div>
 
     <!-- Add loading indicator -->
-    <div v-if="!modelLoaded" class="loading-overlay">
-      <div class="loading-content">
-        <p>Loading model...</p>
-        <p class="text-sm">{{ formStatus }}</p>
-      </div>
-    </div>
+    <AppLoading v-if="!modelLoaded" />
 
     <!-- Existing template content -->
     <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
@@ -66,6 +61,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import AppLoading from '@/components/App/Loading.vue';
 
 const route = useRoute();
 const nameOfWorkout = ref('Pushups');

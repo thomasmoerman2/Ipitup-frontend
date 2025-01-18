@@ -19,10 +19,11 @@
     <Filter v-if="props.name === 'Filter'" :class="color" :size="size" />
     <ArrowLeft v-if="props.name === 'ArrowLeft'" :class="color" :size="size" />
     <Flame v-if="props.name === 'Flame'" :class="color" :size="size" />
+    <Dumbbell v-if="props.name === 'Dumbbell'" :class="color" :size="size" />
 </template>
 
 <script setup>
-import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, ArrowLeft, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter, Flame} from 'lucide-vue-next';
+import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, ArrowLeft, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter, Flame, Dumbbell } from 'lucide-vue-next';
 
 const props = defineProps({
     name: {
