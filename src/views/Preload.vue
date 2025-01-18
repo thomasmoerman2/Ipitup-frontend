@@ -155,7 +155,7 @@ const startLoading = async () => {
 
         // Step 1: Health check (0-15%)
         try {
-            const healthCheck = await fetch('https://api.tm-dev.be/api/health-check');
+            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/health-check`);
             if (!healthCheck.ok) throw new Error('Health check failed');
             loadingProgress.value = 15;
         } catch (error) {
@@ -168,7 +168,7 @@ const startLoading = async () => {
 
         // Step 3: User data (30-45%)
         try {
-            const userResponse = await fetch('https://api.tm-dev.be/api/user/me');
+            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`);
             if (!userResponse.ok) throw new Error('User data fetch failed');
             const userData = await userResponse.json();
             await userStore.initializeUser(userData);
@@ -179,7 +179,7 @@ const startLoading = async () => {
 
         // Step 4: Exercises (45-60%)
         try {
-            const exerciseResponse = await fetch('https://api.tm-dev.be/api/exercises');
+            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`);
             if (!exerciseResponse.ok) throw new Error('Exercise data fetch failed');
             const exerciseData = await exerciseResponse.json();
             loadingProgress.value = 60;
