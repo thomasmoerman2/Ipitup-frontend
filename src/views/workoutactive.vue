@@ -4,6 +4,7 @@
     v-if="showModal"
     class="absolute flex flex-col bg-white top-0 left-0 w-full h-full bg-black/50 px-8 justify-center z-[9999]"
   >
+    <h1 class="text-2xl py-10 text-center font-bold">Pushups warmup!</h1>
     <p class="">1. Ga op je handen en knieën op de grond zitten.</p>
     <p class="">
       1. Plaats je handen iets breder dan schouderbreedte op de grond..
@@ -60,7 +61,7 @@
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
   <!-- make this 7.5rem -->
   <p
-    class="absolute bottom-14 right-14 z-[9998] text-blue-60 text-7xl font-bold"
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold"
   >
     <span :key="pushUpCount" class="pushup-counter">
       {{ pushUpCount }}
@@ -119,6 +120,52 @@ let maxPredictions = 0;
 const isInPosition = ref(false);
 const modelLoaded = ref(false);
 
+// Lifecycle hooks
+onMounted(async () => {
+  debugLog("Component mounted");
+  try {
+    const tfScript = document.createElement("script");
+    tfScript.src =
+      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+
+    const tmScript = document.createElement("script");
+    tmScript.src =
+      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
+
+    const loadScripts = new Promise((resolve, reject) => {
+      tfScript.onload = () => {
+        // Just append tmScript after tfScript loads
+        document.head.appendChild(tmScript);
+      };
+
+      tmScript.onload = () => {
+        resolve();
+      };
+
+      // Keep error handlers for debugging issues
+      tfScript.onerror = (error) => reject(error);
+      tmScript.onerror = (error) => reject(error);
+    });
+
+    document.head.appendChild(tfScript);
+    await loadScripts;
+    debugLog("All scripts loaded successfully");
+    await initModel();
+  } catch (error) {
+    debugLog("Initialization error:", error);
+    console.error("Initialization error:", error);
+  }
+
+  // Start countdown immediately when component is mounted
+  const countdownInterval = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(countdownInterval);
+      isCountingDown.value = false;
+      closeModalAndStartCamera();
+    }
+  }, 1000);
+});
 // Modified initModel function
 const initModel = async () => {
   debugLog("Starting model initialization...");
@@ -198,52 +245,6 @@ const predict = async () => {
   }
 };
 
-// Lifecycle hooks
-onMounted(async () => {
-  debugLog("Component mounted");
-  try {
-    const tfScript = document.createElement("script");
-    tfScript.src =
-      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
-
-    const tmScript = document.createElement("script");
-    tmScript.src =
-      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
-
-    const loadScripts = new Promise((resolve, reject) => {
-      tfScript.onload = () => {
-        // Just append tmScript after tfScript loads
-        document.head.appendChild(tmScript);
-      };
-
-      tmScript.onload = () => {
-        resolve();
-      };
-
-      // Keep error handlers for debugging issues
-      tfScript.onerror = (error) => reject(error);
-      tmScript.onerror = (error) => reject(error);
-    });
-
-    document.head.appendChild(tfScript);
-    await loadScripts;
-    debugLog("All scripts loaded successfully");
-    await initModel();
-  } catch (error) {
-    debugLog("Initialization error:", error);
-    console.error("Initialization error:", error);
-  }
-
-  // Start countdown immediately when component is mounted
-  const countdownInterval = setInterval(() => {
-    countdown.value--;
-    if (countdown.value <= 0) {
-      clearInterval(countdownInterval);
-      isCountingDown.value = false;
-      closeModalAndStartCamera();
-    }
-  }, 1000);
-});
 // Modal handler
 const closeModalAndStartCamera = async () => {
   showModal.value = false;
@@ -371,7 +372,8 @@ const detectPushUp = (landmarks) => {
   // Calibrate base arm length if not done yet
 
   const currentTime = Date.now();
-  const DOWN_THRESHOLD = 0.2;
+  const DOWN_THRESHOLD = 0.25;
+  console.log(avgArmDistance.value);
   // DOWN position
   if (
     avgArmDistance.value < DOWN_THRESHOLD &&
@@ -565,7 +567,7 @@ canvas {
 }
 @keyframes epicZoomEffect {
   0% {
-    transform: scale(4);
+    transform: scale(3.5);
     opacity: 0;
   }
 
