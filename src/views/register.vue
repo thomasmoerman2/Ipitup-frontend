@@ -7,7 +7,8 @@
     <AppInput label="Gebruikersnaam (kan later niet worden gewijzigd)" placeholder="@uw-gebruikersnaam" type="text" />
     <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" />
     <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" />
-    <AppInput label="Leeftijd" placeholder="Voeg uw leeftijd in" type="number" />
+    <AppInput label="Geboortedatum" placeholder="Selecteer uw geboortedatum" type="date" />
+
 
     <div class="flex flex-col gap-2">
       <p class="text-sm">Zichtbaarheid</p>

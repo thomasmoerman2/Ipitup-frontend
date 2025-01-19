@@ -17,7 +17,7 @@ import AppHeader from './components/App/Header.vue';
 import AppNavigation from './components/App/Navigation.vue';
 import Preload from './views/Preload.vue';
 
-const isLoading = ref(true);
+const isLoading = ref(false);
 
 const route = useRoute();
 const hideNavigation = computed(() => route.meta.hideNavigation);
