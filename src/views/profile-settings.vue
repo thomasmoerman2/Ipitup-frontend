@@ -1,6 +1,6 @@
 <template>
     <RouterLink to="/profile" class="flex items-center gap-1">
-        <AppIcon name="ArrowLeft" size="24"/>
+        <AppIcon name="ArrowLeft" size="24" />
         <p class="font-medium text-[1.25rem]">Back</p>
     </RouterLink>
 
@@ -27,7 +27,7 @@
     </div>
     <div class="flex flex-col gap-3">
         <strong>Mij uitloggen</strong>
-        <AppButton text="Uitloggen" version="3" icon="false" />
+        <AppButton text="Uitloggen" version="3" icon="false" @click="fetch_logout" />
     </div>
     <div class="flex flex-col gap-3">
         <strong>Account verwijderen</strong>
@@ -49,4 +49,14 @@ import AppSmallButton from '@/components/App/SmallButton.vue';
 import AppButton from '@/components/App/Button.vue';
 import AppInput from '@/components/App/Input.vue';
 import AppIcon from '@/components/App/Icon.vue';
+
+const fetch_logout = async () => {
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('exerciseData');
+    localStorage.removeItem('appPrepared');
+    window.location.href = '/';
+}
+
 </script>

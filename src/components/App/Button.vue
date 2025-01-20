@@ -1,15 +1,15 @@
 <template>
   <button :class="[
     {
-      'bg-blue-54 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+      'bg-blue-54 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3 disabled:opacity-50':
         props.version === 'primary' || props.version === '1',
-      'bg-orange-50 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+      'bg-orange-50 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3 disabled:opacity-50':
         props.version === 'secondary' || props.version === '2',
-      'bg-black-40 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+      'bg-black-40 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3 disabled:opacity-50':
         props.version === 'tertiary' || props.version === '3',
-      'bg-blue-18 text-blue-84 rounded-[10px] flex gap-3 items-center justify-center w-full py-3':
+      'bg-blue-18 text-blue-84 rounded-[10px] flex gap-3 items-center justify-center w-full py-3 disabled:opacity-50':
         props.version === 'outline' || props.version === '4',
-      'text-blue-84 underline py-0 w-max':
+      'text-blue-84 underline py-0 w-max disabled:opacity-50':
         props.version === 'link' || props.version === '5',
     },
   ]">

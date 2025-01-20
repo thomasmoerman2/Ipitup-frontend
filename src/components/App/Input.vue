@@ -1,9 +1,9 @@
 <template>
     <label :for="inputId" class="flex flex-col gap-1">
-        <span class="text-xs">{{ props.label }}</span>
+        <span class="text-xs">{{ props.label }} <span v-if="props.required" class="text-red-54">*</span></span>
         <div class="items-center relative flex gap-2 border border-black-40 rounded-md px-2.5 py-3">
             <AppIcon :name="props.icon" color="text-black-40" />
-            <input :type="inputType" class="border-none w-full outline-none" :placeholder="props.placeholder" v-model="inputValue" :id="inputId" @input="func_input" @change="func_change" />
+            <input :type="inputType" class="border-none w-full outline-none disabled:opacity-50" :placeholder="props.placeholder" v-model="inputValue" :id="inputId" @input="func_input" @change="func_change" />
             <button v-if="props.type === 'password'" type="button" class="absolute right-2 top-1/2 -translate-y-1/2" @click="func_showPassword">
                 <AppIcon :name="showPassword ? 'eyeOff' : 'eye'" color="text-black-100" />
             </button>
@@ -35,6 +35,10 @@ const props = defineProps({
     icon: {
         type: String,
         default: ''
+    },
+    required: {
+        type: Boolean,
+        default: false
     }
 });
 

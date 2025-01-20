@@ -3,17 +3,17 @@
   <p class="mb-6">New bij Ipitup? <RouterLink to="/register" class="text-blue-54">Maak een account</RouterLink>
   </p>
 
-  <form class="flex flex-col gap-6">
-    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" v-model="email" :disabled="isLoading" value="jefke@mail.be" />
+  <form class="flex flex-col gap-6" @submit.prevent="login">
+    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" :disabled="isLoading" value="jefke@mail.be" @update:value="set_email" />
 
-    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" v-model="password" :disabled="isLoading" />
+    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
 
     <div class="flex items-center gap-1 flex-wrap">
       <AppCheckbox title="Mij herinneren" />
       <RouterLink to="/forgot-password" class="text-blue-54 text-xs">Wachtwoord vergeten?</RouterLink>
     </div>
 
-    <AppButton text="Inloggen" version="primary" icon="false" @click="login" :disabled="isLoading" />
+    <AppButton text="Inloggen" version="primary" icon="false" :disabled="isLoading" />
   </form>
 </template>
 
@@ -24,19 +24,24 @@ import AppButton from '@/components/App/Button.vue';
 import AppCheckbox from '@/components/App/Checkbox.vue';
 import { ref } from 'vue';
 
+if (localStorage.getItem('loggedIn')) {
+  window.location.href = '/';
+}
+
 const email = ref('');
 const password = ref('');
 const isLoading = ref(false);
 
 const fetch_login = async () => {
   try {
-    const response = await fetch('http://localhost:7071/api/user/login', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': '*'
       },
-      credentials: 'include',
       body: JSON.stringify({ email: email.value, password: password.value }),
     });
     if (!response.ok) {
@@ -50,14 +55,36 @@ const fetch_login = async () => {
   }
 }
 
+const set_email = (value) => {
+  email.value = value;
+}
+
+const set_password = (value) => {
+  password.value = value;
+}
+
 const login = async () => {
   try {
-    isLoading.value = true;
-    const response = await fetch_login();
-    console.log(response);
+    if (email.value === '' || password.value === '') {
+      console.warn('Email or password is empty');
+    } else {
+      isLoading.value = true;
+      const response = await fetch_login();
+      console.log(response);
+
+      //check if response has token
+      if (response.status === 200) {
+        localStorage.setItem('loggedIn', true);
+        localStorage.setItem('userId', response.userId);
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        console.error('Login failed');
+      }
+    }
   } catch (error) {
     console.error('Login failed:', error);
-    // Here you could add user feedback about the login failure
   } finally {
     isLoading.value = false;
   }

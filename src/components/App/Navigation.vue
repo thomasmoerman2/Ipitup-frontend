@@ -9,7 +9,7 @@
                 <Icon name="UserCircle2" class="w-4 h-4" />
                 <span class="text-2xs lowercase">profile</span>
             </RouterLink>
-            <RouterLink v-if="!userAuthenticated" to="/register" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/register') ? 'text-blue-54' : 'text-blue-84' || isActive('/login') ? 'text-blue-54' : 'text-blue-84'">
+            <RouterLink v-if="!userAuthenticated" to="/register" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/register') ? 'text-blue-54' : 'text-blue-84'">
                 <Icon name="KeyRound" class="w-4 h-4" />
                 <span class="text-2xs lowercase">connect</span>
             </RouterLink>
@@ -20,15 +20,13 @@
 <script setup>
 import { RouterLink, useRoute } from 'vue-router';
 import { Home, SquareKanban, UserRoundSearch, BicepsFlexed } from 'lucide-vue-next';
-import { useUserStore } from '@/stores/user';
 import Icon from './Icon.vue';
 import { ref } from 'vue';
 const route = useRoute();
-const userStore = useUserStore();
 
 const userAuthenticated = ref(false);
 
-userAuthenticated.value = userStore.isLoggedIn;
+userAuthenticated.value = localStorage.getItem('loggedIn');
 
 
 const navigation = [

@@ -2,7 +2,6 @@
   <div class="flex flex-col gap-24 container">
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">header</h1>
-
     </div>
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">button</h1>
@@ -29,7 +28,6 @@
 
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">navigation</h1>
-
     </div>
     <div class="flex flex-col gap-10">
       <h1 class="capitalize underline font-caveat">workout exercise</h1>

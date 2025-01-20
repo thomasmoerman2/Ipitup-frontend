@@ -3,7 +3,7 @@
         <AppIcon :name="props.icon" :size="24" color="text-blue-54" />
         <p class="text-xs font-bold">{{ text }}</p>
         <p class="text-xs">{{ amount }}</p>
-    </div>
+    </div> 
 </template>
 
 <script setup>

@@ -71,7 +71,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useUserStore } from '@/stores/user';
 import AppNotification from '@/components/App/Notification.vue';
 import AppIcon from '@/components/App/Icon.vue';
 
@@ -155,7 +154,7 @@ const startLoading = async () => {
 
         // Step 1: Health check (0-15%)
         try {
-            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/health-check`);
+            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`);
             if (!healthCheck.ok) throw new Error('Health check failed');
             loadingProgress.value = 15;
         } catch (error) {
@@ -164,14 +163,26 @@ const startLoading = async () => {
 
         // Step 2: App preparation (15-30%)
         await new Promise(resolve => setTimeout(resolve, 500));
-        loadingProgress.value = 30;
+        localStorage.setItem('appPrepared', true);
+
+        if (localStorage.getItem('loggedIn')) {
+            if (localStorage.getItem('userData')) {
+                loadingProgress.value = 100;
+                emit('loading-complete', null);
+                return null;
+            } else {
+                loadingProgress.value = 30;
+            }
+        } else {
+            loadingProgress.value = 30;
+        }
 
         // Step 3: User data (30-45%)
         try {
-            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`);
+            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/`);
             if (!userResponse.ok) throw new Error('User data fetch failed');
             const userData = await userResponse.json();
-            await userStore.initializeUser(userData);
+            localStorage.setItem('userData', JSON.stringify(userData));
             loadingProgress.value = 45;
         } catch (error) {
             return handleLoadingError(error, 'user-data');
@@ -182,6 +193,7 @@ const startLoading = async () => {
             const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`);
             if (!exerciseResponse.ok) throw new Error('Exercise data fetch failed');
             const exerciseData = await exerciseResponse.json();
+            localStorage.setItem('exerciseData', JSON.stringify(exerciseData));
             loadingProgress.value = 60;
         } catch (error) {
             throw new Error('Kan oefeningen niet laden');
@@ -189,7 +201,6 @@ const startLoading = async () => {
 
         // Step 5: User preferences (60-75%)
         try {
-            await userStore.loadUserPreferences(exerciseData);
             loadingProgress.value = 75;
         } catch (error) {
             throw new Error('Kan voorkeuren niet instellen');
@@ -197,7 +208,11 @@ const startLoading = async () => {
 
         // Step 6: Final preparations (75-90%)
         await new Promise(resolve => setTimeout(resolve, 300));
-        loadingProgress.value = 90;
+        if (localStorage.getItem('userData') && localStorage.getItem('exerciseData') && localStorage.getItem('appPrepared')) {
+            loadingProgress.value = 90;
+        } else {
+            throw new Error('Kan niet klaar zijn');
+        }
 
         // Step 7: Completion (90-100%)
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -236,7 +251,7 @@ const emit = defineEmits(['loading-complete']);
 const handleContinueOffline = () => {
     try {
         // Set a flag in the store to indicate offline mode
-        userStore.setOfflineMode(true);
+        localStorage.setItem('goOffline', true);
 
         // Complete the loading process
         loadingProgress.value = 100;
