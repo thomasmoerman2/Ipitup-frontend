@@ -5,21 +5,37 @@
                 <component :is="item.icon" class="w-4 h-4" />
                 <span class="text-2xs lowercase">{{ item.label }}</span>
             </RouterLink>
+            <RouterLink v-if="userAuthenticated" to="/profile" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/profile') ? 'text-blue-54' : 'text-blue-84'">
+                <Icon name="UserCircle2" class="w-4 h-4" />
+                <span class="text-2xs lowercase">profile</span>
+            </RouterLink>
+            <RouterLink v-if="!userAuthenticated" to="/register" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/register') ? 'text-blue-54' : 'text-blue-84' || isActive('/login') ? 'text-blue-54' : 'text-blue-84'">
+                <Icon name="KeyRound" class="w-4 h-4" />
+                <span class="text-2xs lowercase">connect</span>
+            </RouterLink>
         </div>
     </div>
 </template>
 
 <script setup>
 import { RouterLink, useRoute } from 'vue-router';
-import { Home, SquareKanban, UserRoundSearch, BicepsFlexed, UserCircle2 } from 'lucide-vue-next';
+import { Home, SquareKanban, UserRoundSearch, BicepsFlexed } from 'lucide-vue-next';
+import { useUserStore } from '@/stores/user';
+import Icon from './Icon.vue';
+import { ref } from 'vue';
 const route = useRoute();
+const userStore = useUserStore();
+
+const userAuthenticated = ref(false);
+
+userAuthenticated.value = userStore.isLoggedIn;
+
 
 const navigation = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/search', icon: UserRoundSearch, label: 'Search' },
     { path: '/workout', icon: BicepsFlexed, label: 'Workout' },
     { path: '/podium', icon: SquareKanban, label: 'Podium' },
-    { path: '/profile', icon: UserCircle2, label: 'Profile' },
 ];
 
 const isActive = (path) => {

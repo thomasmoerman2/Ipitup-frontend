@@ -7,8 +7,8 @@
                     <AppIcon :name="blnChecked ? 'Check' : ''" :size="10" />
                 </div>
             </div>
-            <span class="ml-2">{{ title }}</span>
-            <a :href="url" target="_blank" v-if="url" class="text-blue-54 underline">{{ titleUrl }}</a>
+            <span class="ml-2 text-xs">{{ title }}</span>
+            <a :href="url" target="_blank" v-if="url" class="text-blue-54 underline text-xs">{{ titleUrl }}</a>
         </label>
     </div>
 </template>
