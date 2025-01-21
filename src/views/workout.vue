@@ -9,17 +9,40 @@
     <div></div>
 
     <div class="flex flex-col gap-3">
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+      <WorkoutExercise
+        img="https://picsum.photos/100"
+        title="pushups"
+        level="1"
+        time="10"
+      />
+      <WorkoutExercise
+        img="https://picsum.photos/99"
+        title="pull"
+        level="1"
+        time="10"
+      />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="dips" level="1" time="10" />
+      <WorkoutExercise
+        img="https://picsum.photos/98"
+        title="core"
+        level="1"
+        time="10"
+      />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pullups" level="1" time="10" />
+      <WorkoutExercise
+        img="https://picsum.photos/100"
+        title="squads"
+        level="1"
+        time="10"
+      />
 
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
-
-      <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+      <WorkoutExercise
+        img="https://picsum.photos/100"
+        title="balance"
+        level="1"
+        time="10"
+      />
     </div>
-
   </div>
 </template>
 <script setup>
