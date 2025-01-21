@@ -41,11 +41,14 @@
 <script setup>
 import WorkoutExercise from "@/components/Workout/Exercise.vue";
 import AppButton from "@/components/App/Button.vue";
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import Cookies from 'js-cookie';
 
+const router = useRouter();
 const isLoggedIn = ref(false);
 
-if (localStorage.getItem('loggedIn')) {
+if (Cookies.get('authToken')) {
   isLoggedIn.value = true;
 }
 
@@ -58,4 +61,6 @@ const fetch_3_exercises = async () => {
   const data = await response.json();
   console.log(data);
 }
+
+
 </script>

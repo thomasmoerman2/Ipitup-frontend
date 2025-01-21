@@ -94,6 +94,15 @@ const router = createRouter({
       path: '/podium',
       name: 'podium',
       component: () => import('../views/podium.vue'),
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/admin.vue'),
+      meta: {
+        requiresAuth: true,
+        requiresAdmin: true
+      }
     }
   ],
 });

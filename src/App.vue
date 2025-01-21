@@ -2,7 +2,7 @@
   <div v-if="isLoading" class="flex flex-col gap-5 overflow-x-hidden">
     <Preload @loading-complete="handleLoadingComplete" />
   </div>
-  <div v-else class="flex flex-col gap-5 container overflow-x-hidden">
+  <div v-else class="flex flex-col gap-5 container mx-auto overflow-x-hidden">
     <AppHeader v-if="!hideNavigation" class="pt-16 z-[65]" />
     <RouterView />
     <div v-if="!hideNavigation" class="pb-20 z-[65]"></div>
@@ -17,7 +17,7 @@ import AppHeader from './components/App/Header.vue';
 import AppNavigation from './components/App/Navigation.vue';
 import Preload from './views/Preload.vue';
 
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 const route = useRoute();
 const hideNavigation = computed(() => route.meta.hideNavigation);

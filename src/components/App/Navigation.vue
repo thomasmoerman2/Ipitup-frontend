@@ -18,16 +18,41 @@
 </template>
 
 <script setup>
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { Home, SquareKanban, UserRoundSearch, BicepsFlexed } from 'lucide-vue-next';
 import Icon from './Icon.vue';
-import { ref } from 'vue';
-const route = useRoute();
+import { ref, onMounted, onUnmounted } from 'vue';
+import Cookies from 'js-cookie';
 
+const route = useRoute();
+const router = useRouter();
 const userAuthenticated = ref(false);
 
-userAuthenticated.value = localStorage.getItem('loggedIn');
+// Check auth status
+const checkAuth = () => {
+    const hasAuth = !!Cookies.get('authToken');
+    if (hasAuth !== userAuthenticated.value) {
+        userAuthenticated.value = hasAuth;
+        console.log('Auth state changed:', hasAuth);
+    }
+}
 
+// Set up interval to check auth status
+let authCheckInterval;
+
+onMounted(() => {
+    // Initial check
+    checkAuth();
+
+    // Check every second for changes
+    authCheckInterval = setInterval(checkAuth, 1000);
+});
+
+onUnmounted(() => {
+    if (authCheckInterval) {
+        clearInterval(authCheckInterval);
+    }
+});
 
 const navigation = [
     { path: '/', icon: Home, label: 'Home' },

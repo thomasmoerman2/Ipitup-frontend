@@ -4,8 +4,8 @@
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar />
       <div class="flex flex-col items-center">
-        <p class="font-bold mb-[0.3125rem]">Pietjepuk</p>
-        <p class="text-xs">@pietjepuk1998</p>
+        <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
+        <p class="text-xs">{{ userData.username }}</p>
       </div>
       <RouterLink to="/profile/settings">
         <AppSmallButton version="blue" text="Profiel bewerken" />
@@ -16,7 +16,7 @@
       <ProfileInfo icon="Award" text="Badges" amount="7" />
       <ProfileInfo icon="RefreshCw" text="Oefeningen" amount="29" />
       <ProfileInfo icon="Gem" text="Punten" amount="544" />
-      
+
     </div>
 
     <div>
@@ -33,16 +33,16 @@
     <div class="flex flex-col items-center gap-3">
       <p class="font-bold w-full">Badges</p>
 
-        <div class="flex flex-wrap justify-center gap-2">
-          <AppBadge exercise="Pushup" amount="100" />
-          <AppBadge exercise="Squat" amount="500" />
-          <AppBadge exercise="Pullup" amount="200" />
-          <AppBadge exercise="Situp" amount="50" />
-        </div>
-        <RouterLink to="/badges">
-          <AppSmallButton version="blue" text="Alle badges" />
-        </RouterLink>
-        
+      <div class="flex flex-wrap justify-center gap-2">
+        <AppBadge exercise="Pushup" amount="100" />
+        <AppBadge exercise="Squat" amount="500" />
+        <AppBadge exercise="Pullup" amount="200" />
+        <AppBadge exercise="Situp" amount="50" />
+      </div>
+      <RouterLink to="/badges">
+        <AppSmallButton version="blue" text="Alle badges" />
+      </RouterLink>
+
     </div>
 
     <!-- <div class="flex items-center font-bold justify-center">
@@ -61,12 +61,29 @@ import ProfileInfo from "@/components/Profile/Info.vue";
 import AppOptions from "@/components/App/Options.vue";
 import AppBadge from "@/components/App/Badge.vue";
 import AppIcon from "@/components/App/Icon.vue";
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { AppleIcon } from "lucide-vue-next";
+import { useRouter } from 'vue-router';
+import Cookies from 'js-cookie';
+
+const router = useRouter();
+const userData = ref({
+  firstname: Cookies.get('userFirstname') || '',
+  lastname: Cookies.get('userLastname') || '',
+  email: Cookies.get('userEmail') || '',
+  username: '@' + (Cookies.get('userFirstname') || '').toLowerCase(),
+  accountStatus: Cookies.get('accountStatus') || 'Private'
+})
 
 const selectedOption = ref('1');
 
 const handleOptionChange = (option) => {
   console.log('Selected option:', option);
 };
+
+onMounted(() => {
+  if (!Cookies.get('authToken')) {
+    router.push('/login')
+  }
+})
 </script>

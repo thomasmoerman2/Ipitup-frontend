@@ -43,11 +43,18 @@
                                 {{ currentQuote }}
                             </p>
                         </transition>
-                        <button v-if="retryCount >= MAX_RETRIES" @click="handleContinueOffline" class="mt-4 bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
-                            Continue Offline
-                        </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Only show buttons when there's an error or offline option needed -->
+            <div v-if="retryCount > 0 || (showOfflineOption && !Cookies.get('authToken') && loadingProgress < 100)" class="flex flex-col gap-4 mt-4">
+                <button v-if="showOfflineOption || retryCount > 0" @click="handleContinueOffline" class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
+                    Doorgaan zonder internet
+                </button>
+                <button v-if="showOfflineOption && !Cookies.get('authToken')" @click="router.push('/login')" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
+                    Inloggen
+                </button>
             </div>
         </div>
 
@@ -70,13 +77,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import AppNotification from '@/components/App/Notification.vue';
-import AppIcon from '@/components/App/Icon.vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import Cookies from 'js-cookie'
+import AppNotification from '@/components/App/Notification.vue'
+import AppIcon from '@/components/App/Icon.vue'
 
-const userStore = useUserStore();
-const loadingProgress = ref(0);
-const notificationRef = ref(null);
+const emit = defineEmits(['loadingComplete'])
+const router = useRouter()
+const loadingProgress = ref(0)
+const notificationRef = ref(null)
+const targetProgress = ref(0)
+let progressInterval = null
+const LOADING_TIMEOUT = 8000 // Show offline option after 8 seconds
+let loadingTimeout = null
+const showOfflineOption = ref(false)
 
 const quotes = [
     "Elke rep telt! 💪",
@@ -84,187 +99,246 @@ const quotes = [
     "Maak er vandaag een geweldige training van! ⭐",
     "Klein beginnen, groot eindigen! 🎯",
     "Jij kan dit! 🔥"
-];
+]
 
-const currentQuote = ref(quotes[0]);
-let quoteInterval;
-
-const MAX_RETRIES = 3; // Maximum number of retry attempts
-const RETRY_DELAY = 10000; // 10 seconds in milliseconds
-const retryCount = ref(0);
-const retryCountdown = ref(0);
-let retryInterval = null;
+const currentQuote = ref(quotes[0])
+let quoteInterval
+const MAX_RETRIES = 3
+const RETRY_DELAY = 10000
+const retryCount = ref(0)
+const retryCountdown = ref(0)
+let retryInterval = null
 
 const getLoadingMessage = (progress) => {
-    if (progress < 15) return "Verbinding maken...";
-    if (progress < 30) return "App voorbereiden...";
-    if (progress < 45) return "Gebruikersgegevens ophalen...";
-    if (progress < 60) return "Oefeningen laden...";
-    if (progress < 75) return "Voorkeuren instellen...";
-    if (progress < 90) return "Bijna klaar...";
-    if (progress < 100) return "Laatste stappen...";
-    return "Klaar om te beginnen!";
-};
+    if (progress < 15) return "Verbinding maken..."
+    if (progress < 30) return "App voorbereiden..."
+    if (progress < 45) return "Gebruikersgegevens ophalen..."
+    if (progress < 60) return "Oefeningen laden..."
+    if (progress < 75) return "Voorkeuren instellen..."
+    if (progress < 90) return "Bijna klaar..."
+    if (progress < 100) return "Laatste stappen..."
+    return "Klaar om te beginnen!"
+}
 
-// Add retry countdown function
 const startRetryCountdown = () => {
-    retryCountdown.value = RETRY_DELAY / 1000;
-    if (retryInterval) clearInterval(retryInterval);
+    retryCountdown.value = RETRY_DELAY / 1000
+    if (retryInterval) clearInterval(retryInterval)
 
     retryInterval = setInterval(() => {
         if (retryCountdown.value > 0) {
-            retryCountdown.value--;
+            retryCountdown.value--
         } else {
-            clearInterval(retryInterval);
+            clearInterval(retryInterval)
         }
-    }, 1000);
-};
+    }, 1000)
+}
 
-// Update the error handling in startLoading
 const handleLoadingError = (error, step) => {
-    console.error('Loading failed at step:', step, error);
+    console.error('Loading failed at step:', step, error)
 
     if (retryCount.value < MAX_RETRIES) {
-        retryCount.value++;
-        startRetryCountdown();
+        retryCount.value++
+        startRetryCountdown()
 
         notificationRef.value?.addNotification(
             'Verbinding mislukt',
             `Opnieuw proberen over ${retryCountdown.value} seconden... (Poging ${retryCount.value}/${MAX_RETRIES})`,
             'error'
-        );
+        )
 
-        // Schedule retry
         setTimeout(() => {
-            startLoading();
-        }, RETRY_DELAY);
+            startLoading()
+        }, RETRY_DELAY)
     } else {
         notificationRef.value?.addNotification(
             'Laden mislukt',
             'Maximum aantal pogingen bereikt. Ververs de pagina handmatig om opnieuw te proberen.',
             'error'
-        );
+        )
     }
-};
+}
 
-// Update the startLoading function
+// Progress animation function
+const animateProgress = () => {
+    if (progressInterval) clearInterval(progressInterval)
+
+    progressInterval = setInterval(() => {
+        if (loadingProgress.value < targetProgress.value) {
+            loadingProgress.value = Math.min(loadingProgress.value + 1, targetProgress.value)
+        }
+    }, 50)
+}
+
 const startLoading = async () => {
     try {
-        loadingProgress.value = 0;
+        loadingProgress.value = 0
+        targetProgress.value = 0
+        showOfflineOption.value = false
 
-        // Step 1: Health check (0-15%)
-        try {
-            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`);
-            if (!healthCheck.ok) throw new Error('Health check failed');
-            loadingProgress.value = 15;
-        } catch (error) {
-            return handleLoadingError(error, 'health-check');
+        // Set timeout to show offline option
+        loadingTimeout = setTimeout(() => {
+            showOfflineOption.value = true
+            notificationRef.value?.addNotification(
+                'Laden duurt langer dan verwacht',
+                'Je kan offline doorgaan of wachten op verbinding',
+                'info'
+            )
+        }, LOADING_TIMEOUT)
+
+        // Quick check for auth before starting
+        const authToken = Cookies.get('authToken')
+        const userId = Cookies.get('userId')
+        if (!authToken || !userId) {
+            if (loadingTimeout) clearTimeout(loadingTimeout)
+            showOfflineOption.value = true
+            targetProgress.value = 100
+            animateProgress()
+            notificationRef.value?.addNotification(
+                'Niet ingelogd',
+                'Je kan offline doorgaan of inloggen voor meer functies',
+                'info'
+            )
+            return
         }
 
-        // Step 2: App preparation (15-30%)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        localStorage.setItem('appPrepared', true);
+        // Step 1: Check auth and health (0-15%)
+        try {
+            targetProgress.value = 15
+            animateProgress()
 
-        if (localStorage.getItem('loggedIn')) {
-            if (localStorage.getItem('userData')) {
-                loadingProgress.value = 100;
-                emit('loading-complete', null);
-                return null;
-            } else {
-                loadingProgress.value = 30;
+            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`)
+            if (!healthCheck.ok) throw new Error('Health check failed')
+        } catch (error) {
+            return handleLoadingError(error, 'health-check')
+        }
+
+        // Step 2: Verify token (15-30%)
+        try {
+            targetProgress.value = 30
+            animateProgress()
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/verify`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            })
+
+            if (!response.ok) {
+                // Clear invalid cookies
+                Cookies.remove('userId')
+                Cookies.remove('authToken')
+                Cookies.remove('userFirstname')
+                Cookies.remove('userLastname')
+                Cookies.remove('userEmail')
+                Cookies.remove('accountStatus')
+                if (loadingTimeout) clearTimeout(loadingTimeout)
+                // Reload page instead of redirecting
+                window.location.reload()
+                return
             }
-        } else {
-            loadingProgress.value = 30;
-        }
-
-        // Step 3: User data (30-45%)
-        try {
-            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/`);
-            if (!userResponse.ok) throw new Error('User data fetch failed');
-            const userData = await userResponse.json();
-            localStorage.setItem('userData', JSON.stringify(userData));
-            loadingProgress.value = 45;
         } catch (error) {
-            return handleLoadingError(error, 'user-data');
+            return handleLoadingError(error, 'token-verify')
         }
 
-        // Step 4: Exercises (45-60%)
+        // Step 3: Load user data (30-45%)
         try {
-            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`);
-            if (!exerciseResponse.ok) throw new Error('Exercise data fetch failed');
-            const exerciseData = await exerciseResponse.json();
-            localStorage.setItem('exerciseData', JSON.stringify(exerciseData));
-            loadingProgress.value = 60;
+            targetProgress.value = 45
+            animateProgress()
+
+            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`)
+            if (!userResponse.ok) throw new Error('User data fetch failed')
         } catch (error) {
-            throw new Error('Kan oefeningen niet laden');
+            return handleLoadingError(error, 'user-data')
         }
 
-        // Step 5: User preferences (60-75%)
+        // Step 4: Load exercises (45-60%)
         try {
-            loadingProgress.value = 75;
+            targetProgress.value = 60
+            animateProgress()
+
+            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/${userId}`)
+            if (!exerciseResponse.ok) throw new Error('Exercise data fetch failed')
         } catch (error) {
-            throw new Error('Kan voorkeuren niet instellen');
+            return handleLoadingError(error, 'exercise-data')
         }
 
-        // Step 6: Final preparations (75-90%)
-        await new Promise(resolve => setTimeout(resolve, 300));
-        if (localStorage.getItem('userData') && localStorage.getItem('exerciseData') && localStorage.getItem('appPrepared')) {
-            loadingProgress.value = 90;
-        } else {
-            throw new Error('Kan niet klaar zijn');
-        }
+        // Faster final steps
+        targetProgress.value = 75
+        animateProgress()
+        await new Promise(resolve => setTimeout(resolve, 200))
 
-        // Step 7: Completion (90-100%)
-        await new Promise(resolve => setTimeout(resolve, 200));
-        loadingProgress.value = 100;
+        targetProgress.value = 90
+        animateProgress()
+        await new Promise(resolve => setTimeout(resolve, 200))
 
-        // Emit completion after a short delay
+        targetProgress.value = 100
+        animateProgress()
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Clear timeout since loading completed successfully
+        if (loadingTimeout) clearTimeout(loadingTimeout)
+
+        // Redirect after a short delay
         setTimeout(() => {
-            emit('loading-complete', null);
-        }, 300);
+            router.push('/')
+        }, 300)
 
     } catch (error) {
-        handleLoadingError(error, 'unknown');
-        return null;
+        handleLoadingError(error, 'unknown')
     }
-};
+}
+
+const handleContinueOffline = () => {
+    try {
+        if (loadingTimeout) clearTimeout(loadingTimeout)
+        localStorage.setItem('goOffline', true)
+        targetProgress.value = 100
+        animateProgress()
+    } catch (error) {
+        console.error('Error in offline mode:', error)
+        notificationRef.value?.addNotification(
+            'Error in offline mode',
+            'An unexpected error occurred',
+            'error'
+        )
+    }
+}
+
+// Watch for loading progress to complete
+const handleLoadingComplete = () => {
+    if (loadingProgress.value === 100) {
+        // Add fade out animation class
+        document.querySelector('.min-h-screen')?.classList.add('fade-out')
+        // Navigate and emit after animation
+        setTimeout(() => {
+            emit('loadingComplete')
+        }, 500)
+    }
+}
+
+// Watch loading progress
+watch(loadingProgress, (newValue) => {
+    if (newValue === 100) {
+        handleLoadingComplete()
+    }
+})
 
 // Start loading and quote rotation on mount
 onMounted(() => {
-    startLoading();
+    startLoading()
     quoteInterval = setInterval(() => {
-        const currentIndex = quotes.indexOf(currentQuote.value);
-        currentQuote.value = quotes[(currentIndex + 1) % quotes.length];
-    }, 3000);
-});
+        const currentIndex = quotes.indexOf(currentQuote.value)
+        currentQuote.value = quotes[(currentIndex + 1) % quotes.length]
+    }, 3000)
+})
 
-// Clean up on unmount
+// Clean up all intervals and timeouts
 onUnmounted(() => {
-    if (quoteInterval) clearInterval(quoteInterval);
-    if (retryInterval) clearInterval(retryInterval);
-});
-
-// Add emit declaration
-const emit = defineEmits(['loading-complete']);
-
-// Add continue offline handler
-const handleContinueOffline = () => {
-    try {
-        // Set a flag in the store to indicate offline mode
-        localStorage.setItem('goOffline', true);
-
-        // Complete the loading process
-        loadingProgress.value = 100;
-
-        // Emit with null to indicate offline mode
-        emit('loading-complete', null);
-
-        return null; // Explicit return for the event handler
-    } catch (error) {
-        console.error('Error in offline mode:', error);
-        return null; // Always return null for the event handler
-    }
-};
+    if (quoteInterval) clearInterval(quoteInterval)
+    if (retryInterval) clearInterval(retryInterval)
+    if (progressInterval) clearInterval(progressInterval)
+    if (loadingTimeout) clearTimeout(loadingTimeout)
+})
 </script>
 
 <style scoped>
@@ -277,6 +351,22 @@ const handleContinueOffline = () => {
 .fade-leave-to {
     opacity: 0;
     transform: translateY(10px);
+}
+
+.fade-out {
+    animation: fade-out 0.5s ease-out forwards;
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
 }
 
 @keyframes fade-in {
@@ -311,7 +401,6 @@ const handleContinueOffline = () => {
     animation: slide-up 0.8s ease-out forwards;
 }
 
-/* Add new animation for the icon */
 .animate-bounce-slow {
     animation: bounce 2s infinite;
 }

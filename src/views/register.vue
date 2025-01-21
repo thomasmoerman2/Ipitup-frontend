@@ -31,13 +31,19 @@ import AppButton from '@/components/App/Button.vue';
 import AppCheckbox from '@/components/App/Checkbox.vue';
 import AppToggle from '@/components/App/Toggle.vue';
 import AppNotification from '@/components/App/Notification.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import Cookies from 'js-cookie';
+import { useRouter } from 'vue-router';
 
 const notification = ref(null);
+const router = useRouter();
 
-if (localStorage.getItem('loggedIn')) {
-  window.location.href = '/';
-}
+onMounted(() => {
+  // Check if user is already logged in
+  if (Cookies.get('authToken')) {
+    router.push('/')
+  }
+})
 
 const firstName = ref('');
 const lastName = ref('');
@@ -78,17 +84,11 @@ const set_isChecked = (value) => {
 
 const fetch_register = async () => {
   try {
-    // Reset any existing notification
-    notification.value = { message: '', type: '' };
-    isLoading.value = true;
-
+    isLoading.value = true
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
         firstname: firstName.value,
@@ -99,30 +99,32 @@ const fetch_register = async () => {
         accountstatus: visibility.value === 'Publiek' ? 'Public' : 'Private',
         avatar: "null"
       })
-    });
+    })
 
-    const data = await response.json();
-
-    if (response.status === 200) {
-      localStorage.setItem('loggedIn', true);
-      localStorage.setItem('userId', data.userId);
-      window.location.href = '/';
-    } else {
-      notification.value.addNotification(
-        'Registration failed',
-        data.error || 'Registration failed. Please try again.',
-        'error'
-      );
+    if (!response.ok) {
+      throw new Error('Registration failed')
     }
+
+    const data = await response.json()
+
+    // Store user data in cookies
+    Cookies.set('authToken', data.token)
+    Cookies.set('userId', data.userId)
+    Cookies.set('userFirstname', data.firstname)
+    Cookies.set('userLastname', data.lastname)
+    Cookies.set('userEmail', data.email)
+    Cookies.set('accountStatus', data.accountStatus)
+
+    router.push('/')
   } catch (error) {
-    console.error(error);
+    console.error('Registration error:', error)
     notification.value.addNotification(
-      'Registration failed',
-      'An unexpected error occurred. Please try again.',
+      'Registratie mislukt',
+      'Er ging iets mis. Probeer het opnieuw.',
       'error'
-    );
+    )
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 </script>
