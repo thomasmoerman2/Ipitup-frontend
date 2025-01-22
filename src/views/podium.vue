@@ -11,6 +11,9 @@
     </button>
   </div>
 
+  <AppNotification ref="notification" />
+
+
   <!-- Podium -->
   <div class="flex items-end justify-center">
     <div v-for="(winner, index) in podiumWinners" :key="winner.userId" class="flex flex-col items-center">
@@ -29,7 +32,7 @@
   <Transition name="dialog">
     <dialog v-if="sortDialogOpen" @click="sortDialogOpen = false" class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0">
       <div class="dialog-content" @click.stop>
-        <DialogSort @closeDialog="sortDialogOpen = false" @updateSort="applySort" />
+        <DialogSort :currentSort="selectedSort" @updateSort="applySort" @closeDialog="sortDialogOpen = false" />
       </div>
     </dialog>
   </Transition>
@@ -62,18 +65,15 @@ import SettingsAvatar from '@/components/Settings/Avatar.vue';
 import PodiumSvg from '@/components/Podium/PodiumSvg.vue';
 import AppInput from '@/components/App/Input.vue';
 import AppLeaderboardPostion from '@/components/App/LeaderboardPosition.vue';
+import Cookies from 'js-cookie';
+import AppNotification from '@/components/App/Notification.vue';
+
 
 const searchQuery = ref('');
 const sortDialogOpen = ref(false);
 const filterDialogOpen = ref(false);
 
-const openSort = () => {
-  sortDialogOpen.value = true;
-};
 
-const openFilter = () => {
-  filterDialogOpen.value = true;
-};
 
 const selectedSort = ref("globaal");
 
@@ -82,11 +82,20 @@ const applySort = (sortType) => {
   fetchFilteredLeaderboard();
 };
 
+const openSort = () => {
+  sortDialogOpen.value = true;
+};
+
 const filters = ref({
   locations: [],
   minAge: null,
   maxAge: null,
 });
+
+
+const openFilter = () => {
+  filterDialogOpen.value = true;
+};
 
 const applyFilters = (newFilters) => {
   filters.value = { ...newFilters };  // Sla de nieuwe filterwaarden op
@@ -96,6 +105,9 @@ const applyFilters = (newFilters) => {
 
 const podiumWinners = ref([]);
 const leaderboardData = ref([]);
+
+const notification = ref(null);
+
 
 const fetchFilteredLeaderboard = async () => {
   const params = new URLSearchParams();
@@ -113,6 +125,16 @@ const fetchFilteredLeaderboard = async () => {
     params.append('sortType', selectedSort.value);
   }
 
+  const userId = Cookies.get('userId');  
+  if (selectedSort.value === 'volgend') {
+    if (userId && userId !== '0') {
+      params.append('userId', userId);
+    } else {
+      console.error("User ID is missing or invalid.");
+      return;  
+    }
+  }
+
   console.log("API request:", params.toString());
   
   try {
@@ -120,10 +142,68 @@ const fetchFilteredLeaderboard = async () => {
     const data = await response.json();
     console.log("Leaderboard API response:", data);
 
-    if (response.ok && Array.isArray(data) && data.length > 0) {
-      const sortedPodium = [data[1], data[0], data[2]];  // 2e naar 1e, 1e naar 2e, 3e blijft
-      podiumWinners.value = sortedPodium;
-      leaderboardData.value = data.slice(3);  // Overige deelnemers
+    if (response.ok && Array.isArray(data)) {
+      if (data.length < 2 && selectedSort.value === 'volgend') {
+        console.warn("Not enough following data found, switching to global.");
+        selectedSort.value = 'globaal';
+
+        notification.value?.addNotification(
+          'Minder dan 2 volgers',
+          'Je volgt minder dan 2 gebruikers. We tonen nu de globale ranglijst.',
+          'error'
+        );
+
+        fetchFilteredLeaderboard();
+        return;
+      }
+
+      // Controleer of de gebruiker in de lijst staat
+      const userExists = data.some(player => player.userId == userId);
+      
+      if (!userExists) {
+        console.warn(`User ${userId} not found in leaderboard, fetching user score.`);
+
+        try {
+          const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/byid/${userId}`);
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            
+            data.push({
+              userId: userId,
+              firstname: userData.firstname || 'Jij',
+              lastname: userData.lastname || '',
+              totalScore: userData.totalScore || 0
+            });
+
+            console.log("User data added:", userData);
+          } else {
+            console.warn("Failed to fetch user score, adding with default score.");
+            data.push({
+              userId: userId,
+              firstname: Cookies.get('userFirstname') || 'Jij',
+              lastname: Cookies.get('userLastname') || '',
+              totalScore: 0
+            });
+          }
+        } catch (fetchError) {
+          console.error("Error fetching user score:", fetchError);
+          data.push({
+            userId: userId,
+            firstname: Cookies.get('userFirstname') || 'Jij',
+            lastname: Cookies.get('userLastname') || '',
+            totalScore: 0
+          });
+        }
+      }
+
+      // Sorteer de lijst opnieuw op score
+      data.sort((a, b) => b.totalScore - a.totalScore);
+
+      podiumWinners.value = data.length >= 3 
+        ? [data[1], data[0], data[2]]  
+        : data.slice().reverse();
+
+      leaderboardData.value = data.slice(3);  
     } else {
       console.warn("No leaderboard data found:", data.message);
       podiumWinners.value = [];
@@ -133,6 +213,9 @@ const fetchFilteredLeaderboard = async () => {
     console.error("Error fetching leaderboard data:", error);
   }
 };
+
+
+
 
 
 onMounted(() => {

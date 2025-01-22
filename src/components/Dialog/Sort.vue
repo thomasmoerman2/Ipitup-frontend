@@ -8,7 +8,7 @@
         { text: 'Lokaal', value: 'lokaal' },
         { text: 'Volgend', value: 'volgend' },
       ]"
-      v-model="selectedSort"
+      v-model="localSelectedSort"
       @change="handleSortChange"
     />
 
@@ -16,20 +16,36 @@
   </div>
 </template>
 
+
+
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AppButton from '@/components/App/Button.vue';
 import AppOptions from '@/components/App/Options.vue';
 
-const emit = defineEmits(['closeDialog']);
+const props = defineProps({
+  currentSort: {
+    type: String,
+    default: 'globaal',
+  }
+});
 
-const selectedSort = ref('volgend');
+const emit = defineEmits(['closeDialog', 'updateSort']);
+
+// Maak een lokale kopie van de sorteerwaarde
+const localSelectedSort = ref(props.currentSort);
+
+// Zorg ervoor dat de waarde correct wordt gesynchroniseerd
+watch(() => props.currentSort, (newValue) => {
+  localSelectedSort.value = newValue;
+}, { immediate: true }); // immediate zorgt ervoor dat de watch direct bij aanmaken wordt uitgevoerd
 
 const handleSortChange = (value) => {
-  selectedSort.value = value;
+  localSelectedSort.value = value;
 };
 
 const func_closeDialog = () => {
+  emit('updateSort', localSelectedSort.value);
   emit('closeDialog');
 };
 </script>
