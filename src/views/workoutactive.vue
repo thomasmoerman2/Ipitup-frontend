@@ -29,6 +29,8 @@
     {{ countdown }}
   </p>
 
+  <!-- Display hold time -->
+
   <!-- Add popup -->
   <div
     v-if="showPopup"
@@ -113,6 +115,8 @@ let exerciseTimer;
 const pullUpInterval = ref(null);
 
 const hasScored = ref(false);
+
+let holdInterval = null;
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -526,52 +530,50 @@ const detectPullUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
   const nose = landmarks[0];
-  const leftShoulder = landmarks[11];
-  const rightShoulder = landmarks[12];
   const leftWrist = landmarks[15];
   const rightWrist = landmarks[16];
   const leftFeet = landmarks[27];
   const rightFeet = landmarks[28];
 
   const avgWristHeight = (leftWrist.y + rightWrist.y) / 2;
-  const avgShoulderHeight = (leftShoulder.y + rightShoulder.y) / 2;
 
   const currentTime = Date.now();
-  console.log(leftFeet.y);
-  console.log(rightFeet.y);
-  const avgFeetHeight = (leftFeet.y + rightFeet.y) / 2;
-  const avgFeetHeightPullUp = avgFeetHeight - 0.05;
+  console.log(predictions.value[0].className, predictions.value[0].probability);
 
-  if (avgFeetHeightPullUp > avgWristHeight) {
-    console.log("feet off ground!");
-  }
-  // Check for pull-up without timer
-  if (
-    nose.y < avgWristHeight &&
-    avgShoulderHeight < avgWristHeight + 0.1 &&
-    !isInDownPosition.value &&
-    currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
-  ) {
-    console.log(" PULL-UP DETECTED!");
-    isInDownPosition.value = true;
-    score.value++;
-    lastRepTime.value = currentTime;
+  console.log(predictions.value[1].className, predictions.value[1].probability);
 
-    // Start the interval
-    pullUpInterval.value = setInterval(() => {
-      score.value++;
-    }, 1000);
-  } else if (nose.y > avgWristHeight && isInDownPosition.value) {
-    console.log("↓ Reset position - user lowered down");
-    isInDownPosition.value = false;
-    // Clear the interval
-    if (pullUpInterval.value) {
-      clearInterval(pullUpInterval.value);
-      pullUpInterval.value = null;
+  if (predictions.value[0].probability > 0.8) {
+    console.log("Pull-up detected");
+    // Check for pull-up without timer
+    if (
+      nose.y < avgWristHeight &&
+      !isInDownPosition.value &&
+      currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS &&
+      !showPopup.value
+    ) {
+      console.log("PULL-UP DETECTED!");
+      isInDownPosition.value = true;
+      lastRepTime.value = currentTime;
+
+      // Start the interval for continuous scoring
+      pullUpInterval.value = setInterval(() => {
+        score.value++;
+      }, 1000);
+    } else if (nose.y > avgWristHeight && isInDownPosition.value) {
+      console.log("↓ Reset position - user lowered down");
+      isInDownPosition.value = false;
+
+      // Clear the interval when user lowers down
+      if (pullUpInterval.value) {
+        clearInterval(pullUpInterval.value);
+        pullUpInterval.value = null;
+      }
+
+      // Trigger popup when pull-up is completed
+      showPopup.value = true;
     }
-    // Stop the workout and show completion popup
-    isWorkoutActive.value = false;
-    showPopup.value = true;
+  } else {
+    console.log("get into position");
   }
 };
 
@@ -613,7 +615,7 @@ const calculateDistance = (pointA, pointB) => {
 // Modified restart function to include get ready countdown
 const restartWorkout = async () => {
   if (pullUpInterval.value) {
-    clearInterval(pullUpInterval.value);
+    clearTimeout(pullUpInterval.value);
     pullUpInterval.value = null;
   }
   showPopup.value = false;
@@ -664,7 +666,10 @@ const restartWorkout = async () => {
 // Add cleanup when component unmounts
 onUnmounted(() => {
   if (pullUpInterval.value) {
-    clearInterval(pullUpInterval.value);
+    clearTimeout(pullUpInterval.value);
+  }
+  if (holdInterval) {
+    clearInterval(holdInterval);
   }
 });
 </script>
