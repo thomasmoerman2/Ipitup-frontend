@@ -13,9 +13,9 @@
     </div>
 
     <div class="flex justify-around w-full">
-      <ProfileInfo icon="Award" text="Badges" amount="7" />
-      <ProfileInfo icon="RefreshCw" text="Oefeningen" amount="29" />
-      <ProfileInfo icon="Gem" text="Punten" amount="544" />
+      <ProfileInfo icon="Award" text="Badges" :amount="isLoading ? 'Laden...' : String(userData.badgeCount)" />
+      <ProfileInfo icon="RefreshCw" text="Oefeningen" :amount="isLoading ? 'Laden...' : String(userData.activitiesCount)" />
+      <ProfileInfo icon="Gem" text="Punten" :amount="isLoading ? 'Laden...' : String(userData.totalscore)" />
 
     </div>
 
@@ -34,10 +34,12 @@
       <p class="font-bold w-full">Badges</p>
 
       <div class="flex flex-wrap justify-center gap-2">
-        <AppBadge exercise="Pushup" amount="100" />
-        <AppBadge exercise="Squat" amount="500" />
-        <AppBadge exercise="Pullup" amount="200" />
-        <AppBadge exercise="Situp" amount="50" />
+      <AppBadge 
+        v-for="badge in userBadges.slice(0, 8)" 
+        :key="badge.badgeId" 
+        :exercise="badge.badgeName" 
+        :amount="Number(badge.badgeAmount)"
+      />
       </div>
       <RouterLink to="/badges">
         <AppSmallButton version="blue" text="Alle badges" />
@@ -62,28 +64,107 @@ import AppOptions from "@/components/App/Options.vue";
 import AppBadge from "@/components/App/Badge.vue";
 import AppIcon from "@/components/App/Icon.vue";
 import { ref, onMounted } from 'vue';
-import { AppleIcon } from "lucide-vue-next";
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
 
 const router = useRouter();
+const selectedOption = ref('1');
+const userBadges = ref([]);
+const isLoading = ref(false);
+
+
 const userData = ref({
   firstname: Cookies.get('userFirstname') || '',
   lastname: Cookies.get('userLastname') || '',
   email: Cookies.get('userEmail') || '',
   username: '@' + (Cookies.get('userFirstname') || '').toLowerCase(),
-  accountStatus: Cookies.get('accountStatus') || 'Private'
+  accountStatus: Cookies.get('accountStatus') || 'Private',
+  totalscore: Number(Cookies.get('totalScore')) || 0,
+  activitiesCount: Number(Cookies.get('activitiesCount')) || 0,
+  badgeCount: Number(Cookies.get('badgeCount')) || 0
 })
 
-const selectedOption = ref('1');
 
 const handleOptionChange = (option) => {
   console.log('Selected option:', option);
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!Cookies.get('authToken')) {
-    router.push('/login')
+    router.push('/login');
+  } else {
+    await fetchUserTotalScore();
+    await fetchUserActivitiesCount();
+    await fetchUserBadgeCount();
+    await fetchUserBadges(); 
   }
-})
+});
+
+
+const fetchUserTotalScore = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/totalscore/${userId}`);
+    const data = await response.json();
+    if (data && typeof data.totalScore === 'number') {
+      Cookies.set('totalScore', data.totalScore, { expires: 1 }); // Sla altijd op en vernieuw cookie
+      userData.value.totalscore = data.totalScore;
+    }
+  } catch (error) {
+    console.error('Error fetching total score:', error);
+  }
+};
+
+const fetchUserActivitiesCount = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/total/${userId}`);
+    const data = await response.json();
+    if (data && typeof data.count === 'number') {
+      Cookies.set('activitiesCount', data.count, { expires: 1 }); // Sla altijd op en vernieuw cookie
+      userData.value.activitiesCount = data.count;
+    }
+  } catch (error) {
+    console.error('Error fetching activity count:', error);
+  }
+};
+
+const fetchUserBadgeCount = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/badge/user/${userId}`);
+    const data = await response.json();
+    if (data && typeof data.count === 'number') {
+      Cookies.set('badgeCount', data.count, { expires: 1 });  // Sla in cookies op
+      userData.value.badgeCount = data.count;  // Update de state
+    }
+  } catch (error) {
+    console.error('Error fetching badge count:', error);
+  }
+};
+
+
+
+const fetchUserBadges = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/badge/user/${userId}`);
+    const data = await response.json();
+    
+    if (data && Array.isArray(data.badges)) {
+      userBadges.value = data.badges;
+      console.log('Fetched badges: ', userBadges.value);
+    } else {
+      console.warn('No badges found');
+    }
+  } catch (error) {
+    console.error('Error fetching badges:', error);
+  }
+};
+
+
+
+
+
+
 </script>
