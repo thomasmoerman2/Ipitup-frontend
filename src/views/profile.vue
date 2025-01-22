@@ -46,12 +46,6 @@
       </RouterLink>
 
     </div>
-
-    <!-- <div class="flex items-center font-bold justify-center">
-      <p >Non-stop</p>
-      <AppIcon name="Flame" color="text-blue-48" size="20"/>
-      <p>8</p>
-    </div> -->
   </div>
 
 </template>
