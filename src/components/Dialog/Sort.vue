@@ -4,9 +4,9 @@
 
     <AppOptions
       :options="[
-        { text: 'Volgend', value: 'volgend' },
-        { text: 'Lokaal', value: 'lokaal' },
         { text: 'Globaal', value: 'globaal' },
+        { text: 'Lokaal', value: 'lokaal' },
+        { text: 'Volgend', value: 'volgend' },
       ]"
       v-model="selectedSort"
       @change="handleSortChange"
