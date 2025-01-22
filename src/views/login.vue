@@ -4,7 +4,7 @@
   </p>
 
   <form class="flex flex-col gap-6" @submit.prevent="login">
-    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" :disabled="isLoading" value="jefke@mail.be" @update:value="set_email" />
+    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" :disabled="isLoading" @update:value="set_email" />
 
     <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
 
@@ -43,14 +43,15 @@ import AppCheckbox from '@/components/App/Checkbox.vue';
 import AppNotification from '@/components/App/Notification.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { setAuthCookie, setUserCookies, clearAuthCookies, isAuthenticated } from '@/utils/auth';
+import Cookies from 'js-cookie';
 
 const router = useRouter();
 const notification = ref(null);
 
 onMounted(() => {
   // Check if user is already logged in
-  if (isAuthenticated()) {
+  const authToken = Cookies.get('authToken');
+  if (authToken) {
     router.push('/')
   }
 })
@@ -90,6 +91,16 @@ const copyPassword = async () => {
   }
 }
 
+const clearAllCookies = () => {
+  Cookies.remove('authToken');
+  Cookies.remove('userId');
+  Cookies.remove('userFirstname');
+  Cookies.remove('userLastname');
+  Cookies.remove('userEmail');
+  Cookies.remove('accountStatus');
+  Cookies.remove('isAdmin');
+}
+
 const handleLogin = async () => {
   try {
     isLoading.value = true
@@ -117,16 +128,24 @@ const handleLogin = async () => {
     }
 
     // Set auth token first
-    const tokenSet = setAuthCookie(data.authToken)
-    if (!tokenSet) {
+    try {
+      Cookies.set('authToken', data.authToken)
+    } catch (error) {
+      console.error('Failed to set auth token:', error)
       throw new Error('Failed to set authentication token')
     }
 
     // Then set user data
-    const userDataSet = setUserCookies(data)
-    if (!userDataSet) {
-      // If user data fails to set, clear auth token
-      clearAuthCookies()
+    try {
+      Cookies.set('userId', data.userId)
+      Cookies.set('userFirstname', data.firstname)
+      Cookies.set('userLastname', data.lastname)
+      Cookies.set('userEmail', data.email)
+      Cookies.set('accountStatus', data.accountStatus)
+      Cookies.set('isAdmin', data.isAdmin || false)
+    } catch (error) {
+      console.error('Failed to set user data:', error)
+      clearAllCookies()
       throw new Error('Failed to set user data')
     }
 
@@ -134,7 +153,7 @@ const handleLogin = async () => {
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
-    clearAuthCookies()  // Clear any partial data on error
+    clearAllCookies()  // Clear any partial data on error
     notification.value?.addNotification(
       'Login mislukt',
       error.message || 'Controleer je e-mail en wachtwoord',

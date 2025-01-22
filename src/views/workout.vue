@@ -15,7 +15,7 @@
 
     <!-- Workout Content -->
     <div class="flex flex-col gap-3">
-      <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in filteredExercises" :key="exercise.id" :img="exercise.image" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
+      <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in filteredExercises" :key="exercise.id" :img="exercise.image" :title="exercise.exerciseName" :level="exercise.exerciseType" :time="exercise.exerciseTime" :isFavorite="isFavorite" @setFavorite="setFavorite" :id="exercise.exerciseId" />
       <div v-else>
         <p class="text-blue-54 text-sm">Er zijn momenteel geen oefeningen beschikbaar.</p>
       </div>
@@ -28,14 +28,19 @@ import { ref, computed } from 'vue'
 import AppDialog from '@/components/App/Dialog.vue'
 import AppIcon from '@/components/App/Icon.vue'
 import WorkoutExercise from '@/components/Workout/Exercise.vue'
+import Cookies from 'js-cookie';
 
 const exercises = ref([])
 const activeFilters = ref([])
+const isFavorite = ref([])
+
+isFavorite.value = Cookies.get('isFavorite')
 
 const fetch_exercises = async () => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`)
     const data = await response.json()
+    console.log(data)
     exercises.value = data
   } catch (error) {
     console.error('Error fetching exercises:', error)
@@ -79,6 +84,11 @@ const filteredExercises = computed(() => {
     })
   })
 })
+
+function setFavorite(exerciseId) {
+  isFavorite.value.push(exerciseId)
+  Cookies.set('isFavorite', isFavorite.value)
+}
 
 // Initial fetch
 fetch_exercises()

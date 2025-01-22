@@ -1,5 +1,5 @@
 <template>
-  <RouterLink :to="`/workout/active/${title}`" class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border">
+  <RouterLink :to="`/workout/active/${id}`" class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border">
     <div class="relative ">
       <img :src="img" alt="image" class="min-w-[86px] h-[74px] rounded-md aspect-square" />
       <div class="absolute bottom-0 left-0 p-0.5 bg-black-5 bg-opacity-80 rounded-tr rounded-bl-md">
@@ -9,7 +9,7 @@
     <div class="flex flex-col justify-between w-full h-max">
       <div class="flex flex-col text-left">
         <strong class="capitalize">{{ title }}</strong>
-        <p class="uppercase text-[12px] font-light">Level {{ level }}</p>
+        <p class="uppercase text-[12px] font-light">{{ level }}</p>
       </div>
       <div class="flex items-center gap-1 text-[12px]">
         <AppIcon name="Timer" :size="12" />
@@ -26,7 +26,17 @@
 import { RouterLink } from 'vue-router';
 import AppIcon from "@/components/App/Icon.vue";
 
+const emit = defineEmits(['setFavorite'])
+
+const setFavorite = (exerciseId) => {
+  emit('setFavorite', exerciseId)
+}
+
 defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
   img: {
     type: String,
     required: true,
@@ -41,6 +51,10 @@ defineProps({
   },
   time: {
     type: String,
+    required: true,
+  },
+  isFavorite: {
+    type: Array,
     required: true,
   },
 });

@@ -330,9 +330,26 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import AppNotification from '@/components/App/Notification.vue'
 import { useRouter } from 'vue-router'
-import { getAuthToken, isAdmin, isAuthenticated } from '@/utils/auth'
+import Cookies from 'js-cookie'
 
 const router = useRouter()
+
+// Auth utilities
+const getAuthToken = () => Cookies.get('authToken')
+
+if (Cookies.get('isAdmin') !== 'true') {
+    router.push('/')
+}
+
+const clearAllCookies = () => {
+    Cookies.remove('authToken')
+    Cookies.remove('userId')
+    Cookies.remove('userFirstname')
+    Cookies.remove('userLastname')
+    Cookies.remove('userEmail')
+    Cookies.remove('accountStatus')
+    Cookies.remove('isAdmin')
+}
 
 const tabs = [
     { id: 'exercise', name: 'Exercises' },
@@ -556,7 +573,14 @@ const deleteItem = async () => {
         const authToken = getAuthToken()
 
         if (!authToken) {
-            throw new Error('No auth token available')
+            clearAllCookies()
+            router.push('/login')
+            notification.value?.addNotification(
+                'Sessie verlopen',
+                'Je moet opnieuw inloggen om door te gaan.',
+                'warning'
+            )
+            return
         }
 
         // Get the ID based on the current tab
@@ -610,7 +634,13 @@ const deleteItem = async () => {
     } catch (error) {
         console.error('Error deleting item:', error)
         if (error.message.includes('auth')) {
+            clearAllCookies()
             router.push('/login')
+            notification.value?.addNotification(
+                'Sessie verlopen',
+                'Je moet opnieuw inloggen om door te gaan.',
+                'warning'
+            )
         } else {
             notification.value?.addNotification(
                 'Error',
@@ -702,48 +732,58 @@ const toggleAdminDropdown = (user) => {
     showAdminDropdown.value = !showAdminDropdown.value
 }
 
-const updateAdminStatus = async (user, isAdmin) => {
+const updateAdminStatus = async (user, makeAdmin) => {
     try {
         isLoading.value = true
         showAdminDropdown.value = false
         const authToken = getAuthToken()
 
         if (!authToken) {
-            throw new Error('No auth token available')
+            clearAllCookies()
+            router.push('/login')
+            notification.value?.addNotification(
+                'Sessie verlopen',
+                'Je moet opnieuw inloggen om door te gaan.',
+                'warning'
+            )
+            return
         }
 
-        const response = await fetch(`${apiPath}/api/user/admin`, {
+        const response = await fetch(`${apiPath}/api/user/${user.userId}/admin`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
-                id: user.userId,
-                isAdmin: isAdmin
+                isAdmin: makeAdmin
             })
         })
 
+        const data = await response.json()
+
         if (!response.ok) {
-            throw new Error('Failed to update admin status')
+            throw new Error(data.message || 'Failed to update admin status')
         }
 
-        // Update the user's admin status in the items list
-        const updatedUser = items.value.find(item => item.userId === user.userId)
-        if (updatedUser) {
-            updatedUser.isAdmin = isAdmin === true
-        }
+        // Refresh the items list to show updated status
+        await fetchItems()
 
         notification.value?.addNotification(
             'Success',
-            `User ${isAdmin === true ? 'is now an admin' : 'is no longer an admin'}`,
+            `Gebruiker is ${makeAdmin ? 'nu een administrator' : 'geen administrator meer'}`,
             'success'
         )
     } catch (error) {
         console.error('Error updating admin status:', error)
         if (error.message.includes('auth')) {
+            clearAllCookies()
             router.push('/login')
+            notification.value?.addNotification(
+                'Sessie verlopen',
+                'Je moet opnieuw inloggen om door te gaan.',
+                'warning'
+            )
         } else {
             notification.value?.addNotification(
                 'Error',
@@ -759,8 +799,14 @@ const updateAdminStatus = async (user, isAdmin) => {
 // Watch for tab changes
 watch(currentTab, () => {
     // Verify auth status before fetching
-    if (!isAuthenticated() || !isAdmin()) {
+    if (Cookies.get('isAdmin') === null) {
+        clearAllCookies()
         router.push('/login')
+        notification.value?.addNotification(
+            'Toegang geweigerd',
+            'Je moet ingelogd zijn als administrator om deze pagina te bekijken.',
+            'warning'
+        )
         return
     }
 
@@ -770,11 +816,12 @@ watch(currentTab, () => {
 // Initial fetch
 onMounted(() => {
     // Check if user is logged in and is admin
-    if (!isAuthenticated() || !isAdmin()) {
+    if (Cookies.get('isAdmin') === null) {
+        clearAllCookies()
         notification.value?.addNotification(
             'Toegang geweigerd',
             'Je moet ingelogd zijn als administrator om deze pagina te bekijken.',
-            'error'
+            'warning'
         )
         router.push('/login')
         return

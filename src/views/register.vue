@@ -34,14 +34,15 @@ import AppToggle from '@/components/App/Toggle.vue';
 import AppNotification from '@/components/App/Notification.vue';
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { setAuthCookie, setUserCookies, clearAuthCookies, isAuthenticated } from '@/utils/auth';
+import Cookies from 'js-cookie';
 
 const notification = ref(null);
 const router = useRouter();
 
 onMounted(() => {
   // Check if user is already logged in
-  if (isAuthenticated()) {
+  const authToken = Cookies.get('authToken');
+  if (authToken) {
     router.push('/')
   }
 })
@@ -83,7 +84,6 @@ const set_isChecked = (value) => {
   isChecked.value = value;
 }
 
-
 const isFormValid = computed(() => {
   return (
     firstName.value.trim() !== '' &&
@@ -94,6 +94,16 @@ const isFormValid = computed(() => {
     isChecked.value
   );
 });
+
+const clearAllCookies = () => {
+  Cookies.remove('authToken');
+  Cookies.remove('userId');
+  Cookies.remove('userFirstname');
+  Cookies.remove('userLastname');
+  Cookies.remove('userEmail');
+  Cookies.remove('accountStatus');
+  Cookies.remove('isAdmin');
+}
 
 const handleRegister = async () => {
   try {
@@ -109,6 +119,7 @@ const handleRegister = async () => {
         email: email.value,
         password: password.value,
         birthDate: dateOfBirth.value,
+        accountStatus: visibility.value.toLowerCase()
       }),
     })
 
@@ -119,23 +130,31 @@ const handleRegister = async () => {
     }
 
     // Set auth token first
-    const tokenSet = setAuthCookie(data.authToken)
-    if (!tokenSet) {
+    try {
+      Cookies.set('authToken', data.authToken)
+    } catch (error) {
+      console.error('Failed to set auth token:', error)
       throw new Error('Failed to set authentication token')
     }
 
     // Then set user data
-    const userDataSet = setUserCookies(data)
-    if (!userDataSet) {
-      // If user data fails to set, clear auth token
-      clearAuthCookies()
+    try {
+      Cookies.set('userId', data.userId)
+      Cookies.set('userFirstname', data.firstname)
+      Cookies.set('userLastname', data.lastname)
+      Cookies.set('userEmail', data.email)
+      Cookies.set('accountStatus', data.accountStatus)
+      Cookies.set('isAdmin', data.isAdmin || false)
+    } catch (error) {
+      console.error('Failed to set user data:', error)
+      clearAllCookies()
       throw new Error('Failed to set user data')
     }
 
     router.push('/')
   } catch (error) {
     console.error('Registration error:', error)
-    clearAuthCookies()  // Clear any partial data on error
+    clearAllCookies()  // Clear any partial data on error
     notification.value?.addNotification(
       'Registratie mislukt',
       error.message || 'Er ging iets mis bij het registreren',

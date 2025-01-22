@@ -109,6 +109,82 @@ const retryCount = ref(0)
 const retryCountdown = ref(0)
 let retryInterval = null
 
+const clearAllCookies = () => {
+    Cookies.remove('authToken');
+    Cookies.remove('userId');
+    Cookies.remove('userFirstname');
+    Cookies.remove('userLastname');
+    Cookies.remove('userEmail');
+    Cookies.remove('accountStatus');
+    Cookies.remove('isAdmin');
+}
+const validateToken = async () => {
+    const authToken = Cookies.get('authToken')
+    console.log("Checking auth token:", authToken ? "Token exists" : "No token found")
+    if (!authToken) {
+        console.log("No auth token found, validation failed")
+        return false
+    }
+
+    try {
+        console.log("Validating token with backend...")
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        })
+
+        if (!response.ok) {
+            console.log("Token validation failed, clearing cookies...")
+            clearAllCookies()
+            console.log("Cookies cleared due to token validation failure")
+            return false
+        }
+
+        console.log("isAdmin:", Cookies.get('isAdmin'))
+
+        //fetch user data
+        const userId = Cookies.get('userId')
+        console.log("User ID:", userId)
+        const userDataResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`)
+        const userData = await userDataResponse.json()
+
+        if (!userData || typeof userData !== 'object') {
+            console.error("Invalid user data format received")
+            clearAllCookies()
+            console.log("Cookies cleared due to invalid user data format")
+            return false
+        }
+
+        console.log("User data:", userData)
+
+        try {
+            Cookies.set('userId', userData.userId)
+            Cookies.set('userFirstname', userData.firstname)
+            Cookies.set('userLastname', userData.lastname)
+            Cookies.set('userEmail', userData.email)
+            Cookies.set('accountStatus', userData.accountStatus)
+            Cookies.set('isAdmin', userData.isAdmin || false)
+
+            console.log("User data updated successfully")
+        } catch (error) {
+            console.error("Failed to update user data:", error)
+            clearAllCookies()
+            console.log("Cookies cleared due to user data update failure")
+            return false
+        }
+
+        console.log("Token validation successful")
+        return true
+    } catch (error) {
+        console.error('Token validation error:', error.message)
+        clearAllCookies()
+        console.log("Cookies cleared due to token validation error")
+        return false
+    }
+}
+
 const getLoadingMessage = (progress) => {
     if (progress < 15) return "Verbinding maken..."
     if (progress < 30) return "App voorbereiden..."
@@ -169,166 +245,99 @@ const animateProgress = () => {
     }, 50)
 }
 
-const validateToken = async () => {
-    const authToken = Cookies.get('authToken')
-    console.log("Checking auth token:", authToken ? "Token exists" : "No token found")
-    if (!authToken) return false
-
-    try {
-        console.log("Validating token with backend...")
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        })
-
-        console.log("Token validation response:", response.status, response.statusText)
-
-        if (!response.ok) {
-            console.log("Token validation failed, clearing cookies...")
-            clearAllCookies()
-            return false
-        }
-
-        // Get user data to ensure isAdmin status is up to date
-        const userData = await response.json()
-        if (userData.isAdmin !== undefined) {
-            Cookies.set('isAdmin', userData.isAdmin)
-            console.log("Updated isAdmin status:", userData.isAdmin)
-        }
-
-        console.log("Token validation successful")
-        return true
-    } catch (error) {
-        console.error('Token validation error:', error.message)
-        clearAllCookies()
-        return false
-    }
-}
-
-// Add a helper function to clear all cookies
-const clearAllCookies = () => {
-    Cookies.remove('userId')
-    Cookies.remove('authToken')
-    Cookies.remove('userFirstname')
-    Cookies.remove('userLastname')
-    Cookies.remove('userEmail')
-    Cookies.remove('accountStatus')
-    Cookies.remove('isAdmin')
-}
-
 const startLoading = async () => {
     try {
         loadingProgress.value = 0
         targetProgress.value = 0
         showOfflineOption.value = false
 
-        // Set timeout to show offline option
-        loadingTimeout = setTimeout(() => {
-            showOfflineOption.value = true
-            notificationRef.value?.addNotification(
-                'Laden duurt langer dan verwacht',
-                'Je kan offline doorgaan of wachten op verbinding',
-                'info'
-            )
-        }, LOADING_TIMEOUT)
-
-        // Step 1: Check health (0-15%)
+        // Step 1: Check API health (0-15%)
         console.log("Checking API health...")
-        try {
-            targetProgress.value = 15
-            animateProgress()
+        targetProgress.value = 15
+        animateProgress()
 
-            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`)
-            if (!healthCheck.ok) {
-                console.error("Health check failed:", healthCheck.status, healthCheck.statusText)
-                throw new Error('Health check failed')
+        let healthCheckSuccess = false
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`)
+                if (!healthCheck.ok) {
+                    throw new Error(`Health check failed: ${healthCheck.status}`)
+                }
+                healthCheckSuccess = true
+                console.log("Health check successful")
+                break
+            } catch (error) {
+                console.error(`Health check attempt ${attempt} failed:`, error)
+                if (attempt === MAX_RETRIES) {
+                    console.error("All health check attempts failed")
+                    showOfflineOption.value = true
+                    targetProgress.value = 100
+                    animateProgress()
+                    notificationRef.value?.addNotification(
+                        'Offline modus',
+                        'De server is niet bereikbaar na meerdere pogingen. Je kunt offline doorgaan met beperkte functionaliteit.',
+                        'warning'
+                    )
+                    return
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
+                }
             }
-            console.log("Health check successful")
-        } catch (error) {
-            console.error("Health check error:", error.message)
-            return handleLoadingError(error, 'health-check')
         }
+
+        if (!healthCheckSuccess) return
 
         // Step 2: Validate token (15-30%)
         console.log("Starting token validation...")
         targetProgress.value = 30
         animateProgress()
 
-        const isValidToken = await validateToken()
-        if (!isValidToken) {
-            console.log("Token validation failed, showing offline option")
-            if (loadingTimeout) clearTimeout(loadingTimeout)
+        try {
+            const isValidToken = await validateToken()
+            if (!isValidToken) {
+                console.log("Token validation failed, showing offline option")
+                if (loadingTimeout) clearTimeout(loadingTimeout)
+                showOfflineOption.value = true
+                targetProgress.value = 100
+                animateProgress()
+                notificationRef.value?.addNotification(
+                    'Niet ingelogd',
+                    'Je kan offline doorgaan of inloggen voor meer functies',
+                    'info'
+                )
+                return
+            }
+        } catch (error) {
+            console.error("Token validation error:", error)
             showOfflineOption.value = true
             targetProgress.value = 100
             animateProgress()
             notificationRef.value?.addNotification(
-                'Niet ingelogd',
-                'Je kan offline doorgaan of inloggen voor meer functies',
-                'info'
+                'Validatie fout',
+                'Er was een probleem met het valideren van je sessie. Je kunt offline doorgaan of opnieuw inloggen.',
+                'warning'
             )
             return
         }
 
-        // Get user data since token is valid
-        const userId = Cookies.get('userId')
-        console.log("Token valid, proceeding with userId:", userId)
-
         // Step 3: Load user data (30-60%)
-        try {
-            targetProgress.value = 60
-            animateProgress()
-
-            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`)
-            if (!userResponse.ok) {
-                console.error("User data fetch failed:", userResponse.status, userResponse.statusText)
-                throw new Error('User data fetch failed')
-            }
-            console.log("User data loaded successfully")
-        } catch (error) {
-            console.error("User data error:", error.message)
-            return handleLoadingError(error, 'user-data')
-        }
-
-        // Step 4: Load exercises (60-75%)
-        try {
-            targetProgress.value = 75
-            animateProgress()
-
-            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/${userId}`)
-            if (!exerciseResponse.ok) {
-                console.error("Exercise data fetch failed:", exerciseResponse.status, exerciseResponse.statusText)
-                throw new Error('Exercise data fetch failed')
-            }
-            console.log("Exercise data loaded successfully")
-        } catch (error) {
-            console.error("Exercise data error:", error.message)
-            return handleLoadingError(error, 'exercise-data')
-        }
-
-        // Final steps
-        console.log("Starting final loading steps...")
-        targetProgress.value = 90
+        targetProgress.value = 60
         animateProgress()
-        await new Promise(resolve => setTimeout(resolve, 200))
 
+        // Step 4: Load exercises (60-100%)
         targetProgress.value = 100
         animateProgress()
-        await new Promise(resolve => setTimeout(resolve, 200))
-
-        // Clear timeout since loading completed successfully
-        if (loadingTimeout) clearTimeout(loadingTimeout)
-        console.log("Loading completed successfully")
-
-        // Redirect after a short delay
-        setTimeout(() => {
-            router.push('/')
-        }, 300)
 
     } catch (error) {
-        console.error("Unexpected error during loading:", error)
-        handleLoadingError(error, 'unknown')
+        console.error('Loading error:', error)
+        showOfflineOption.value = true
+        targetProgress.value = 100
+        animateProgress()
+        notificationRef.value?.addNotification(
+            'Error',
+            'Er ging iets mis tijdens het laden',
+            'error'
+        )
     }
 }
 
