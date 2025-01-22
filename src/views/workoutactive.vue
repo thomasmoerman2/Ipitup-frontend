@@ -10,15 +10,20 @@
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
   <p
-    :key="pushUpCount"
+    :key="score"
     class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
   >
-    {{ pushUpCount }}
+    {{ score }}
   </p>
 
   <!-- Show countdown only for pushups -->
   <p
-    v-if="$route.path.includes('pushups') || $route.path.includes('core')"
+    v-if="
+      $route.path.includes('pushups') ||
+      $route.path.includes('core') ||
+      $route.path.includes('squads') ||
+      $route.path.includes('balance')
+    "
     class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
   >
     {{ countdown }}
@@ -32,7 +37,7 @@
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
       <p>Completed Workout</p>
-      <p>{{ pushUpCount }}</p>
+      <p>{{ score }}</p>
       <div class="flex gap-4 justify-center">
         <button
           @click="restartWorkout"
@@ -70,7 +75,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
-const pushUpCount = ref(0);
+const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
 const countdown = ref(30);
@@ -106,6 +111,8 @@ let exerciseTimer;
 
 // Add this ref at the top with other refs
 const pullUpInterval = ref(null);
+
+const hasScored = ref(false);
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -155,7 +162,12 @@ onMounted(async () => {
           .split("/")
           .filter((segment) => segment)
           .pop();
-        if (lastSegment === "pushups" || lastSegment === "core") {
+        if (
+          lastSegment === "pushups" ||
+          lastSegment === "core" ||
+          lastSegment === "squads" ||
+          lastSegment === "balance"
+        ) {
           countdown.value = 30; // Reset to 30 seconds for pushups and core
           countdownInterval = setInterval(() => {
             if (countdown.value > 0) {
@@ -316,6 +328,8 @@ const initPoseDetection = () => {
       } else if (lastSegment === "balance") {
         detectBalance(results.poseLandmarks);
       }
+    } else {
+      console.log("no pose detected");
     }
   });
 
@@ -326,6 +340,134 @@ const initPoseDetection = () => {
 
   detectPose();
 };
+const IsLeftKneeUp = ref(false);
+const IsRightKneeUp = ref(false);
+const isStandingStraight = ref(0);
+const BalanceCompleted = ref("false");
+
+const detectBalance = (landmarks) => {
+  if (!isWorkoutActive.value) return;
+
+  const leftHip = landmarks[23];
+  const rightHip = landmarks[24];
+  const leftKnee = landmarks[25];
+  const rightKnee = landmarks[26];
+  const leftAnkle = landmarks[27];
+  const rightAnkle = landmarks[28];
+
+  // Calculate angles for both legs
+  const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+  const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+
+  // Average knee angle between both legs
+  const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+
+  // Check if knees are up
+  if (leftKneeAngle > 60) {
+    console.log("LEFT KNEES UP");
+    IsLeftKneeUp.value = true;
+  }
+  if (rightKneeAngle > 60) {
+    console.log("RIGHT KNEES UP");
+    IsRightKneeUp.value = true;
+  }
+
+  // Check if standing straight
+  if (avgKneeAngle < 20) {
+    console.log("STANDING STRAIGHT");
+    if (isStandingStraight.value === 0) {
+      isStandingStraight.value = 1;
+      console.log(isStandingStraight.value);
+    }
+    if (isStandingStraight.value === 1) {
+      isStandingStraight.value = 2;
+      console.log(isStandingStraight.value);
+    }
+  }
+
+  // Increment score only when both knees have been up and user is standing straight again
+  if (
+    isStandingStraight.value === 2 &&
+    IsLeftKneeUp.value &&
+    IsRightKneeUp.value &&
+    !hasScored.value
+  ) {
+    score.value++;
+    hasScored.value = true;
+  }
+
+  // Reset the state when user is standing straight again
+  if (avgKneeAngle >= 20 && hasScored.value) {
+    isStandingStraight.value = 0;
+    IsLeftKneeUp.value = false;
+    IsRightKneeUp.value = false;
+    hasScored.value = false;
+  }
+};
+
+const detectSquads = (landmarks) => {
+  if (!isWorkoutActive.value) return;
+  console.log("SQUADS DETECTED");
+  const leftHip = landmarks[23];
+  const rightHip = landmarks[24];
+  const leftKnee = landmarks[25];
+  const rightKnee = landmarks[26];
+  const leftAnkle = landmarks[27];
+  const rightAnkle = landmarks[28];
+
+  // Calculate angles for both legs
+  const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+  const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+
+  // Average knee angle between both legs
+  const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+
+  const currentTime = Date.now();
+  console.log(avgKneeAngle);
+  // Check if person is in squat position (knees bent around 90 degrees)
+  if (
+    avgKneeAngle <= 100 && // Allow some flexibility around 90 degrees
+    avgKneeAngle >= 80 &&
+    !isInDownPosition.value &&
+    currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
+  ) {
+    isInDownPosition.value = true;
+  }
+  // Check if person has returned to standing position
+  else if (avgKneeAngle > 10 && isInDownPosition.value) {
+    score.value++;
+    isInDownPosition.value = false;
+    lastRepTime.value = currentTime;
+  }
+};
+
+// Add this helper function to calculate angles
+const calculateAngle = (pointA, pointB, pointC) => {
+  const vectorAB = {
+    x: pointB.x - pointA.x,
+    y: pointB.y - pointA.y,
+  };
+  const vectorBC = {
+    x: pointC.x - pointB.x,
+    y: pointC.y - pointB.y,
+  };
+
+  // Calculate dot product
+  const dotProduct = vectorAB.x * vectorBC.x + vectorAB.y * vectorBC.y;
+
+  // Calculate magnitudes
+  const magnitudeAB = Math.sqrt(
+    vectorAB.x * vectorAB.x + vectorAB.y * vectorAB.y
+  );
+  const magnitudeBC = Math.sqrt(
+    vectorBC.x * vectorBC.x + vectorBC.y * vectorBC.y
+  );
+
+  // Calculate angle in radians and convert to degrees
+  const angle = Math.acos(dotProduct / (magnitudeAB * magnitudeBC));
+  return angle * (180 / Math.PI);
+};
+
 const detectCore = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
@@ -344,7 +486,7 @@ const detectCore = (landmarks) => {
     currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
   ) {
     console.log("Left knee raise detected!");
-    pushUpCount.value++;
+    score.value++;
     lastRepTime.value = currentTime;
     lastKneePosition.value = "left";
   }
@@ -355,7 +497,7 @@ const detectCore = (landmarks) => {
     currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
   ) {
     console.log("Right knee raise detected!");
-    pushUpCount.value++;
+    score.value++;
     lastRepTime.value = currentTime;
     lastKneePosition.value = "right";
   }
@@ -365,20 +507,20 @@ const detectCore = (landmarks) => {
   }
 };
 
-// Helper functions
-const calculateDistance = (pointA, pointB) => {
-  const dx = pointA.x - pointB.x;
-  const dy = pointA.y - pointB.y;
-  const dz = pointA.z - pointB.z;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
-};
+// // Helper functions
+// const calculateDistance = (pointA, pointB) => {
+//   const dx = pointA.x - pointB.x;
+//   const dy = pointA.y - pointB.y;
+//   const dz = pointA.z - pointB.z;
+//   return Math.sqrt(dx * dx + dy * dy + dz * dz);
+// };
 
-const calculateArmLength = (leftElbow, leftWrist, leftShoulder) => {
-  const dx = leftElbow.x - leftWrist.x;
-  const dy = leftElbow.y - leftWrist.y;
-  const dz = leftElbow.z - leftWrist.z;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
-};
+// const calculateArmLength = (leftElbow, leftWrist, leftShoulder) => {
+//   const dx = leftElbow.x - leftWrist.x;
+//   const dy = leftElbow.y - leftWrist.y;
+//   const dz = leftElbow.z - leftWrist.z;
+//   return Math.sqrt(dx * dx + dy * dy + dz * dz);
+// };
 
 const detectPullUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
@@ -388,12 +530,21 @@ const detectPullUp = (landmarks) => {
   const rightShoulder = landmarks[12];
   const leftWrist = landmarks[15];
   const rightWrist = landmarks[16];
+  const leftFeet = landmarks[27];
+  const rightFeet = landmarks[28];
 
   const avgWristHeight = (leftWrist.y + rightWrist.y) / 2;
   const avgShoulderHeight = (leftShoulder.y + rightShoulder.y) / 2;
 
   const currentTime = Date.now();
+  console.log(leftFeet.y);
+  console.log(rightFeet.y);
+  const avgFeetHeight = (leftFeet.y + rightFeet.y) / 2;
+  const avgFeetHeightPullUp = avgFeetHeight - 0.05;
 
+  if (avgFeetHeightPullUp > avgWristHeight) {
+    console.log("feet off ground!");
+  }
   // Check for pull-up without timer
   if (
     nose.y < avgWristHeight &&
@@ -403,12 +554,12 @@ const detectPullUp = (landmarks) => {
   ) {
     console.log(" PULL-UP DETECTED!");
     isInDownPosition.value = true;
-    pushUpCount.value++;
+    score.value++;
     lastRepTime.value = currentTime;
 
     // Start the interval
     pullUpInterval.value = setInterval(() => {
-      pushUpCount.value++;
+      score.value++;
     }, 1000);
   } else if (nose.y > avgWristHeight && isInDownPosition.value) {
     console.log("↓ Reset position - user lowered down");
@@ -429,31 +580,34 @@ const detectPushUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
   const leftShoulder = landmarks[11];
-  const rightShoulder = landmarks[12];
-  const leftElbow = landmarks[13];
   const leftWrist = landmarks[15];
-  const rightWrist = landmarks[16];
 
-  // Calculate distances
-  leftArmDistance.value = calculateDistance(leftShoulder, leftWrist);
-  rightArmDistance.value = calculateDistance(rightShoulder, rightWrist);
-  const avgArmDistance = (leftArmDistance.value + rightArmDistance.value) / 2;
-  const avgArmLength = calculateArmLength(leftElbow, leftWrist, leftShoulder);
+  // Calculate the distance between left shoulder and left wrist
+  const distance = calculateDistance(leftShoulder, leftWrist);
 
-  const armToShoulderDistance = avgArmDistance - avgArmLength + 0.06;
-  const currentTime = Date.now();
-
-  if (
-    armToShoulderDistance < avgArmLength &&
-    !isInDownPosition.value &&
-    currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
-  ) {
-    isInDownPosition.value = true;
-    pushUpCount.value++;
-    lastRepTime.value = currentTime;
-  } else if (armToShoulderDistance >= avgArmLength && isInDownPosition.value) {
-    isInDownPosition.value = false;
+  // Define thresholds
+  const CLOSE_THRESHOLD = 0.1; // Threshold for "really close"
+  const STRETCH_THRESHOLD = 0.15; // Threshold for "arms stretched out"
+  console.log(distance);
+  // Check if arms are stretched out
+  if (distance > STRETCH_THRESHOLD) {
+    isInDownPosition.value = false; // Reset the down position
   }
+
+  // Increment score if the distance is below the close threshold and arms were stretched out
+  if (distance < CLOSE_THRESHOLD && !isInDownPosition.value) {
+    score.value++;
+    isInDownPosition.value = true; // Set the down position
+    console.log("Push-up detected: left shoulder and wrist are close!");
+  }
+};
+
+// Add this helper function to calculate distance
+const calculateDistance = (pointA, pointB) => {
+  const dx = pointA.x - pointB.x;
+  const dy = pointA.y - pointB.y;
+  const dz = pointA.z - pointB.z;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
 // Modified restart function to include get ready countdown
@@ -465,7 +619,7 @@ const restartWorkout = async () => {
   showPopup.value = false;
   showGetReadyPopup.value = true;
   getReadyCountdown.value = 5;
-  pushUpCount.value = 0;
+  score.value = 0;
 
   const path = window.location.pathname;
   const lastSegment = path
