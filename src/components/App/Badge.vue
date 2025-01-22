@@ -53,7 +53,7 @@
     return '#737373'; // Grijs als de state false is
     }
     return {
-      Pushup: '#1F418B',   // Blauw
+      "Push-up": '#1F418B',   // Blauw
       Squat: '#8B1F21',    // Rood
       Pullup: '#1F8B36',   // Groen
       Situp: '#6C1F8B',    // Paars

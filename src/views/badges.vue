@@ -6,10 +6,10 @@
         </RouterLink>
 
         <div class="flex flex-wrap justify-center gap-2.5 gap-y-5">
-            <AppBadge  exercise="Pushup" amount="10" />
-          <AppBadge exercise="Pushup" amount="25" />
-          <AppBadge exercise="Pushup" amount="50" />
-          <AppBadge state="false" exercise="Pushup" amount="100" />
+            <AppBadge  exercise="Push-up" amount="10" />
+          <AppBadge exercise="Push-up" amount="25" />
+          <AppBadge exercise="Push-up" amount="50" />
+          <AppBadge state="false" exercise="Push-up" amount="100" />
 
           <AppBadge exercise="Squat" amount="100" />
           <AppBadge exercise="Squat" amount="200" />
