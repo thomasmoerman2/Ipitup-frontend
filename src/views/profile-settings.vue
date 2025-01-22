@@ -13,9 +13,9 @@
     </div>
 
     <form class="flex flex-col gap-5" @submit.prevent="handleSave">
-        <AppInput label="Voornaam" placeholder="Voornaam" v-model="formData.firstname" :disabled="isLoading" />
-        <AppInput label="Achternaam" placeholder="Achternaam" v-model="formData.lastname" :disabled="isLoading" />
-        <AppInput label="E-mail" placeholder="E-mail" v-model="formData.email" :disabled="isLoading" />
+        <AppInput label="Voornaam" placeholder="Voornaam" v-model="formData.firstname" :value="formData.firstname" :disabled="isLoading" />
+        <AppInput label="Achternaam" placeholder="Achternaam" v-model="formData.lastname" :value="formData.lastname" :disabled="isLoading" />
+        <AppInput label="E-mail" placeholder="E-mail" v-model="formData.email" :value="formData.email" :disabled="isLoading" />
         <AppButton text="Wijzigingen opslaan" version="primary" icon="false" type="submit" :disabled="isLoading" />
     </form>
 
@@ -126,6 +126,7 @@ const handleLogout = async () => {
     try {
         isLoading.value = true
         const authToken = Cookies.get('authToken')
+        console.log("authToken ->", authToken)
 
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/logout`, {
             method: 'POST',
@@ -146,7 +147,7 @@ const handleLogout = async () => {
         Cookies.remove('userEmail')
         Cookies.remove('accountStatus')
 
-        router.push('/login')
+        router.push('/')
     } catch (error) {
         console.error('Logout error:', error)
         notification.value.addNotification(

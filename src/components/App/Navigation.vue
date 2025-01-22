@@ -28,9 +28,11 @@ const route = useRoute();
 const router = useRouter();
 const userAuthenticated = ref(false);
 
+
+
 // Check auth status
 const checkAuth = () => {
-    const hasAuth = !!Cookies.get('authToken');
+    const hasAuth = Cookies.get('authToken');
     if (hasAuth !== userAuthenticated.value) {
         userAuthenticated.value = hasAuth;
         console.log('Auth state changed:', hasAuth);

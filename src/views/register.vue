@@ -3,7 +3,7 @@
   <p class="mb-6">Heb je al een account? <RouterLink to="/login" class="text-blue-54">Log in</RouterLink>
   </p>
 
-  <form class="flex flex-col gap-6" @submit.prevent="fetch_register">
+  <form class="flex flex-col gap-6" @submit.prevent="handleRegister">
     <AppInput label="Voornaam" placeholder="Voeg uw voornaam in" type="text" :disabled="isLoading" @update:value="set_firstName" />
     <AppInput label="Achternaam" placeholder="Voeg uw achternaam in" type="text" :disabled="isLoading" @update:value="set_lastName" />
     <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" :disabled="isLoading" @update:value="set_email" />
@@ -82,7 +82,7 @@ const set_isChecked = (value) => {
   isChecked.value = value;
 }
 
-const fetch_register = async () => {
+const handleRegister = async () => {
   try {
     isLoading.value = true
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
@@ -95,32 +95,31 @@ const fetch_register = async () => {
         lastname: lastName.value,
         email: email.value,
         password: password.value,
-        birthdate: dateOfBirth.value,
-        accountstatus: visibility.value === 'Publiek' ? 'Public' : 'Private',
-        avatar: "null"
-      })
+        birthDate: dateOfBirth.value,
+      }),
     })
-
-    if (!response.ok) {
-      throw new Error('Registration failed')
-    }
 
     const data = await response.json()
 
+    if (!response.ok) {
+      throw new Error(data.message || 'Registration failed')
+    }
+
     // Store user data in cookies
-    Cookies.set('authToken', data.token)
+    Cookies.set('authToken', data.authToken)
     Cookies.set('userId', data.userId)
     Cookies.set('userFirstname', data.firstname)
     Cookies.set('userLastname', data.lastname)
     Cookies.set('userEmail', data.email)
-    Cookies.set('accountStatus', data.accountStatus)
+    Cookies.set('accountStatus', data.accountStatus || 'Private')
+    Cookies.set('isAdmin', data.isAdmin || false)  // Store isAdmin status
 
     router.push('/')
   } catch (error) {
     console.error('Registration error:', error)
-    notification.value.addNotification(
+    notification.value?.addNotification(
       'Registratie mislukt',
-      'Er ging iets mis. Probeer het opnieuw.',
+      error.message || 'Er ging iets mis bij het registreren',
       'error'
     )
   } finally {

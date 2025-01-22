@@ -43,7 +43,7 @@ import AppCheckbox from '@/components/App/Checkbox.vue';
 import AppNotification from '@/components/App/Notification.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import Cookies from 'js-cookie';
+import { setUserData, clearUserData, isUserLoggedIn } from '@/utils/auth';
 
 const router = useRouter();
 const notification = ref(null);
@@ -113,17 +113,13 @@ const handleLogin = async () => {
       throw new Error('Login failed')
     }
 
-    // Store user data in cookies
-    Cookies.set('authToken', data.token)
-    Cookies.set('userId', data.userId)
-    Cookies.set('userFirstname', data.firstname)
-    Cookies.set('userLastname', data.lastname)
-    Cookies.set('userEmail', data.email)
-    Cookies.set('accountStatus', data.accountStatus)
-
+    // Store user data using utility function
+    setUserData(data)
+    console.log('Login successful, isAdmin:', data.isAdmin)
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
+    clearUserData()  // Clear any partial data on error
     notification.value?.addNotification(
       'Login mislukt',
       'Controleer je e-mail en wachtwoord',
@@ -138,8 +134,8 @@ const handleLogin = async () => {
 const login = handleLogin
 
 onMounted(() => {
-  // Check if user is already logged in
-  if (Cookies.get('authToken')) {
+  // Check if user is already logged in using utility function
+  if (isUserLoggedIn()) {
     router.push('/')
   }
 })

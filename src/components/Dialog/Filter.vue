@@ -41,11 +41,23 @@ import AppButton from '@/components/App/Button.vue';
 import AppOptions from '@/components/App/Options.vue';
 import AppSwitch from '@/components/App/Switch.vue';
 
-const emit = defineEmits(['closeDialog']);
+const props = defineProps({
+  currentFilters: {
+    type: Object,
+    default: () => ({
+      exercises: [],
+      level: 'all',
+      bundlesOnly: false,
+      favoritesOnly: false
+    })
+  }
+});
+
+const emit = defineEmits(['closeDialog', 'filterUpdate']);
 
 // Exercise types
 const exerciseTypes = ['Pushups', 'Dips', 'Plank', 'Squat', 'Core', 'Pull', 'Balance', 'Challenge'];
-const selectedExercises = ref([]);
+const selectedExercises = ref(props.currentFilters.exercises);
 
 // Level options
 const levelOptions = [
@@ -56,11 +68,11 @@ const levelOptions = [
   { text: '4', value: '4' },
   { text: '5', value: '5' },
 ];
-const selectedLevel = ref('all');
+const selectedLevel = ref(props.currentFilters.level);
 
 // Switch states
-const bundlesOnly = ref(false);
-const favoritesOnly = ref(false);
+const bundlesOnly = ref(props.currentFilters.bundlesOnly);
+const favoritesOnly = ref(props.currentFilters.favoritesOnly);
 
 const toggleExercise = (exercise) => {
   const index = selectedExercises.value.indexOf(exercise);
@@ -76,6 +88,13 @@ const handleLevelChange = (value) => {
 };
 
 const func_closeDialog = () => {
+  // Emit both the close event and the filter data
+  emit('filterUpdate', {
+    exercises: selectedExercises.value,
+    level: selectedLevel.value,
+    bundlesOnly: bundlesOnly.value,
+    favoritesOnly: favoritesOnly.value
+  });
   emit('closeDialog');
 };
 </script>

@@ -1,5 +1,14 @@
 <template>
-    <AppButton :text="props.title" @click="func_openDialog" version="1" />
+    <button @click="func_openDialog" :class="[
+        {
+            'bg-blue-6 text-blue-48': props.version === 'light',
+            'bg-blue-48 text-blue-6': props.version === 'dark',
+        },
+        'flex items-center justify-center text-sm gap-2 rounded-[0.625rem] px-2.5 py-2',
+    ]">
+        <AppIcon :name="props.icon" />
+        {{ props.title }}
+    </button>
 
     <Transition name="dialog">
         <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
@@ -9,7 +18,7 @@
                 </div>
                 <DialogSearch @closeDialog="func_closeDialog" v-if="props.type === 'search'" />
                 <DialogSlider @closeDialog="func_closeDialog" v-if="props.type === 'slider'" />
-                <DialogFilter @closeDialog="func_closeDialog" v-if="props.type === 'filter'" />
+                <DialogFilter @closeDialog="func_closeDialog" @filterUpdate="(filterData) => emit('filterUpdate', filterData)" :currentFilters="currentFilters" v-if="props.type === 'filter'" />
             </div>
         </dialog>
     </Transition>
@@ -19,7 +28,7 @@
 import DialogSearch from '@/components/Dialog/Search.vue';
 import DialogSlider from '@/components/Dialog/Slider.vue';
 import DialogFilter from '@/components/Dialog/Filter.vue';
-import AppButton from '@/components/App/Button.vue';
+import AppIcon from '@/components/App/Icon.vue';
 import { ref, onUnmounted } from 'vue';
 
 const isOpen = ref(false);
@@ -37,8 +46,31 @@ const props = defineProps({
     title: {
         type: String,
         default: 'Open Dialog'
+    },
+    icon: {
+        type: String,
+        default: 'Search'
+    },
+    version: {
+        type: String,
+        default: 'light',
+        validator: (value) => {
+            return ['light', 'dark'].includes(value);
+        }
+    },
+    currentFilters: {
+        type: Object,
+        default: () => ({
+            exercises: [],
+            level: 'all',
+            bundlesOnly: false,
+            favoritesOnly: false
+        })
     }
 });
+
+const emit = defineEmits(['filterUpdate']);
+
 
 const func_openDialog = () => {
     isOpen.value = true;
