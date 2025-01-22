@@ -1,13 +1,11 @@
 <template>
-  <button
-    :class="[
-      {
-        'bg-blue-6 text-blue-48': props.version === 'light',
-        'bg-blue-48 text-blue-6': props.version === 'dark',
-      },
-      'flex items-center justify-center text-sm gap-2 rounded-[0.625rem] px-2.5 py-2',
-    ]"
-  >
+  <button :class="[
+    {
+      'bg-blue-6 text-blue-48': props.version === 'light',
+      'bg-blue-48 text-blue-6': props.version === 'dark',
+    },
+    'flex items-center w-max justify-center text-sm gap-2 rounded-[0.625rem] px-5 py-2',
+  ]">
     <AppIcon :name="props.icon" />
     {{ props.text }}
   </button>

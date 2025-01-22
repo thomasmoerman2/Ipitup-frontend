@@ -1,23 +1,21 @@
 <template>
-  <div>
-    <div class="mb-10">
-      <div class="flex gap-2 flex-wrap items-center mb-3">
-        <AppDialog type="filter" title="Filter" icon="Filter" :currentFilters="currentFilters" @filterUpdate="handleFilterUpdate" />
-        <!-- Selected filter chips -->
-        <div v-for="exercise in currentFilters.exercises" :key="exercise" class="bg-blue-54 text-white px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 cursor-pointer hover:bg-blue-60 transition-colors" @click="removeFilter(exercise)">
-          {{ exercise }}
-          <AppIcon name="X" :size="14" />
-        </div>
-        <!-- Level chip if not 'all' -->
-        <div v-if="currentFilters.level !== 'all'" class="bg-blue-54 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 cursor-pointer hover:bg-blue-60 transition-colors" @click="removeLevel()">
-          Level {{ currentFilters.level }}
-          <AppIcon name="X" :size="14" />
-        </div>
+  <div class="flex flex-col gap-4">
+    <!-- Selected Filters Display -->
+    <div v-if="activeFilters.length > 0" class="flex flex-wrap gap-2 px-4">
+      <div v-for="filter in activeFilters" :key="filter.id" class="flex items-center gap-2 bg-blue-54 bg-opacity-10 text-blue-54 px-3 py-1 rounded-full">
+        <span class="text-sm">{{ filter.name }}</span>
+        <button @click="removeFilter(filter)" class="hover:text-blue-700">
+          <AppIcon name="Close" :size="16" />
+        </button>
       </div>
     </div>
 
+    <!-- Filter Dialog Button -->
+    <AppDialog title="Filter" type="filter" @updateFilters="handleFilterUpdate" :currentFilters="activeFilters" :dataset="exercises" />
+
+    <!-- Workout Content -->
     <div class="flex flex-col gap-3">
-      <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in exercises" :key="exercise.id" :img="exercise.image" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
+      <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in filteredExercises" :key="exercise.id" :img="exercise.image" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
       <div v-else>
         <p class="text-blue-54 text-sm">Er zijn momenteel geen oefeningen beschikbaar.</p>
       </div>
@@ -26,74 +24,66 @@
 </template>
 
 <script setup>
-import WorkoutExercise from "@/components/Workout/Exercise.vue";
-import AppDialog from "@/components/App/Dialog.vue";
-import AppIcon from "@/components/App/Icon.vue";
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue'
+import AppDialog from '@/components/App/Dialog.vue'
+import AppIcon from '@/components/App/Icon.vue'
+import WorkoutExercise from '@/components/Workout/Exercise.vue'
 
-// Store filter data
-const currentFilters = ref({
-  exercises: [],
-  level: 'all',
-  bundlesOnly: false,
-  favoritesOnly: false
-});
-
-//fetch all exercises
-const exercises = ref([]);
+const exercises = ref([])
+const activeFilters = ref([])
 
 const fetch_exercises = async () => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`);
-  const data = await response.json();
-  exercises.value = data;
-}
-
-const fetch_exercises_by_categories = async (categories) => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/categories/${categories}`);
-  const data = await response.json();
-  exercises.value = data;
-}
-
-const removeFilter = (exercise) => {
-  currentFilters.value = {
-    ...currentFilters.value,
-    exercises: currentFilters.value.exercises.filter(e => e !== exercise)
-  };
-
-  // Re-apply filters
-  if (currentFilters.value.exercises.length > 0) {
-    fetch_exercises_by_categories(currentFilters.value.exercises.join(','));
-  } else {
-    fetch_exercises();
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises`)
+    const data = await response.json()
+    exercises.value = data
+  } catch (error) {
+    console.error('Error fetching exercises:', error)
   }
 }
 
-const removeLevel = () => {
-  currentFilters.value = {
-    ...currentFilters.value,
-    level: 'all'
-  };
-
-  // Re-apply filters with updated level
-  if (currentFilters.value.exercises.length > 0) {
-    fetch_exercises_by_categories(currentFilters.value.exercises.join(','));
-  } else {
-    fetch_exercises();
+const removeFilter = (filter) => {
+  const index = activeFilters.value.findIndex(f => f.id === filter.id)
+  if (index !== -1) {
+    activeFilters.value.splice(index, 1)
   }
 }
 
-const handleFilterUpdate = (filterData) => {
-  // Update the current filters
-  currentFilters.value = filterData;
-
-  // Apply filters
-  if (filterData.exercises.length > 0) {
-    fetch_exercises_by_categories(filterData.exercises.join(','));
-  } else {
-    fetch_exercises();
-  }
+const handleFilterUpdate = (filters) => {
+  activeFilters.value = filters
 }
+
+const filteredExercises = computed(() => {
+  if (activeFilters.value.length === 0) {
+    return exercises.value
+  }
+
+  return exercises.value.filter(exercise => {
+    // Check each filter category
+    return activeFilters.value.every(filter => {
+      switch (filter.category) {
+        case 'exercise':
+          return exercise.type === filter.name
+        case 'level':
+          return exercise.level === parseInt(filter.name.split(' ')[1])
+        case 'switch':
+          if (filter.id === 'bundles') {
+            return exercise.isBundle
+          } else if (filter.id === 'favorites') {
+            return exercise.isFavorite
+          }
+          return true
+        default:
+          return true
+      }
+    })
+  })
+})
 
 // Initial fetch
-fetch_exercises();
+fetch_exercises()
 </script>
+
+<style scoped>
+/* Add any additional styles you need */
+</style>
