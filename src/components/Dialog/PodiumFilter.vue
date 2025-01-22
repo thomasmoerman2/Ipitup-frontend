@@ -39,9 +39,9 @@ import { NSlider, NSpace, NConfigProvider } from 'naive-ui';
 const emit = defineEmits(['closeDialog']);
 
 // Filter states
-const ageRange = ref([20, 100]);
+const ageRange = ref([0, 100]);
 const cities = ['Kortrijk', 'Gent', 'Brussel', 'Antwerpen', 'Leuven'];
-const selectedCities = ref(['Kortrijk']);
+const selectedCities = ref([]);
 
 const themeOverrides = {
   common: {
@@ -63,6 +63,7 @@ const func_closeDialog = () => {
 };
 
 const resetFilters = () => {
-  // Implementation of resetFilters
+  ageRange.value = [0, 100];
+  selectedCities.value = [];
 };
 </script>
