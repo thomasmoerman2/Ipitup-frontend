@@ -11,37 +11,80 @@
 
     <!-- Show countdown -->
     <div class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] bg-black bg-opacity-50 px-6 py-3 rounded-lg">
-      <p class="text-white text-6xl font-bold">{{ countdown }}</p>
+      <p :key="countdown" class="text-white text-6xl font-bold countdown-animation">{{ countdown }}</p>
     </div>
 
     <!-- Display hold time -->
 
-    <!-- Add popup -->
+    <!-- Modified Time's Up popup -->
     <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-      <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-        <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
-        <p>Completed Workout</p>
-        <p>{{ score }}</p>
+      <div class="bg-white p-8 rounded-xl shadow-lg text-center w-[90%] max-w-md">
+        <div class="bg-blue-6 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+          <span class="text-blue-60 text-3xl">🎉</span>
+        </div>
+        <h2 class="text-2xl font-bold text-blue-60 mb-2">Great Job!</h2>
+        <p class="text-gray-600 mb-4">You've completed your workout</p>
+        <div class="bg-blue-6 rounded-lg p-4 mb-6">
+          <div class="flex justify-center items-center gap-3">
+            <span class="text-blue-60">Score:</span>
+            <span class="text-3xl font-bold text-blue-60 score-animate">{{ displayScore }}</span>
+          </div>
+        </div>
         <div class="flex gap-4 justify-center">
-          <button @click="restartWorkout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
-            Restart
+          <button @click="restartWorkout" class="bg-blue-60 text-white px-6 py-3 rounded-lg hover:bg-blue-30 transition-colors">
+            Try Again
           </button>
-          <RouterLink to="/workout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
-            Terug naar menu
+          <RouterLink to="/workout" class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors" @click="saveActivity">
+            Back
           </RouterLink>
         </div>
       </div>
     </div>
 
-    <!-- Add get ready popup -->
-    <div v-if="showGetReadyPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-      <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-        <h1 class="text-2xl font-bold mb-4">{{ exerciseData.exerciseName }}</h1>
-        <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
-        <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
-        <p class="mb-4">Prepare for your {{ exerciseData.exerciseName.toLowerCase() }} challenge</p>
-        <RouterLink to="/workout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
-          Terug naar menu
+    <!-- Modified Get Ready popup with collapsible instructions -->
+    <div v-if="showGetReadyPopup" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[9998] w-[90%] max-w-md get-ready-slide-up">
+      <div class="bg-white p-6 rounded-xl shadow-lg">
+        <div class="flex items-center gap-4 mb-4">
+          <div :class="[
+            'rounded-lg p-3 transition-colors duration-300',
+            instructionsOpen ? 'bg-gray-200' : 'bg-blue-60'
+          ]">
+            <h2 class="text-xl font-bold" :class="instructionsOpen ? 'text-blue-60' : 'text-white'">
+              {{ getReadyCountdown }}
+              <span v-if="instructionsOpen" class="text-sm block">paused</span>
+            </h2>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-blue-60">{{ exerciseData.exerciseName }}</h1>
+            <p class="text-sm text-gray-600">Get ready for your workout!</p>
+          </div>
+        </div>
+
+        <div class="bg-blue-6 rounded-lg p-4 mb-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-blue-60">Time:</span>
+              <span class="font-bold">{{ exerciseData.exerciseTime }}s</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-blue-60">Type:</span>
+              <span class="font-bold">{{ exerciseData.exerciseType }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Instructions -->
+        <details class="mb-4 cursor-pointer" @toggle="instructionsOpen = $event.target.open">
+          <summary class="text-blue-60 font-medium mb-2 hover:text-blue-30 transition-colors">
+            View Instructions
+          </summary>
+          <div class="bg-gray-50 rounded-lg p-4 mt-2">
+            <p class="text-sm text-gray-600 whitespace-pre-line">{{ exerciseData.exerciseInstructions.replace(/<br>/g, '\n') }}</p>
+          </div>
+        </details>
+
+        <RouterLink to="/workout" class="block w-full bg-blue-60 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-30 transition-colors">
+          Cancel
         </RouterLink>
       </div>
     </div>
@@ -64,6 +107,7 @@ const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
 const countdown = ref(30);
+const savedScore = ref(0);
 
 const URL = "/my_model/";
 let model = null;
@@ -111,6 +155,14 @@ const cameraEnabled = ref(true);
 // Add this ref at the top with other refs
 const countdownStarted = ref(false);
 
+// Add this ref at the top with other refs
+const instructionsOpen = ref(false);
+
+// Add these refs at the top
+const animatingScore = ref(false);
+const displayScore = ref(0);
+const finalScore = ref(0);
+
 const func_preload = async () => {
   try {
     loading.value = true;
@@ -124,9 +176,8 @@ const func_preload = async () => {
 
     // Initialize camera smoothly
     await new Promise(resolve => setTimeout(resolve, 300));
-     startCamera();
-    await new Promise(resolve => setTimeout(resolve, 500));
-     enableCamera();
+    startCamera();
+    enableCamera();
 
     // Set countdown value
     countdown.value = exerciseData.value.exerciseTime || 30;
@@ -144,28 +195,39 @@ const func_preload = async () => {
     if (exerciseTimer) clearInterval(exerciseTimer);
     if (countdownInterval) clearInterval(countdownInterval);
 
-    // Start get ready countdown
+    // Start get ready countdown with smoother transition
     exerciseTimer = setInterval(() => {
-      if (getReadyCountdown.value > 1) {
-        getReadyCountdown.value--;
-      } else {
-        clearInterval(exerciseTimer);
-        showGetReadyPopup.value = false;
-        isWorkoutActive.value = true;
-        
-        // Start main countdown
-        if (!countdownStarted.value) {
-          countdownStarted.value = true;
-          countdownInterval = setInterval(() => {
-            if (countdown.value > 0) {
-              countdown.value--;
-            } else {
-              clearInterval(countdownInterval);
-              countdownStarted.value = false;
-              isWorkoutActive.value = false;
-              showPopup.value = true;
+      // Only countdown if instructions are not open
+      if (!instructionsOpen.value) {
+        if (getReadyCountdown.value > 1) {
+          setTimeout(() => {
+            getReadyCountdown.value--;
+          }, 100);
+        } else {
+          clearInterval(exerciseTimer);
+          showGetReadyPopup.value = false;
+          isWorkoutActive.value = true;
+
+          // Add small delay before starting main countdown
+          setTimeout(() => {
+            if (!countdownStarted.value) {
+              countdownStarted.value = true;
+              countdownInterval = setInterval(() => {
+                if (countdown.value > 0) {
+                  setTimeout(() => {
+                    countdown.value--;
+                  }, 100);
+                } else {
+                  clearInterval(countdownInterval);
+                  countdownStarted.value = false;
+                  isWorkoutActive.value = false;
+                  savedScore.value += score.value;
+                  showPopup.value = true;
+                  animateScore(); // Start score animation when workout completes
+                }
+              }, 1000);
             }
-          }, 1000);
+          }, 500);
         }
       }
     }, 1000);
@@ -685,7 +747,7 @@ const restartWorkout = async () => {
   getReadyCountdown.value = 5;
   score.value = 0;
   isWorkoutActive.value = false;
-  countdown.value = exerciseData.value.ExerciseTime || 30;
+  countdown.value = exerciseData.value.exerciseTime;
 
   // Start get ready countdown
   exerciseTimer = setInterval(() => {
@@ -695,7 +757,7 @@ const restartWorkout = async () => {
       clearInterval(exerciseTimer);
       showGetReadyPopup.value = false;
       isWorkoutActive.value = true;
-      
+
       // Start main countdown
       if (!countdownStarted.value) {
         countdownStarted.value = true;
@@ -792,6 +854,58 @@ onUnmounted(() => {
   }
 });
 
+// Add this function for the score animation
+const animateScore = () => {
+  animatingScore.value = true;
+  displayScore.value = 0;
+  finalScore.value = score.value;
+
+  const duration = 1500; // 1.5 seconds
+  const start = performance.now();
+
+  const animate = (currentTime) => {
+    const elapsed = currentTime - start;
+    const progress = Math.min(elapsed / duration, 1);
+
+    displayScore.value = Math.floor(progress * finalScore.value);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      animatingScore.value = false;
+    }
+  };
+
+  requestAnimationFrame(animate);
+};
+
+// Add function to save activity
+const saveActivity = async () => {
+  try {
+    const activityData = {
+      exerciseId: exerciseData.value.exerciseId,
+      score: score.value,
+      duration: exerciseData.value.exerciseTime - countdown.value
+    };
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(activityData)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save activity');
+    }
+
+    console.log('Activity saved successfully');
+  } catch (error) {
+    console.error('Error saving activity:', error);
+  }
+};
+
 </script>
 
 <style scoped>
@@ -838,5 +952,87 @@ canvas {
 
 .score-pop {
   animation: scorePop 0.2s ease-out;
+}
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.countdown-animation {
+  animation: countdownPop 0.9s ease-out;
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 100%);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.get-ready-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* Add styles for the details element */
+details>summary {
+  list-style: none;
+}
+
+details>summary::-webkit-details-marker {
+  display: none;
+}
+
+details>summary::after {
+  content: '▼';
+  display: inline-block;
+  margin-left: 0.5rem;
+  transition: transform 0.2s;
+}
+
+details[open]>summary::after {
+  transform: rotate(180deg);
+}
+
+/* Add transition for countdown background */
+.transition-colors {
+  transition-property: background-color, color;
+  transition-timing-function: ease-in-out;
+  transition-duration: 300ms;
+}
+
+@keyframes scoreAnimate {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.score-animate {
+  animation: scoreAnimate 0.3s ease-out;
 }
 </style>
