@@ -1,5 +1,5 @@
 <template>
-    <AppButton :text="props.title" @click="func_openDialog" version="1" />
+    <Filters :text="props.title" @click="func_openDialog" :icon="props.icon" />
 
     <Transition name="dialog">
         <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
@@ -9,7 +9,9 @@
                 </div>
                 <DialogSearch @closeDialog="func_closeDialog" v-if="props.type === 'search'" />
                 <DialogSlider @closeDialog="func_closeDialog" v-if="props.type === 'slider'" />
-                <DialogFilter @closeDialog="func_closeDialog" v-if="props.type === 'filter'" />
+                <DialogFilter @closeDialog="func_closeDialog" @updateFilters="handleFilterUpdate" v-if="props.type === 'filter'" :currentFilters="currentFilters" />
+                <DialogPodiumFilter @closeDialog="func_closeDialog" v-if="props.type === 'podium-filter'" />
+                <DialogPodiumSort @closeDialog="func_closeDialog" v-if="props.type === 'podium-sort'" />
             </div>
         </dialog>
     </Transition>
@@ -19,7 +21,9 @@
 import DialogSearch from '@/components/Dialog/Search.vue';
 import DialogSlider from '@/components/Dialog/Slider.vue';
 import DialogFilter from '@/components/Dialog/Filter.vue';
-import AppButton from '@/components/App/Button.vue';
+import DialogPodiumFilter from '@/components/Dialog/PodiumFilter.vue';
+import DialogPodiumSort from '@/components/Dialog/Sort.vue';
+import Filters from '@/components/App/Filters.vue';
 import { ref, onUnmounted } from 'vue';
 
 const isOpen = ref(false);
@@ -32,13 +36,23 @@ let isDragging = false;
 const props = defineProps({
     type: {
         type: String,
-        default: 'search'
+        default: 'search',
     },
     title: {
         type: String,
-        default: 'Open Dialog'
+        default: 'Open Dialog',
+    },
+    icon: {
+        type: String,
+        default: 'Filter',
+    },
+    currentFilters: {
+        type: Array,
+        default: () => []
     }
 });
+
+const emit = defineEmits(['updateFilters']);
 
 const func_openDialog = () => {
     isOpen.value = true;
@@ -53,6 +67,11 @@ const handleClickOutside = (event) => {
     if (event.target.tagName === 'DIALOG') {
         func_closeDialog();
     }
+};
+
+const handleFilterUpdate = (filters) => {
+    emit('updateFilters', filters);
+    func_closeDialog();
 };
 
 const startDrag = (event) => {

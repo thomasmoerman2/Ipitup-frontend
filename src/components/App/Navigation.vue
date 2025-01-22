@@ -5,21 +5,62 @@
                 <component :is="item.icon" class="w-4 h-4" />
                 <span class="text-2xs lowercase">{{ item.label }}</span>
             </RouterLink>
+            <RouterLink v-if="userAuthenticated" to="/profile" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/profile') ? 'text-blue-54' : 'text-blue-84'">
+                <Icon name="UserCircle2" class="w-4 h-4" />
+                <span class="text-2xs lowercase">profile</span>
+            </RouterLink>
+            <RouterLink v-if="!userAuthenticated" to="/register" class="relative flex-col gap-1 cursor-pointer grid place-items-center" :class="isActive('/register') ? 'text-blue-54' : 'text-blue-84'">
+                <Icon name="KeyRound" class="w-4 h-4" />
+                <span class="text-2xs lowercase">connect</span>
+            </RouterLink>
         </div>
     </div>
 </template>
 
 <script setup>
-import { RouterLink, useRoute } from 'vue-router';
-import { Home, SquareKanban, UserRoundSearch, BicepsFlexed, UserCircle2 } from 'lucide-vue-next';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { Home, SquareKanban, UserRoundSearch, BicepsFlexed } from 'lucide-vue-next';
+import Icon from './Icon.vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import Cookies from 'js-cookie';
+
 const route = useRoute();
+const router = useRouter();
+const userAuthenticated = ref(false);
+
+
+
+// Check auth status
+const checkAuth = () => {
+    const hasAuth = Cookies.get('authToken');
+    if (hasAuth !== userAuthenticated.value) {
+        userAuthenticated.value = hasAuth;
+        console.log('Auth state changed:', hasAuth);
+    }
+}
+
+// Set up interval to check auth status
+let authCheckInterval;
+
+onMounted(() => {
+    // Initial check
+    checkAuth();
+
+    // Check every second for changes
+    authCheckInterval = setInterval(checkAuth, 1000);
+});
+
+onUnmounted(() => {
+    if (authCheckInterval) {
+        clearInterval(authCheckInterval);
+    }
+});
 
 const navigation = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/search', icon: UserRoundSearch, label: 'Search' },
     { path: '/workout', icon: BicepsFlexed, label: 'Workout' },
     { path: '/podium', icon: SquareKanban, label: 'Podium' },
-    { path: '/profile', icon: UserCircle2, label: 'Profile' },
 ];
 
 const isActive = (path) => {

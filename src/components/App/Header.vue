@@ -1,6 +1,6 @@
 <template>
     <header class="flex justify-between items-center py-5">
-        <h1 class="text-lg font-semibold">{{ pageTitle }}</h1>
+        <h1 class="text-lg font-semibold capitalize">{{ pageTitle }}</h1>
         <Notification :messages="[]" />
     </header>
 </template>
