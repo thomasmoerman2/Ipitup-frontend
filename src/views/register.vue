@@ -8,7 +8,7 @@
     <AppInput label="Achternaam" placeholder="Voeg uw achternaam in" type="text" :disabled="isLoading" @update:value="set_lastName" />
     <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" :disabled="isLoading" @update:value="set_email" />
     <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
-    <AppInput label="Geboortedatum" placeholder="Selecteer uw geboortedatum" type="date" :disabled="isLoading" @update:value="set_dateOfBirth" />
+    <AppInput label="Geboortedatum" class="text-black-40" :placeholder="placeholder" type="date" :disabled="isLoading" @update:value="set_dateOfBirth" />
 
     <div class="flex flex-col gap-2">
       <p class="text-sm">Zichtbaarheid</p>
