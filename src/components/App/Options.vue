@@ -35,13 +35,13 @@ const generateId = (value) => {
     return `option_${timestamp}_${value}_${random}`;
 };
 
-const chosenOption = ref(props.options[0]?.value || props.modelValue)
+const chosenOption = ref(props.modelValue || props.options[0]?.value);
+
 
 watch(() => props.modelValue, (newValue) => {
-    if (newValue) {
-        chosenOption.value = newValue;
-    }
-});
+  chosenOption.value = newValue || props.options[0]?.value;
+}, { immediate: true });
+
 
 const func_chooseOption = (value) => {
     chosenOption.value = value
