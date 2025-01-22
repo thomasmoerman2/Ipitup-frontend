@@ -20,7 +20,8 @@
 
     <AppCheckbox title="Ik ga akkoord met de " url="/terms" titleUrl="Terms & Conditions" @update:modelValue="set_isChecked" />
     <AppNotification ref="notification" />
-    <AppButton text="Register" version="primary" icon="false" :disabled="isLoading || !isChecked" />
+    <AppButton text="Register" version="primary" icon="false" :disabled="isLoading || !isFormValid"  />
+
   </form>
 </template>
 
@@ -34,6 +35,7 @@ import AppNotification from '@/components/App/Notification.vue';
 import { ref, onMounted } from 'vue';
 import Cookies from 'js-cookie';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 const notification = ref(null);
 const router = useRouter();
@@ -82,7 +84,19 @@ const set_isChecked = (value) => {
   isChecked.value = value;
 }
 
-const handleRegister = async () => {
+
+const isFormValid = computed(() => {
+  return (
+    firstName.value.trim() !== '' &&
+    lastName.value.trim() !== '' &&
+    email.value.trim() !== '' &&
+    password.value.trim() !== '' &&
+    dateOfBirth.value.trim() !== '' &&
+    isChecked.value
+  );
+});
+
+const fetch_register = async () => {
   try {
     isLoading.value = true
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
