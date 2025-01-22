@@ -542,38 +542,34 @@ const detectPullUp = (landmarks) => {
 
   console.log(predictions.value[1].className, predictions.value[1].probability);
 
-  if (predictions.value[0].probability > 0.8) {
-    console.log("Pull-up detected");
-    // Check for pull-up without timer
-    if (
-      nose.y < avgWristHeight &&
-      !isInDownPosition.value &&
-      currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS &&
-      !showPopup.value
-    ) {
-      console.log("PULL-UP DETECTED!");
-      isInDownPosition.value = true;
-      lastRepTime.value = currentTime;
+  console.log("Pull-up detected");
+  // Check for pull-up without timer
+  if (
+    nose.y < avgWristHeight &&
+    !isInDownPosition.value &&
+    currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS &&
+    !showPopup.value
+  ) {
+    console.log("PULL-UP DETECTED!");
+    isInDownPosition.value = true;
+    lastRepTime.value = currentTime;
 
-      // Start the interval for continuous scoring
-      pullUpInterval.value = setInterval(() => {
-        score.value++;
-      }, 1000);
-    } else if (nose.y > avgWristHeight && isInDownPosition.value) {
-      console.log("↓ Reset position - user lowered down");
-      isInDownPosition.value = false;
+    // Start the interval for continuous scoring
+    pullUpInterval.value = setInterval(() => {
+      score.value++;
+    }, 1000);
+  } else if (nose.y > avgWristHeight && isInDownPosition.value) {
+    console.log("↓ Reset position - user lowered down");
+    isInDownPosition.value = false;
+    showPopup.value = true;
 
-      // Clear the interval when user lowers down
-      if (pullUpInterval.value) {
-        clearInterval(pullUpInterval.value);
-        pullUpInterval.value = null;
-      }
-
-      // Trigger popup when pull-up is completed
-      showPopup.value = true;
+    // Clear the interval when user lowers down
+    if (showPopup.value && pullUpInterval.value) {
+      clearInterval(pullUpInterval.value);
+      pullUpInterval.value = null;
     }
-  } else {
-    console.log("get into position");
+
+    // Trigger popup when pull-up is completed
   }
 };
 
