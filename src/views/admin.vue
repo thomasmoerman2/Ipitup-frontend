@@ -20,7 +20,7 @@
                 <div class="p-6 sm:p-8 border-b border-gray-200">
                     <div class="flex justify-between items-center">
                         <h2 class="text-3xl font-bold text-gray-900">{{ currentTabName }}</h2>
-                        <button @click="showAddModal = true" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                        <button @click="showAddNewModal" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
                             Add New {{ currentTabName.slice(0, -1) }}
                         </button>
                     </div>
@@ -44,6 +44,7 @@
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Birthdate</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
@@ -74,13 +75,35 @@
                                                     {{ user.accountStatus }}
                                                 </span>
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="user.isAdmin === true ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'">
+                                                    {{ user.isAdmin === true ? 'Admin' : 'User' }}
+                                                </span>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {{ new Date(user.birthDate).toLocaleDateString() }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                <button @click="confirmPasswordReset(user)" class="text-blue-600 hover:text-blue-900 font-medium">
-                                                    Reset Password
-                                                </button>
+                                                <div class="flex items-center space-x-4">
+                                                    <button @click="confirmPasswordReset(user)" class="text-blue-600 hover:text-blue-900 font-medium">
+                                                        Reset Password
+                                                    </button>
+                                                    <div class="relative">
+                                                        <button @click="toggleAdminDropdown(user)" class="text-gray-600 hover:text-gray-900 font-medium">
+                                                            Admin Rights
+                                                        </button>
+                                                        <div v-if="selectedUser?.userId === user.userId && showAdminDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                                            <div class="py-1">
+                                                                <button @click="updateAdminStatus(user, true)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" :class="{ 'bg-gray-50': user.isAdmin === true }">
+                                                                    Make Admin
+                                                                </button>
+                                                                <button @click="updateAdminStatus(user, false)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" :class="{ 'bg-gray-50': user.isAdmin !== true }">
+                                                                    Remove Admin
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -190,19 +213,19 @@
                 <template v-if="currentTab === 'exercise'">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Exercise Name</label>
-                        <input v-model="formData.exerciseName" type="text" class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                        <input v-model="formData.exerciseName" type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Exercise Type</label>
-                        <input v-model="formData.exerciseType" type="text" class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                        <input v-model="formData.exerciseType" type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Instructions</label>
-                        <textarea v-model="formData.exerciseInstructions" rows="4" class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        <textarea v-model="formData.exerciseInstructions" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Time (seconds)</label>
-                        <input v-model="formData.exerciseTime" type="number" min="1" class="w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                        <input v-model="formData.exerciseTime" type="number" min="1" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                     </div>
                 </template>
 
@@ -304,8 +327,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import AppNotification from '@/components/App/Notification.vue'
+import Cookies from 'js-cookie'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const tabs = [
     { id: 'exercise', name: 'Exercises' },
@@ -329,47 +356,28 @@ const selectedItem = ref(null)
 const selectedUser = ref(null)
 const notification = ref(null)
 const newPassword = ref('')
+const showAdminDropdown = ref(false)
+const token = ref(Cookies.get('token'))
 
 // Computed Properties
 const currentTabName = computed(() => {
     return tabs.find(tab => tab.id === currentTab.value)?.name || ''
 })
 
-const difficultyClass = (difficulty) => {
-    const classes = {
-        1: 'bg-green-100 text-green-800',
-        2: 'bg-blue-100 text-blue-800',
-        3: 'bg-yellow-100 text-yellow-800',
-        4: 'bg-orange-100 text-orange-800',
-        5: 'bg-red-100 text-red-800'
-    }
-    return classes[difficulty] || 'bg-gray-100 text-gray-800'
-}
 
 // Methods
-const getItemId = (item) => {
-    switch (currentTab.value) {
-        case 'exercise':
-            return item.exerciseId
-        case 'location':
-            return item.locationId
-        case 'badge':
-            return item.badgeId
-        case 'activity':
-            return item.activityId
-        case 'user':
-            return item.userId
-        default:
-            return item.id
-    }
-}
+const getItemId = (item) => item.id
 
 const fetchItems = async () => {
     try {
         isLoading.value = true
         items.value = [] // Clear items before fetching new ones
 
-        const endpoint = `${apiPath}/api/${currentTab.value}`
+        // Special case for exercises
+        const endpoint = currentTab.value === 'exercise'
+            ? `${apiPath}/api/exercises`
+            : `${apiPath}/api/${currentTab.value}`
+
         const response = await fetch(endpoint)
 
         if (!response.ok) {
@@ -386,79 +394,197 @@ const fetchItems = async () => {
     }
 }
 
+const getEndpoint = () => {
+    const base = currentTab.value === 'exercise' ? 'exercise' : currentTab.value
+    return `${base}/${showEditModal.value ? 'update' : 'add'}`
+}
+
 const submitForm = async () => {
     try {
         isLoading.value = true
-        const method = showEditModal.value ? 'update' : 'add'
-        const endpoint = currentTab.value === 'user' ? 'user' : `${currentTab.value}s`
+        const endpoint = getEndpoint()
+        const method = showEditModal.value ? 'PUT' : 'POST'
 
-        // Add any necessary ID fields based on the table
+        // Prepare form data based on current tab
+        const data = prepareFormData()
+
+        // Get the correct ID field based on the current tab
         if (showEditModal.value) {
             switch (currentTab.value) {
                 case 'exercise':
-                    formData.value.exerciseId = selectedItem.value.exerciseId
+                    data.id = selectedItem.value.exerciseId
                     break
                 case 'location':
-                    formData.value.locationId = selectedItem.value.locationId
+                    data.id = selectedItem.value.locationId
                     break
                 case 'badge':
-                    formData.value.badgeId = selectedItem.value.badgeId
+                    data.id = selectedItem.value.badgeId
                     break
                 case 'activity':
-                    formData.value.activityId = selectedItem.value.activityId
+                    data.id = selectedItem.value.activityId
                     break
+                case 'user':
+                    data.id = selectedItem.value.userId
+                    break
+                default:
+                    data.id = selectedItem.value.id
             }
         }
 
-        const response = await fetch(`${apiPath}/api/${endpoint}/${method}`, {
-            method: showEditModal.value ? 'PUT' : 'POST',
+        console.log('Submitting to:', `${apiPath}/api/${endpoint}`, 'Method:', method, 'Data:', data)
+
+        const response = await fetch(`${apiPath}/api/${endpoint}`, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(formData.value)
+            body: JSON.stringify(data)
         })
 
-        if (response.ok) {
-            await fetchItems()
-            closeModal()
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
         }
+
+        const responseData = await response.json()
+
+        // Show success notification
+        notification.value?.addNotification(
+            showEditModal.value ? 'Updated Successfully' : 'Added Successfully',
+            `${currentTabName.value.slice(0, -1)} has been ${showEditModal.value ? 'updated' : 'added'}.`,
+            'success'
+        )
+
+        await fetchItems()
+        closeModal()
     } catch (error) {
         console.error('Error submitting form:', error)
+        notification.value?.addNotification(
+            'Error',
+            error.message || 'Failed to save changes',
+            'error'
+        )
     } finally {
         isLoading.value = false
     }
 }
 
+const prepareFormData = () => {
+    const data = { ...formData.value }
+
+    // Transform specific ID fields to use 'id'
+    switch (currentTab.value) {
+        case 'exercise':
+            if (data.exerciseId) {
+                data.id = data.exerciseId
+                delete data.exerciseId
+            }
+            data.exerciseTime = parseInt(data.exerciseTime) || 30
+            break
+        case 'location':
+            if (data.locationId) {
+                data.id = data.locationId
+                delete data.locationId
+            }
+            break
+        case 'badge':
+            if (data.badgeId) {
+                data.id = data.badgeId
+                delete data.badgeId
+            }
+            data.badgeAmount = parseInt(data.badgeAmount) || 0
+            break
+        case 'activity':
+            if (data.activityId) {
+                data.id = data.activityId
+                delete data.activityId
+            }
+            data.activityScore = parseInt(data.activityScore) || 0
+            data.activityDuration = parseInt(data.activityDuration) || 0
+            break
+        case 'user':
+            if (data.userId) {
+                data.id = data.userId
+                delete data.userId
+            }
+            break
+    }
+
+    console.log('Prepared form data:', data)
+    return data
+}
+
 const editItem = (item) => {
-    selectedItem.value = item
+    console.log('Editing item:', item)
+    selectedItem.value = { ...item }  // Make a copy of the item
     formData.value = { ...item }
     showEditModal.value = true
 }
 
 const confirmDelete = (item) => {
-    selectedItem.value = item
+    console.log('Selected item for deletion:', item)
+    selectedItem.value = { ...item }  // Make a copy of the item
     showDeleteModal.value = true
 }
-
 const deleteItem = async () => {
     try {
         isLoading.value = true
-        const response = await fetch(`${apiPath}/api/${currentTab.value}/remove`, {
+        const base = currentTab.value === 'exercise' ? 'exercise' : currentTab.value
+
+        // Get the ID based on the current tab
+        let itemId
+        switch (currentTab.value) {
+            case 'exercise':
+                itemId = selectedItem.value.exerciseId
+                break
+            case 'location':
+                itemId = selectedItem.value.locationId
+                break
+            case 'badge':
+                itemId = selectedItem.value.badgeId
+                break
+            case 'activity':
+                itemId = selectedItem.value.activityId
+                break
+            case 'user':
+                itemId = selectedItem.value.userId
+                break
+            default:
+                itemId = selectedItem.value.id
+        }
+
+        if (!itemId) {
+            throw new Error('Item ID is missing')
+        }
+
+        const response = await fetch(`${apiPath}/api/${base}/remove`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ id: selectedItem.value.id })
+            body: JSON.stringify({ id: itemId })
         })
 
-        if (response.ok) {
-            await fetchItems()
-            showDeleteModal.value = false
+        if (!response.ok) {
+            throw new Error(`Failed to delete ${currentTab.value}`)
         }
+
+        notification.value?.addNotification(
+            'Deleted Successfully',
+            `${currentTabName.value.slice(0, -1)} has been deleted.`,
+            'success'
+        )
+
+        await fetchItems()
+        showDeleteModal.value = false
     } catch (error) {
-        console.error('Error deleting item:', error)
+        notification.value?.addNotification(
+            'Error',
+            error.message || 'Failed to delete item',
+            'error'
+        )
     } finally {
         isLoading.value = false
     }
@@ -538,13 +664,128 @@ const resetPassword = async () => {
     }
 }
 
+const toggleAdminDropdown = (user) => {
+    selectedUser.value = user
+    showAdminDropdown.value = !showAdminDropdown.value
+}
+
+const updateAdminStatus = async (user, isAdmin) => {
+    try {
+        isLoading.value = true
+        showAdminDropdown.value = false
+
+        const response = await fetch(`${apiPath}/api/user/admin`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token.value}`
+            },
+            body: JSON.stringify({
+                id: user.userId,
+                isAdmin: isAdmin
+            })
+        })
+
+        if (!response.ok) {
+            throw new Error('Failed to update admin status')
+        }
+
+        // Update the user's admin status in the items list
+        const updatedUser = items.value.find(item => item.userId === user.userId)
+        if (updatedUser) {
+            updatedUser.isAdmin = isAdmin === true
+        }
+
+        notification.value?.addNotification(
+            'Success',
+            `User ${isAdmin === true ? 'is now an admin' : 'is no longer an admin'}`,
+            'success'
+        )
+    } catch (error) {
+        console.error('Error updating admin status:', error)
+        notification.value?.addNotification(
+            'Error',
+            error.message || 'Failed to update admin status',
+            'error'
+        )
+    } finally {
+        isLoading.value = false
+    }
+}
+
 // Watch for tab changes
 watch(currentTab, () => {
+    // Verify auth status before fetching
+    const authToken = Cookies.get('authToken')
+    const isAdmin = Cookies.get('isAdmin') === 'true'
+
+    if (!authToken || !isAdmin) {
+        router.push('/login')
+        return
+    }
+
     fetchItems()
 })
 
 // Initial fetch
 onMounted(() => {
+    // Check if user is logged in and is admin
+    const authToken = Cookies.get('authToken')
+    const isAdmin = Cookies.get('isAdmin') === 'true'
+
+    if (!authToken || !isAdmin) {
+        notification.value?.addNotification(
+            'Toegang geweigerd',
+            'Je moet ingelogd zijn als administrator om deze pagina te bekijken.',
+            'error'
+        )
+        router.push('/login')
+        return
+    }
+
     fetchItems()
+    document.addEventListener('click', (event) => {
+        if (showAdminDropdown.value && !event.target.closest('.relative')) {
+            showAdminDropdown.value = false
+        }
+    })
 })
+
+onUnmounted(() => {
+    document.removeEventListener('click', () => { })
+})
+
+// Add new method to handle showing the add modal
+const showAddNewModal = () => {
+    // Initialize empty form data based on current tab
+    formData.value = initializeFormData()
+    showAddModal.value = true
+}
+
+// Add method to initialize form data
+const initializeFormData = () => {
+    switch (currentTab.value) {
+        case 'exercise':
+            return {
+                exerciseName: '',
+                exerciseType: '',
+                exerciseInstructions: '',
+                exerciseTime: 30
+            }
+        case 'location':
+            return {
+                locationName: '',
+                locationCountry: ''
+            }
+        case 'badge':
+            return {
+                badgeName: '',
+                badgeDescription: '',
+                badgeAmount: 0
+            }
+        default:
+            return {}
+    }
+}
 </script>

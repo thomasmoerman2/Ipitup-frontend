@@ -28,13 +28,13 @@
 
   <div class="flex flex-col gap-4">
     <div class="flex justify-between">
-      <p class="text-xs text-blue-54" v-if="isLoggedIn">Meest gebruikte oefeningen</p>
-      <p class="text-xs text-blue-54" v-else>Bekijk alle oefeningen</p>
+      <p class="text-xs text-blue-54" v-if="isLoggedIn">Jouw recente oefeningen</p>
+      <p class="text-xs text-blue-54" v-else>Hier een paar oefeningen voor je</p>
     </div>
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
-    <WorkoutExercise img="https://picsum.photos/100" title="pushups" level="1" time="10" />
+    <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in exercises" :key="exercise.id" :img="exercise.image" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
+    <div v-else>
+      <p class="text-blue-54 text-sm">Er zijn momenteel geen oefeningen beschikbaar.</p>
+    </div>
     <AppButton text="Ontdek meer" icon="false" version="1" @click="func_change_page" v-if="!isLoggedIn" />
   </div>
 </template>
@@ -47,20 +47,25 @@ import Cookies from 'js-cookie';
 
 const router = useRouter();
 const isLoggedIn = ref(false);
+const exercises = ref([]);
+
+
+const fetch_3_exercises = async () => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/random`);
+  const data = await response.json();
+  exercises.value = data;
+}
 
 if (Cookies.get('authToken')) {
   isLoggedIn.value = true;
+} else {
+  fetch_3_exercises();
 }
 
 const func_change_page = () => {
   window.location.href = '/exercises';
 }
 
-const fetch_3_exercises = async () => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/3`);
-  const data = await response.json();
-  console.log(data);
-}
 
 
 </script>

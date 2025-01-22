@@ -1,9 +1,6 @@
 <template>
   <!-- Add Modal -->
-  <div
-    v-if="showModal"
-    class="absolute flex flex-col bg-white top-0 left-0 w-full h-full bg-black/50 px-8 justify-center z-[9999]"
-  >
+  <div v-if="showModal" class="absolute flex flex-col bg-white top-0 left-0 w-full h-full bg-black/50 px-8 justify-center z-[9999]">
     <h1 class="text-2xl py-10 text-center font-bold">Pushups warmup!</h1>
     <p class="">1. Ga op je handen en knieën op de grond zitten.</p>
     <p class="">
@@ -23,10 +20,7 @@
       </span>
       Seconden
     </h1>
-    <button
-      @click="closeModalAndStartCamera"
-      class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42"
-    >
+    <button @click="closeModalAndStartCamera" class="mt-4 px-4 py-2 bg-blue-60 text-white rounded hover:bg-blue-42">
       Ik sta klaar, GO!
     </button>
   </div>
@@ -50,19 +44,11 @@
   </div>
 
   <!-- Existing template content -->
-  <video
-    ref="video"
-    autoplay
-    playsinline
-    muted
-    :class="{ 'camera-flipped': isFrontCamera }"
-  ></video>
+  <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
   <!-- make this 7.5rem -->
-  <p
-    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold"
-  >
+  <p class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold">
     <span :key="pushUpCount" class="pushup-counter">
       {{ pushUpCount }}
     </span>
@@ -74,6 +60,7 @@ import { ref, onMounted } from "vue";
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import AppLoading from "@/components/App/Loading.vue";
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const nameOfWorkout = ref("Pushups");
@@ -361,7 +348,7 @@ const calculateDistance = (pointA, pointB) => {
   const dz = pointA.z - pointB.z;
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
-const detectPullUps = (landmarks) => {};
+const detectPullUps = (landmarks) => { };
 // Modified detectPushUp function with timing
 const detectPushUp = (landmarks) => {
   const leftShoulder = landmarks[11];
@@ -561,15 +548,18 @@ canvas {
   border-radius: 8px;
   text-align: center;
 }
+
 .countdown-number {
   display: inline-block;
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .pushup-counter {
   display: inline-block;
 
   animation: epicZoomEffect 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 @keyframes epicZoomEffect {
   0% {
     transform: scale(3.5);
@@ -581,11 +571,13 @@ canvas {
     opacity: 1;
   }
 }
+
 @keyframes popIn {
   0% {
     transform: scale(1.5);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

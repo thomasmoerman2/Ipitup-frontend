@@ -169,6 +169,55 @@ const animateProgress = () => {
     }, 50)
 }
 
+const validateToken = async () => {
+    const authToken = Cookies.get('authToken')
+    console.log("Checking auth token:", authToken ? "Token exists" : "No token found")
+    if (!authToken) return false
+
+    try {
+        console.log("Validating token with backend...")
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        })
+
+        console.log("Token validation response:", response.status, response.statusText)
+
+        if (!response.ok) {
+            console.log("Token validation failed, clearing cookies...")
+            clearAllCookies()
+            return false
+        }
+
+        // Get user data to ensure isAdmin status is up to date
+        const userData = await response.json()
+        if (userData.isAdmin !== undefined) {
+            Cookies.set('isAdmin', userData.isAdmin)
+            console.log("Updated isAdmin status:", userData.isAdmin)
+        }
+
+        console.log("Token validation successful")
+        return true
+    } catch (error) {
+        console.error('Token validation error:', error.message)
+        clearAllCookies()
+        return false
+    }
+}
+
+// Add a helper function to clear all cookies
+const clearAllCookies = () => {
+    Cookies.remove('userId')
+    Cookies.remove('authToken')
+    Cookies.remove('userFirstname')
+    Cookies.remove('userLastname')
+    Cookies.remove('userEmail')
+    Cookies.remove('accountStatus')
+    Cookies.remove('isAdmin')
+}
+
 const startLoading = async () => {
     try {
         loadingProgress.value = 0
@@ -185,10 +234,31 @@ const startLoading = async () => {
             )
         }, LOADING_TIMEOUT)
 
-        // Quick check for auth before starting
-        const authToken = Cookies.get('authToken')
-        const userId = Cookies.get('userId')
-        if (!authToken || !userId) {
+        // Step 1: Check health (0-15%)
+        console.log("Checking API health...")
+        try {
+            targetProgress.value = 15
+            animateProgress()
+
+            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`)
+            if (!healthCheck.ok) {
+                console.error("Health check failed:", healthCheck.status, healthCheck.statusText)
+                throw new Error('Health check failed')
+            }
+            console.log("Health check successful")
+        } catch (error) {
+            console.error("Health check error:", error.message)
+            return handleLoadingError(error, 'health-check')
+        }
+
+        // Step 2: Validate token (15-30%)
+        console.log("Starting token validation...")
+        targetProgress.value = 30
+        animateProgress()
+
+        const isValidToken = await validateToken()
+        if (!isValidToken) {
+            console.log("Token validation failed, showing offline option")
             if (loadingTimeout) clearTimeout(loadingTimeout)
             showOfflineOption.value = true
             targetProgress.value = 100
@@ -201,72 +271,44 @@ const startLoading = async () => {
             return
         }
 
-        // Step 1: Check auth and health (0-15%)
-        try {
-            targetProgress.value = 15
-            animateProgress()
+        // Get user data since token is valid
+        const userId = Cookies.get('userId')
+        console.log("Token valid, proceeding with userId:", userId)
 
-            const healthCheck = await fetch(`${import.meta.env.VITE_API_URL}/api/config/health`)
-            if (!healthCheck.ok) throw new Error('Health check failed')
-        } catch (error) {
-            return handleLoadingError(error, 'health-check')
-        }
-
-        // Step 2: Verify token (15-30%)
-        try {
-            targetProgress.value = 30
-            animateProgress()
-
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/verify`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            })
-
-            if (!response.ok) {
-                // Clear invalid cookies
-                Cookies.remove('userId')
-                Cookies.remove('authToken')
-                Cookies.remove('userFirstname')
-                Cookies.remove('userLastname')
-                Cookies.remove('userEmail')
-                Cookies.remove('accountStatus')
-                if (loadingTimeout) clearTimeout(loadingTimeout)
-                // Reload page instead of redirecting
-                window.location.reload()
-                return
-            }
-        } catch (error) {
-            return handleLoadingError(error, 'token-verify')
-        }
-
-        // Step 3: Load user data (30-45%)
-        try {
-            targetProgress.value = 45
-            animateProgress()
-
-            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`)
-            if (!userResponse.ok) throw new Error('User data fetch failed')
-        } catch (error) {
-            return handleLoadingError(error, 'user-data')
-        }
-
-        // Step 4: Load exercises (45-60%)
+        // Step 3: Load user data (30-60%)
         try {
             targetProgress.value = 60
             animateProgress()
 
-            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/${userId}`)
-            if (!exerciseResponse.ok) throw new Error('Exercise data fetch failed')
+            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`)
+            if (!userResponse.ok) {
+                console.error("User data fetch failed:", userResponse.status, userResponse.statusText)
+                throw new Error('User data fetch failed')
+            }
+            console.log("User data loaded successfully")
         } catch (error) {
+            console.error("User data error:", error.message)
+            return handleLoadingError(error, 'user-data')
+        }
+
+        // Step 4: Load exercises (60-75%)
+        try {
+            targetProgress.value = 75
+            animateProgress()
+
+            const exerciseResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/${userId}`)
+            if (!exerciseResponse.ok) {
+                console.error("Exercise data fetch failed:", exerciseResponse.status, exerciseResponse.statusText)
+                throw new Error('Exercise data fetch failed')
+            }
+            console.log("Exercise data loaded successfully")
+        } catch (error) {
+            console.error("Exercise data error:", error.message)
             return handleLoadingError(error, 'exercise-data')
         }
 
-        // Faster final steps
-        targetProgress.value = 75
-        animateProgress()
-        await new Promise(resolve => setTimeout(resolve, 200))
-
+        // Final steps
+        console.log("Starting final loading steps...")
         targetProgress.value = 90
         animateProgress()
         await new Promise(resolve => setTimeout(resolve, 200))
@@ -277,6 +319,7 @@ const startLoading = async () => {
 
         // Clear timeout since loading completed successfully
         if (loadingTimeout) clearTimeout(loadingTimeout)
+        console.log("Loading completed successfully")
 
         // Redirect after a short delay
         setTimeout(() => {
@@ -284,6 +327,7 @@ const startLoading = async () => {
         }, 300)
 
     } catch (error) {
+        console.error("Unexpected error during loading:", error)
         handleLoadingError(error, 'unknown')
     }
 }
