@@ -13,7 +13,7 @@
       </div>
       <div class="flex items-center gap-1 text-[12px]">
         <AppIcon name="Timer" :size="12" />
-        <p class="uppercase">{{ time }} min</p>
+        <p class="uppercase">{{ time }} sec</p>
       </div>
     </div>
     <div class="w-[22px] h-[22px] grid place-items-center bg-blue-54 rounded-full aspect-square text-white">

@@ -1,100 +1,114 @@
 <template>
-  <video
-    ref="video"
-    autoplay
-    playsinline
-    muted
-    :class="{ 'camera-flipped': isFrontCamera }"
-  ></video>
-  <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
-  <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
+  <AppLoading v-if="loading" />
+  <div class="flex flex-col" v-else>
+    <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
+    <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
+    <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-  <p
-    :key="score"
-    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
-  >
-    {{ score }}
-  </p>
+    <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
+      {{ score }}
+    </p>
 
-  <!-- Show countdown only for pushups -->
-  <p
-    v-if="
-      $route.path.includes('pushups') ||
-      $route.path.includes('core') ||
-      $route.path.includes('squads') ||
-      $route.path.includes('balance')
-    "
-    class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
-  >
-    {{ countdown }}
-  </p>
+    <!-- Show countdown -->
+    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] bg-black bg-opacity-50 px-6 py-3 rounded-lg">
+      <p :key="countdown" class="text-white text-6xl font-bold countdown-animation">{{ countdown }}</p>
+    </div>
 
-  <!-- Display hold time -->
+    <!-- Display hold time -->
 
-  <!-- Add popup -->
-  <div
-    v-if="showPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
-    <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-      <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
-      <p>Completed Workout</p>
-      <p>{{ score }}</p>
-      <div class="flex gap-4 justify-center">
-        <button
-          @click="restartWorkout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
-          Restart
-        </button>
-        <RouterLink
-          to="/workout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
-          Terug naar menu
-        </RouterLink>
+    <!-- Modified Time's Up popup -->
+    <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+      <div class="bg-white p-8 rounded-xl shadow-lg text-center w-[90%] max-w-md">
+        <div class="bg-blue-6 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+          <span class="text-blue-60 text-3xl">🎉</span>
+        </div>
+        <h2 class="text-2xl font-bold text-blue-60 mb-2">Great Job!</h2>
+        <p class="text-gray-600 mb-4">You've completed your workout</p>
+        <div class="bg-blue-6 rounded-lg p-4 mb-6">
+          <div class="flex justify-center items-center gap-3">
+            <span class="text-blue-60">Score:</span>
+            <span class="text-3xl font-bold text-blue-60 score-animate">{{ displayScore }}</span>
+          </div>
+        </div>
+        <div class="flex gap-4 justify-center">
+          <button @click="restartWorkout" class="bg-blue-60 text-white px-6 py-3 rounded-lg hover:bg-blue-30 transition-colors">
+            Try Again
+          </button>
+          <RouterLink to="/workout" class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors" @click="saveActivity">
+            Back
+          </RouterLink>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Add get ready popup -->
-  <div
-    v-if="showGetReadyPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
-    <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-      <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
-      <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
-      <p class="mb-4">Prepare for your push-up challenge</p>
+    <!-- Modified Get Ready popup with collapsible instructions -->
+    <div v-if="showGetReadyPopup" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[9998] w-[90%] max-w-md get-ready-slide-up">
+      <div class="bg-white p-6 rounded-xl shadow-lg">
+        <div class="flex items-center gap-4 mb-4">
+          <div :class="[
+            'rounded-lg p-3 transition-colors duration-300',
+            instructionsOpen ? 'bg-gray-200' : 'bg-blue-60'
+          ]">
+            <h2 class="text-xl font-bold" :class="instructionsOpen ? 'text-blue-60' : 'text-white'">
+              {{ getReadyCountdown }}
+              <span v-if="instructionsOpen" class="text-sm block">paused</span>
+            </h2>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-blue-60">{{ exerciseData.exerciseName }}</h1>
+            <p class="text-sm text-gray-600">Get ready for your workout!</p>
+          </div>
+        </div>
+
+        <div class="bg-blue-6 rounded-lg p-4 mb-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-blue-60">Time:</span>
+              <span class="font-bold">{{ exerciseData.exerciseTime }}s</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-blue-60">Type:</span>
+              <span class="font-bold">{{ exerciseData.exerciseType }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Instructions -->
+        <details class="mb-4 cursor-pointer" @toggle="instructionsOpen = $event.target.open">
+          <summary class="text-blue-60 font-medium mb-2 hover:text-blue-30 transition-colors">
+            View Instructions
+          </summary>
+          <div class="bg-gray-50 rounded-lg p-4 mt-2">
+            <p class="text-sm text-gray-600 whitespace-pre-line">{{ exerciseData.exerciseInstructions.replace(/<br>/g, '\n') }}</p>
+          </div>
+        </details>
+
+        <RouterLink to="/workout" class="block w-full bg-blue-60 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-30 transition-colors">
+          Cancel
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, onBeforeUnmount } from "vue";
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import AppLoading from "@/components/App/Loading.vue";
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
+
+const loading = ref(true);
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
 const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
 const countdown = ref(30);
+const savedScore = ref(0);
 
-const leftArmDistance = ref(0);
-const rightArmDistance = ref(0);
-const predictions = ref([
-  { className: "", probability: 0 },
-  { className: "", probability: 0 },
-  { className: "", probability: 0 },
-]);
-
-const isInDownPosition = ref(false);
-const MIN_TIME_BETWEEN_REPS = 500;
-const lastRepTime = ref(Date.now());
-
-// Teachable Machine model configuration
 const URL = "/my_model/";
 let model = null;
 let maxPredictions = 0;
@@ -107,7 +121,7 @@ const showPopup = ref(false);
 let isWorkoutActive = ref(true);
 
 const showGetReadyPopup = ref(true);
-const getReadyCountdown = ref(5);
+const getReadyCountdown = ref(10);
 let getReadyInterval;
 let exerciseTimer;
 
@@ -117,78 +131,118 @@ const pullUpInterval = ref(null);
 const hasScored = ref(false);
 
 let holdInterval = null;
+const leftArmDistance = ref(0);
+const rightArmDistance = ref(0);
+const predictions = ref([
+  { className: "", probability: 0 },
+  { className: "", probability: 0 },
+  { className: "", probability: 0 },
+]);
 
-// Lifecycle hooks
-onMounted(async () => {
-  // Add this line at the start of onMounted
+const isInDownPosition = ref(false);
+const MIN_TIME_BETWEEN_REPS = 500;
+const lastRepTime = ref(Date.now());
 
+const exercise = ref(route.params.exercise);
+
+console.log("exercise ->", exercise.value);
+const exerciseData = ref(null);
+
+// Add these refs after other refs
+const isPageActive = ref(true);
+const cameraEnabled = ref(true);
+
+// Add this ref at the top with other refs
+const countdownStarted = ref(false);
+
+// Add this ref at the top with other refs
+const instructionsOpen = ref(false);
+
+// Add these refs at the top
+const animatingScore = ref(false);
+const displayScore = ref(0);
+const finalScore = ref(0);
+
+const func_preload = async () => {
   try {
-    const tfScript = document.createElement("script");
-    tfScript.src =
-      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+    loading.value = true;
+    countdownStarted.value = false;
 
-    const tmScript = document.createElement("script");
-    tmScript.src =
-      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
+    // Fetch exercise data
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercise/${exercise.value}`)
+    const data = await response.json();
+    exerciseData.value = data;
+    console.log("exerciseData loaded ->", exerciseData.value);
 
-    const loadScripts = new Promise((resolve, reject) => {
-      tfScript.onload = () => {
-        document.head.appendChild(tmScript);
-      };
+    // Initialize camera smoothly
+    await new Promise(resolve => setTimeout(resolve, 300));
+    startCamera();
+    enableCamera();
 
-      tmScript.onload = () => {
-        resolve();
-      };
+    // Set countdown value
+    countdown.value = exerciseData.value.exerciseTime || 30;
 
-      tfScript.onerror = (error) => reject(error);
-      tmScript.onerror = (error) => reject(error);
-    });
+    // Smooth transition to workout
+    await new Promise(resolve => setTimeout(resolve, 800));
+    loading.value = false;
 
-    document.head.appendChild(tfScript);
-    await loadScripts;
-
-    await initModel();
-    await startCamera();
-
-    // Start with get ready countdown
+    // Start get ready sequence
+    showGetReadyPopup.value = true;
     isWorkoutActive.value = false;
-    exerciseTimer = setInterval(() => {
-      if (getReadyCountdown.value > 1) {
-        getReadyCountdown.value--;
-      } else {
-        clearInterval(exerciseTimer);
-        showGetReadyPopup.value = false;
-        isWorkoutActive.value = true;
+    getReadyCountdown.value = 10;
 
-        // Start main countdown only for pushups URL
-        const path = window.location.pathname;
-        const lastSegment = path
-          .split("/")
-          .filter((segment) => segment)
-          .pop();
-        if (
-          lastSegment === "pushups" ||
-          lastSegment === "core" ||
-          lastSegment === "squads" ||
-          lastSegment === "balance"
-        ) {
-          countdown.value = 30; // Reset to 30 seconds for pushups and core
-          countdownInterval = setInterval(() => {
-            if (countdown.value > 0) {
-              countdown.value--;
-            } else {
-              clearInterval(countdownInterval);
-              isWorkoutActive.value = false;
-              showPopup.value = true;
+    // Clear any existing intervals
+    if (exerciseTimer) clearInterval(exerciseTimer);
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    // Start get ready countdown with smoother transition
+    exerciseTimer = setInterval(() => {
+      // Only countdown if instructions are not open
+      if (!instructionsOpen.value) {
+        if (getReadyCountdown.value > 1) {
+          setTimeout(() => {
+            getReadyCountdown.value--;
+          }, 100);
+        } else {
+          clearInterval(exerciseTimer);
+          showGetReadyPopup.value = false;
+          isWorkoutActive.value = true;
+
+          // Add small delay before starting main countdown
+          setTimeout(() => {
+            if (!countdownStarted.value) {
+              countdownStarted.value = true;
+              countdownInterval = setInterval(() => {
+                if (countdown.value > 0) {
+                  setTimeout(() => {
+                    countdown.value--;
+                  }, 100);
+                } else {
+                  clearInterval(countdownInterval);
+                  countdownStarted.value = false;
+                  isWorkoutActive.value = false;
+                  savedScore.value += score.value;
+                  showPopup.value = true;
+                  animateScore(); // Start score animation when workout completes
+                }
+              }, 1000);
             }
-          }, 1000);
+          }, 500);
         }
       }
     }, 1000);
   } catch (error) {
-    console.error("Initialization error:", error);
+    console.error("Error in func_preload:", error);
+    loading.value = false;
   }
-});
+}
+
+func_preload();
+
+// Teachable Machine model configuration
+
+// Lifecycle hooks
+
 
 // Modified initModel function
 const initModel = async () => {
@@ -250,34 +304,94 @@ const predict = async () => {
   }
 };
 
-const startCamera = async () => {
-  if (currentStream.value) {
-    currentStream.value.getTracks().forEach((track) => track.stop());
+// Add this function after other function declarations
+const disableCamera = async () => {
+  if (currentStream.value && cameraEnabled.value) {
+    // Pause video instead of stopping tracks
+    if (video.value) {
+      video.value.pause();
+    }
+    // Disable but don't stop tracks
+    currentStream.value.getTracks().forEach((track) => {
+      track.enabled = false;
+    });
+    cameraEnabled.value = false;
   }
+};
 
+const enableCamera = async () => {
+  if (currentStream.value && !cameraEnabled.value) {
+    // Resume video
+    if (video.value) {
+      video.value.play();
+    }
+    // Re-enable tracks
+    currentStream.value.getTracks().forEach((track) => {
+      track.enabled = true;
+    });
+    cameraEnabled.value = true;
+  }
+};
+
+// Modify startCamera function to check page active state
+const startCamera = async () => {
   try {
+    // Only start if page is active
+    if (!isPageActive.value) return;
+
+    // Gracefully stop any existing stream first
+    if (currentStream.value) {
+      currentStream.value.getTracks().forEach((track) => {
+        track.stop();
+        return new Promise(resolve => setTimeout(resolve, 200));
+      });
+    }
+
+    // Rest of existing startCamera code...
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: isFrontCamera.value ? "user" : "environment",
-      },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
     });
 
-    video.value.srcObject = stream;
-    currentStream.value = stream;
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    video.value.onloadedmetadata = () => {
-      video.value.play();
+    if (video.value) {
+      video.value.srcObject = stream;
+      currentStream.value = stream;
+      cameraEnabled.value = true;
+
+      await new Promise((resolve) => {
+        video.value.onloadedmetadata = () => {
+          video.value.play().then(() => {
+            setTimeout(resolve, 300);
+          });
+        };
+      });
+
       initPoseDetection();
-    };
+    }
   } catch (error) {
     console.error("Camera error:", error);
   }
 };
 
 const toggleCamera = async () => {
+  // Add loading state during camera switch
+  loading.value = true;
   isFrontCamera.value = !isFrontCamera.value;
-  await startCamera();
-  initPoseDetection();
+
+  try {
+    await startCamera();
+    // Small delay before removing loading state
+    await new Promise(resolve => setTimeout(resolve, 300));
+  } finally {
+    loading.value = false;
+  }
 };
 
 // Pose detection
@@ -612,48 +726,47 @@ const calculateDistance = (pointA, pointB) => {
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
-// Modified restart function to include get ready countdown
+// Modify the restart function to use the same countdown logic
 const restartWorkout = async () => {
+  // Clear all intervals
   if (pullUpInterval.value) {
     clearTimeout(pullUpInterval.value);
     pullUpInterval.value = null;
   }
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  if (exerciseTimer) {
+    clearInterval(exerciseTimer);
+  }
+
+  // Reset all states
+  countdownStarted.value = false;
   showPopup.value = false;
   showGetReadyPopup.value = true;
   getReadyCountdown.value = 5;
   score.value = 0;
-
-  const path = window.location.pathname;
-  const lastSegment = path
-    .split("/")
-    .filter((segment) => segment)
-    .pop();
-  if (lastSegment === "pushups" || lastSegment === "core") {
-    countdown.value = 30; // Only reset to 30 for pushups and core
-  }
-
-  // Start with get ready countdown again
   isWorkoutActive.value = false;
-  getReadyInterval = setInterval(() => {
+  countdown.value = exerciseData.value.exerciseTime;
+
+  // Start get ready countdown
+  exerciseTimer = setInterval(() => {
     if (getReadyCountdown.value > 1) {
       getReadyCountdown.value--;
     } else {
-      clearInterval(getReadyInterval);
+      clearInterval(exerciseTimer);
       showGetReadyPopup.value = false;
       isWorkoutActive.value = true;
 
-      // Start main workout countdown only for pushups URL
-      const path = window.location.pathname;
-      const lastSegment = path
-        .split("/")
-        .filter((segment) => segment)
-        .pop();
-      if (lastSegment === "pushups" || lastSegment === "core") {
+      // Start main countdown
+      if (!countdownStarted.value) {
+        countdownStarted.value = true;
         countdownInterval = setInterval(() => {
           if (countdown.value > 0) {
             countdown.value--;
           } else {
             clearInterval(countdownInterval);
+            countdownStarted.value = false;
             isWorkoutActive.value = false;
             showPopup.value = true;
           }
@@ -663,15 +776,136 @@ const restartWorkout = async () => {
   }, 1000);
 };
 
-// Add cleanup when component unmounts
+// Add page visibility handling
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    isPageActive.value = false;
+    disableCamera();
+  } else {
+    isPageActive.value = true;
+  }
+});
+
+onMounted(async () => {
+  try {
+    // Load TensorFlow scripts with smooth timing
+    const tfScript = document.createElement("script");
+    tfScript.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
+
+    const tmScript = document.createElement("script");
+    tmScript.src = "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
+
+    const loadScripts = new Promise((resolve, reject) => {
+      tfScript.onload = () => {
+        setTimeout(() => {
+          document.head.appendChild(tmScript);
+        }, 300);
+      };
+
+      tmScript.onload = () => {
+        setTimeout(resolve, 300);
+      };
+
+      tfScript.onerror = (error) => reject(error);
+      tmScript.onerror = (error) => reject(error);
+    });
+
+    document.head.appendChild(tfScript);
+    await loadScripts;
+
+    // Initialize model with smooth transitions
+    await initModel();
+    await new Promise(resolve => setTimeout(resolve, 300));
+  } catch (error) {
+    console.error("Initialization error:", error);
+    loading.value = false;
+  }
+});
+
+// Add to onBeforeUnmount
+onBeforeUnmount(() => {
+  isPageActive.value = false;
+  disableCamera();
+});
+
+// Modify existing onUnmounted to include new cleanup
 onUnmounted(() => {
+  console.log("Component unmounting, cleaning up intervals and camera");
+  document.removeEventListener('visibilitychange', () => { });
+
+  // Only fully stop tracks if we're completely unmounting
+  if (currentStream.value) {
+    currentStream.value.getTracks().forEach((track) => {
+      track.stop();
+    });
+  }
+
   if (pullUpInterval.value) {
     clearTimeout(pullUpInterval.value);
   }
   if (holdInterval) {
     clearInterval(holdInterval);
   }
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  if (exerciseTimer) {
+    clearInterval(exerciseTimer);
+  }
 });
+
+// Add this function for the score animation
+const animateScore = () => {
+  animatingScore.value = true;
+  displayScore.value = 0;
+  finalScore.value = score.value;
+
+  const duration = 1500; // 1.5 seconds
+  const start = performance.now();
+
+  const animate = (currentTime) => {
+    const elapsed = currentTime - start;
+    const progress = Math.min(elapsed / duration, 1);
+
+    displayScore.value = Math.floor(progress * finalScore.value);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      animatingScore.value = false;
+    }
+  };
+
+  requestAnimationFrame(animate);
+};
+
+// Add function to save activity
+const saveActivity = async () => {
+  try {
+    const activityData = {
+      exerciseId: exerciseData.value.exerciseId,
+      score: score.value,
+      duration: exerciseData.value.exerciseTime - countdown.value
+    };
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(activityData)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save activity');
+    }
+
+    console.log('Activity saved successfully');
+  } catch (error) {
+    console.error('Error saving activity:', error);
+  }
+};
+
 </script>
 
 <style scoped>
@@ -709,6 +943,7 @@ canvas {
     opacity: 0;
     transform: translate(-50%, -50%) scale(1.7);
   }
+
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -717,5 +952,87 @@ canvas {
 
 .score-pop {
   animation: scorePop 0.2s ease-out;
+}
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.countdown-animation {
+  animation: countdownPop 0.9s ease-out;
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 100%);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.get-ready-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* Add styles for the details element */
+details>summary {
+  list-style: none;
+}
+
+details>summary::-webkit-details-marker {
+  display: none;
+}
+
+details>summary::after {
+  content: '▼';
+  display: inline-block;
+  margin-left: 0.5rem;
+  transition: transform 0.2s;
+}
+
+details[open]>summary::after {
+  transform: rotate(180deg);
+}
+
+/* Add transition for countdown background */
+.transition-colors {
+  transition-property: background-color, color;
+  transition-timing-function: ease-in-out;
+  transition-duration: 300ms;
+}
+
+@keyframes scoreAnimate {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.score-animate {
+  animation: scoreAnimate 0.3s ease-out;
 }
 </style>
