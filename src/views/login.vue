@@ -43,14 +43,17 @@ import AppCheckbox from '@/components/App/Checkbox.vue';
 import AppNotification from '@/components/App/Notification.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { setUserData, clearUserData, isUserLoggedIn } from '@/utils/auth';
+import { setAuthCookie, setUserCookies, clearAuthCookies, isAuthenticated } from '@/utils/auth';
 
 const router = useRouter();
 const notification = ref(null);
 
-if (localStorage.getItem('loggedIn')) {
-  window.location.href = '/';
-}
+onMounted(() => {
+  // Check if user is already logged in
+  if (isAuthenticated()) {
+    router.push('/')
+  }
+})
 
 const email = ref('');
 const password = ref('');
@@ -110,19 +113,31 @@ const handleLogin = async () => {
         showNewPasswordModal.value = true
         return
       }
-      throw new Error('Login failed')
+      throw new Error(data.message || 'Login failed')
     }
 
-    // Store user data using utility function
-    setUserData(data)
+    // Set auth token first
+    const tokenSet = setAuthCookie(data.authToken)
+    if (!tokenSet) {
+      throw new Error('Failed to set authentication token')
+    }
+
+    // Then set user data
+    const userDataSet = setUserCookies(data)
+    if (!userDataSet) {
+      // If user data fails to set, clear auth token
+      clearAuthCookies()
+      throw new Error('Failed to set user data')
+    }
+
     console.log('Login successful, isAdmin:', data.isAdmin)
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
-    clearUserData()  // Clear any partial data on error
+    clearAuthCookies()  // Clear any partial data on error
     notification.value?.addNotification(
       'Login mislukt',
-      'Controleer je e-mail en wachtwoord',
+      error.message || 'Controleer je e-mail en wachtwoord',
       'error'
     )
   } finally {
@@ -132,11 +147,4 @@ const handleLogin = async () => {
 
 // Update form submit handler
 const login = handleLogin
-
-onMounted(() => {
-  // Check if user is already logged in using utility function
-  if (isUserLoggedIn()) {
-    router.push('/')
-  }
-})
 </script>

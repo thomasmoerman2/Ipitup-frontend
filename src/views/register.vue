@@ -20,7 +20,7 @@
 
     <AppCheckbox title="Ik ga akkoord met de " url="/terms" titleUrl="Terms & Conditions" @update:modelValue="set_isChecked" />
     <AppNotification ref="notification" />
-    <AppButton text="Register" version="primary" icon="false" :disabled="isLoading || !isFormValid"  />
+    <AppButton text="Register" version="primary" icon="false" :disabled="isLoading || !isFormValid" />
 
   </form>
 </template>
@@ -32,17 +32,16 @@ import AppButton from '@/components/App/Button.vue';
 import AppCheckbox from '@/components/App/Checkbox.vue';
 import AppToggle from '@/components/App/Toggle.vue';
 import AppNotification from '@/components/App/Notification.vue';
-import { ref, onMounted } from 'vue';
-import Cookies from 'js-cookie';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { computed } from 'vue';
+import { setAuthCookie, setUserCookies, clearAuthCookies, isAuthenticated } from '@/utils/auth';
 
 const notification = ref(null);
 const router = useRouter();
 
 onMounted(() => {
   // Check if user is already logged in
-  if (Cookies.get('authToken')) {
+  if (isAuthenticated()) {
     router.push('/')
   }
 })
@@ -96,7 +95,7 @@ const isFormValid = computed(() => {
   );
 });
 
-const fetch_register = async () => {
+const handleRegister = async () => {
   try {
     isLoading.value = true
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
@@ -119,18 +118,24 @@ const fetch_register = async () => {
       throw new Error(data.message || 'Registration failed')
     }
 
-    // Store user data in cookies
-    Cookies.set('authToken', data.authToken)
-    Cookies.set('userId', data.userId)
-    Cookies.set('userFirstname', data.firstname)
-    Cookies.set('userLastname', data.lastname)
-    Cookies.set('userEmail', data.email)
-    Cookies.set('accountStatus', data.accountStatus || 'Private')
-    Cookies.set('isAdmin', data.isAdmin || false)  // Store isAdmin status
+    // Set auth token first
+    const tokenSet = setAuthCookie(data.authToken)
+    if (!tokenSet) {
+      throw new Error('Failed to set authentication token')
+    }
+
+    // Then set user data
+    const userDataSet = setUserCookies(data)
+    if (!userDataSet) {
+      // If user data fails to set, clear auth token
+      clearAuthCookies()
+      throw new Error('Failed to set user data')
+    }
 
     router.push('/')
   } catch (error) {
     console.error('Registration error:', error)
+    clearAuthCookies()  // Clear any partial data on error
     notification.value?.addNotification(
       'Registratie mislukt',
       error.message || 'Er ging iets mis bij het registreren',

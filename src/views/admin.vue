@@ -329,8 +329,8 @@
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import AppNotification from '@/components/App/Notification.vue'
-import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
+import { getAuthToken, isAdmin, isAuthenticated } from '@/utils/auth'
 
 const router = useRouter()
 
@@ -357,7 +357,6 @@ const selectedUser = ref(null)
 const notification = ref(null)
 const newPassword = ref('')
 const showAdminDropdown = ref(false)
-const token = ref(Cookies.get('token'))
 
 // Computed Properties
 const currentTabName = computed(() => {
@@ -373,12 +372,21 @@ const fetchItems = async () => {
         isLoading.value = true
         items.value = [] // Clear items before fetching new ones
 
+        const authToken = getAuthToken()
+        if (!authToken) {
+            throw new Error('No auth token available')
+        }
+
         // Special case for exercises
         const endpoint = currentTab.value === 'exercise'
             ? `${apiPath}/api/exercises`
             : `${apiPath}/api/${currentTab.value}`
 
-        const response = await fetch(endpoint)
+        const response = await fetch(endpoint, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        })
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
@@ -389,6 +397,10 @@ const fetchItems = async () => {
     } catch (error) {
         console.error('Error fetching items:', error)
         items.value = [] // Reset items on error
+
+        if (error.message.includes('auth')) {
+            router.push('/login')
+        }
     } finally {
         isLoading.value = false
     }
@@ -404,6 +416,11 @@ const submitForm = async () => {
         isLoading.value = true
         const endpoint = getEndpoint()
         const method = showEditModal.value ? 'PUT' : 'POST'
+        const authToken = getAuthToken()
+
+        if (!authToken) {
+            throw new Error('No auth token available')
+        }
 
         // Prepare form data based on current tab
         const data = prepareFormData()
@@ -437,7 +454,8 @@ const submitForm = async () => {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify(data)
         })
@@ -460,11 +478,15 @@ const submitForm = async () => {
         closeModal()
     } catch (error) {
         console.error('Error submitting form:', error)
-        notification.value?.addNotification(
-            'Error',
-            error.message || 'Failed to save changes',
-            'error'
-        )
+        if (error.message.includes('auth')) {
+            router.push('/login')
+        } else {
+            notification.value?.addNotification(
+                'Error',
+                error.message || 'Failed to save changes',
+                'error'
+            )
+        }
     } finally {
         isLoading.value = false
     }
@@ -531,6 +553,11 @@ const deleteItem = async () => {
     try {
         isLoading.value = true
         const base = currentTab.value === 'exercise' ? 'exercise' : currentTab.value
+        const authToken = getAuthToken()
+
+        if (!authToken) {
+            throw new Error('No auth token available')
+        }
 
         // Get the ID based on the current tab
         let itemId
@@ -562,7 +589,8 @@ const deleteItem = async () => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({ id: itemId })
         })
@@ -580,11 +608,16 @@ const deleteItem = async () => {
         await fetchItems()
         showDeleteModal.value = false
     } catch (error) {
-        notification.value?.addNotification(
-            'Error',
-            error.message || 'Failed to delete item',
-            'error'
-        )
+        console.error('Error deleting item:', error)
+        if (error.message.includes('auth')) {
+            router.push('/login')
+        } else {
+            notification.value?.addNotification(
+                'Error',
+                error.message || 'Failed to delete item',
+                'error'
+            )
+        }
     } finally {
         isLoading.value = false
     }
@@ -673,13 +706,18 @@ const updateAdminStatus = async (user, isAdmin) => {
     try {
         isLoading.value = true
         showAdminDropdown.value = false
+        const authToken = getAuthToken()
+
+        if (!authToken) {
+            throw new Error('No auth token available')
+        }
 
         const response = await fetch(`${apiPath}/api/user/admin`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token.value}`
+                'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
                 id: user.userId,
@@ -704,11 +742,15 @@ const updateAdminStatus = async (user, isAdmin) => {
         )
     } catch (error) {
         console.error('Error updating admin status:', error)
-        notification.value?.addNotification(
-            'Error',
-            error.message || 'Failed to update admin status',
-            'error'
-        )
+        if (error.message.includes('auth')) {
+            router.push('/login')
+        } else {
+            notification.value?.addNotification(
+                'Error',
+                error.message || 'Failed to update admin status',
+                'error'
+            )
+        }
     } finally {
         isLoading.value = false
     }
@@ -717,10 +759,7 @@ const updateAdminStatus = async (user, isAdmin) => {
 // Watch for tab changes
 watch(currentTab, () => {
     // Verify auth status before fetching
-    const authToken = Cookies.get('authToken')
-    const isAdmin = Cookies.get('isAdmin') === 'true'
-
-    if (!authToken || !isAdmin) {
+    if (!isAuthenticated() || !isAdmin()) {
         router.push('/login')
         return
     }
@@ -731,10 +770,7 @@ watch(currentTab, () => {
 // Initial fetch
 onMounted(() => {
     // Check if user is logged in and is admin
-    const authToken = Cookies.get('authToken')
-    const isAdmin = Cookies.get('isAdmin') === 'true'
-
-    if (!authToken || !isAdmin) {
+    if (!isAuthenticated() || !isAdmin()) {
         notification.value?.addNotification(
             'Toegang geweigerd',
             'Je moet ingelogd zijn als administrator om deze pagina te bekijken.',
