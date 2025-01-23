@@ -101,18 +101,21 @@
             </div>
         </div>
 
-        <AppButton text="Save" version="primary" icon="false" @click="saveAvatarFetch" />
+        <AppButton text="Opslaan" version="primary" icon="false" @click="saveAvatarFetch" />
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import AppIcon from '@/components/App/Icon.vue';
 import AppOptions from '@/components/App/Options.vue';
 import AppButton from '@/components/App/Button.vue';
 import { Beanhead } from 'beanheads-vue';
 import { User, Smile, Scissors, Shirt, Glasses } from 'lucide-vue-next';
+import Cookies from 'js-cookie';
 
+const router = useRouter();
 // Active tab state
 const activeTab = ref('appearance');
 
@@ -251,33 +254,51 @@ const accessoryOptions = [
 
 
 const saveAvatarFetch = async () => {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${Cookies.get('user_id')}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Cookies.get('token')}`,
-        },
-        body: JSON.stringify({
-            skin,
-            body,
-            eye,
-            eyebrows,
-            mouth,
-            lipColor,
-            hair,
-            hairColor,
-            facialHair,
-            clothing,
-            clothingColor,
-            hat,
-            hatColor,
-            accessory,
-        })
-    })
+    try {
+        const userId = Cookies.get('userId');
+        const token = Cookies.get('authToken');
 
-    const data = await response.json();
-    console.log(data);
-}
+        if (!userId || !token) {
+            throw new Error('User ID or token not found in cookies');
+        }
+
+        // Maak de string met avatar instellingen
+        const avatarString = [
+            skin.value,
+            body.value,
+            eye.value,
+            eyebrows.value,
+            mouth.value,
+            lipColor.value,
+            hair.value,
+            hairColor.value,
+            facialHair.value,
+            clothing.value,
+            clothingColor.value,
+            hat.value,
+            hatColor.value,
+            accessory.value
+        ].join('|');  // Gebruik een '|' als scheidingsteken
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/avatar/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                avatar: avatarString
+            }),
+        });
+
+        const data = await response.json();
+        console.log('Avatar saved:', data);
+        router.back();
+    } catch (error) {
+        console.error('Error saving avatar:', error.message);
+    }
+};
+
 </script>
 
 <style scoped>

@@ -26,7 +26,7 @@
       :key="winner.userId"
       class="flex flex-col items-center"
     >
-      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" />
+    <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" />
       <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">
         {{ winner.firstname }} {{ winner.lastname }}
       </p>
@@ -285,8 +285,17 @@ const fetchFilteredLeaderboard = async () => {
 
       const userRank = userIndex + 1;
 
-      podiumWinners.value =
-        data.length >= 3 ? [data[1], data[0], data[2]] : data.slice().reverse();
+      podiumWinners.value = data.length >= 3 
+      ? [
+          { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
+          { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
+          { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) }
+        ] 
+      : data.slice(0, 3).map(winner => ({
+          ...winner,
+        parsedAvatar: parseAvatar(winner?.avatar)
+      }));
+
       leaderboardData.value = data.slice(3, 10);
 
       if (userIndex >= 10) {
@@ -329,8 +338,49 @@ const fetchFilteredLeaderboard = async () => {
   } catch (error) {
     console.error("Error fetching leaderboard data:", error);
   }
+
+
 };
 
+const parseAvatar = (avatarString) => {
+  if (!avatarString || typeof avatarString !== 'string') {
+    return {
+      skin: 'light',
+      body: 'chest',
+      eye: 'normal-eyes',
+      eyebrows: 'none',
+      mouth: 'grin',
+      lipColor: 'red',
+      hair: 'none',
+      hairColor: 'brown',
+      facialHair: 'none',
+      clothing: 'none',
+      clothingColor: 'white',
+      hat: 'none',
+      hatColor: 'white',
+      accessory: 'none',
+    };
+  }
+
+  const avatarParts = avatarString.split('|');
+
+  return {
+    skin: avatarParts[0] || 'light',
+    body: avatarParts[1] || 'chest',
+    eye: avatarParts[2] || 'normal-eyes',
+    eyebrows: avatarParts[3] || 'none',
+    mouth: avatarParts[4] || 'grin',
+    lipColor: avatarParts[5] || 'red',
+    hair: avatarParts[6] || 'none',
+    hairColor: avatarParts[7] || 'brown',
+    facialHair: avatarParts[8] || 'none',
+    clothing: avatarParts[9] || 'none',
+    clothingColor: avatarParts[10] || 'white',
+    hat: avatarParts[11] || 'none',
+    hatColor: avatarParts[12] || 'white',
+    accessory: avatarParts[13] || 'none',
+  };
+};
 
 
 
