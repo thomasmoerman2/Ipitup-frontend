@@ -1,7 +1,7 @@
 <template>
 
     <RouterLink to="/profile/settings" class="flex items-center gap-1">
-        <AppIcon name="ArrowLeft" size="24"/>
+        <AppIcon name="ArrowLeft" size="24" />
         <p class="font-medium text-[1.25rem]">Back</p>
     </RouterLink>
 
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <AppButton text="Save" version="primary" icon="false" />
+        <AppButton text="Save" version="primary" icon="false" @click="saveAvatarFetch" />
     </div>
 </template>
 
@@ -248,6 +248,36 @@ const accessoryOptions = [
     { text: 'Tiny', value: 'tiny-glasses' },
     { text: 'Shades', value: 'shades' }
 ];
+
+
+const saveAvatarFetch = async () => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${Cookies.get('user_id')}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Cookies.get('token')}`,
+        },
+        body: JSON.stringify({
+            skin,
+            body,
+            eye,
+            eyebrows,
+            mouth,
+            lipColor,
+            hair,
+            hairColor,
+            facialHair,
+            clothing,
+            clothingColor,
+            hat,
+            hatColor,
+            accessory,
+        })
+    })
+
+    const data = await response.json();
+    console.log(data);
+}
 </script>
 
 <style scoped>

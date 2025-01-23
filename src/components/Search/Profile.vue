@@ -1,29 +1,32 @@
 <template>
   <RouterLink :to="`/user/${id}`" class="flex items-center justify-between h-max">
     <div class="flex items-center">
-    <img :src="img" alt="image" class="w-[57px] h-[57px] rounded-full mr-2"/>
-    <p class="font-bold">{{ name }}</p>
+      <div class="w-16 h-16 grid place-items-center">
+        <Beanhead v-bind="{ mask: true, avatar }" />
+      </div>
+      <p class="font-bold">{{ fullname }}</p>
     </div>
-    <p class="text-xs text-black-40">@{{ username }}</p>
+    <p class="text-xs text-black-40">@{{ firstname }}</p>
   </RouterLink>
 </template>
 
 <script setup>
+import { Beanhead } from 'beanheads-vue';
 
 const props = defineProps({
   id: {
     type: String,
     required: true,
   },
-  img: {
+  avatar: {
     type: String,
     required: true,
   },
-  name: {
+  fullname: {
     type: String,
     required: true,
   },
-  username: {
+  firstname: {
     type: String,
     required: true,
   },

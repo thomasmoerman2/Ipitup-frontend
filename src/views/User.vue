@@ -1,5 +1,10 @@
 <template>
   <div class="flex flex-col justify-between gap-10">
+    <!-- Error Message -->
+    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+      {{ error }}
+    </div>
+
     <!-- Gebruiker Informatie -->
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar :src="userData?.avatar" />
@@ -75,13 +80,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import AppIcon from "@/components/App/Icon.vue";
 import WorkoutRecent from "@/components/Workout/Recent.vue";
 import AppBadge from "@/components/App/Badge.vue";
 import AppLeaderboardPosition from "@/components/App/LeaderboardPosition.vue";
+
+const route = useRoute();
+const userData = ref(null);
+const error = ref(null);
+
+const fetchUserData = async () => {
+  try {
+    error.value = null;
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/info/${route.params.id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    userData.value = data;
+  } catch (e) {
+    console.error('Error fetching user data:', e);
+    error.value = 'Er is een fout opgetreden bij het ophalen van de gebruikersgegevens.';
+    userData.value = null;
+  }
+}
+
+onMounted(async () => {
+  await fetchUserData();
+});
 
 // Toggle tussen Badges en Leaderboard
 const activeTab = ref('badges');
