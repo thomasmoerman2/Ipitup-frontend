@@ -1,7 +1,7 @@
 <template>
   <div class="w-[10rem] h-[10rem] flex items-center justify-center relative">
       <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
-      <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center justify-center absolute bottom-0 right-0">
+      <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center drop-shadow-md justify-center absolute bottom-3 right-6">
           <AppIcon name="pen" color="text-blue-108" :size="14" />
       </div>
   </div>
