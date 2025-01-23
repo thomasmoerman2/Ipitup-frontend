@@ -50,13 +50,15 @@
         </div>
       </div>
 
-      <!-- Only show buttons when there's an error or offline option needed -->
-      <div v-if="retryCount > 0" class="flex flex-col gap-4 mt-4">
+      <!-- Only show buttons when there's an error, offline option needed, or for skipping -->
+      <div v-if="retryCount > 0 || showSkipOption" class="flex flex-col gap-4 mt-4">
         <button v-if="showOfflineOption || retryCount > 0" @click="handleContinueOffline" class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
           Doorgaan zonder internet
+          <span class="block text-xs">Sommige functies zullen niet beschikbaar zijn</span>
         </button>
-        <button v-if="showOfflineOption && !Cookies.get('authToken')" @click="router.push('/login')" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
-          Inloggen
+        <button v-if="!loadingComplete" @click="handleSkipLoading" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
+          Loading overslaan
+          <span class="block text-xs">Beperkte functionaliteit beschikbaar</span>
         </button>
       </div>
     </div>
@@ -92,9 +94,11 @@ const loadingProgress = ref(0);
 const notificationRef = ref(null);
 const targetProgress = ref(0);
 let progressInterval = null;
-const LOADING_TIMEOUT = 8000; // Show offline option after 8 seconds
+const LOADING_TIMEOUT = 3000; // Show offline option after 3 seconds
 let loadingTimeout = null;
 const showOfflineOption = ref(false);
+const showSkipOption = ref(true);
+const loadingComplete = ref(false);
 
 const quotes = [
   "Elke rep telt! 💪",
@@ -195,13 +199,10 @@ const validateToken = async () => {
 };
 
 const getLoadingMessage = (progress) => {
-  if (progress < 15) return "Verbinding maken...";
-  if (progress < 30) return "App voorbereiden...";
-  if (progress < 45) return "Gebruikersgegevens ophalen...";
-  if (progress < 60) return "Oefeningen laden...";
-  if (progress < 75) return "Voorkeuren instellen...";
-  if (progress < 90) return "Bijna klaar...";
-  if (progress < 100) return "Laatste stappen...";
+  if (progress < 25) return "App starten...";
+  if (progress < 50) return "Verbinding controleren...";
+  if (progress < 75) return "Inloggegevens controleren...";
+  if (progress < 100) return "Gebruikersgegevens laden...";
   return "Klaar om te beginnen!";
 };
 
@@ -223,12 +224,13 @@ const animateProgress = () => {
 
   progressInterval = setInterval(() => {
     if (loadingProgress.value < targetProgress.value) {
+      // Faster progress updates - bigger steps
       loadingProgress.value = Math.min(
-        loadingProgress.value + 1,
+        loadingProgress.value + 5,
         targetProgress.value
       );
     }
-  }, 50);
+  }, 20); // Reduced from 50ms to 20ms for smoother animation
 };
 
 const startLoading = async () => {
@@ -237,9 +239,15 @@ const startLoading = async () => {
     targetProgress.value = 0;
     showOfflineOption.value = false;
 
-    // Step 1: Check API health (0-15%)
-    console.log("Checking API health...");
-    targetProgress.value = 15;
+    // Check if we're already in offline/limited mode
+    if (localStorage.getItem('goOffline') === 'true' || localStorage.getItem('skipLoading') === 'true') {
+      targetProgress.value = 100;
+      animateProgress();
+      return;
+    }
+
+    // Immediately show we're checking connection
+    targetProgress.value = 25;
     animateProgress();
 
     let healthCheckSuccess = false;
@@ -253,6 +261,9 @@ const startLoading = async () => {
         }
         healthCheckSuccess = true;
         console.log("Health check successful");
+        // Immediately show success
+        targetProgress.value = 50;
+        animateProgress();
         break;
       } catch (error) {
         console.error(`Health check attempt ${attempt} failed:`, error);
@@ -263,9 +274,12 @@ const startLoading = async () => {
           animateProgress();
           notificationRef.value?.addNotification(
             "Offline modus",
-            "De server is niet bereikbaar na meerdere pogingen. Je kunt offline doorgaan met beperkte functionaliteit.",
-            "warning"
+            "De server is niet bereikbaar. Je kunt offline doorgaan met beperkte functionaliteit.",
+            "error"
           );
+          localStorage.setItem("goOffline", "true");
+          localStorage.setItem("offlineModeStartTime", new Date().toISOString());
+          localStorage.setItem("lastError", "Server niet bereikbaar");
           return;
         } else {
           await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
@@ -275,9 +289,9 @@ const startLoading = async () => {
 
     if (!healthCheckSuccess) return;
 
-    // Step 2: Validate token (15-30%)
+    // Start token validation immediately
     console.log("Starting token validation...");
-    targetProgress.value = 30;
+    targetProgress.value = 75;
     animateProgress();
 
     try {
@@ -291,10 +305,16 @@ const startLoading = async () => {
         notificationRef.value?.addNotification(
           "Niet ingelogd",
           "Je kan offline doorgaan of inloggen voor meer functies",
-          "info"
+          "warning"
         );
+        localStorage.setItem("goOffline", "true");
+        localStorage.setItem("offlineModeStartTime", new Date().toISOString());
+        localStorage.setItem("lastError", "Niet ingelogd");
         return;
       }
+      // Complete loading immediately after successful validation
+      targetProgress.value = 100;
+      animateProgress();
     } catch (error) {
       console.error("Token validation error:", error);
       showOfflineOption.value = true;
@@ -303,18 +323,13 @@ const startLoading = async () => {
       notificationRef.value?.addNotification(
         "Validatie fout",
         "Er was een probleem met het valideren van je sessie. Je kunt offline doorgaan of opnieuw inloggen.",
-        "warning"
+        "error"
       );
+      localStorage.setItem("goOffline", "true");
+      localStorage.setItem("offlineModeStartTime", new Date().toISOString());
+      localStorage.setItem("lastError", "Validatie fout");
       return;
     }
-
-    // Step 3: Load user data (30-60%)
-    targetProgress.value = 60;
-    animateProgress();
-
-    // Step 4: Load exercises (60-100%)
-    targetProgress.value = 100;
-    animateProgress();
   } catch (error) {
     console.error("Loading error:", error);
     showOfflineOption.value = true;
@@ -325,15 +340,21 @@ const startLoading = async () => {
       "Er ging iets mis tijdens het laden",
       "error"
     );
+    localStorage.setItem("goOffline", "true");
+    localStorage.setItem("offlineModeStartTime", new Date().toISOString());
+    localStorage.setItem("lastError", "Onverwachte fout");
   }
 };
 
 const handleContinueOffline = () => {
   try {
     if (loadingTimeout) clearTimeout(loadingTimeout);
-    localStorage.setItem("goOffline", true);
+    localStorage.setItem("goOffline", "true");
+    localStorage.removeItem("skipLoading"); // Ensure only one mode is active
     targetProgress.value = 100;
     animateProgress();
+    // Set session start time for offline mode
+    localStorage.setItem("offlineModeStartTime", new Date().toISOString());
   } catch (error) {
     console.error("Error in offline mode:", error);
     notificationRef.value?.addNotification(
@@ -344,9 +365,40 @@ const handleContinueOffline = () => {
   }
 };
 
-// Watch for loading progress to complete
+const handleSkipLoading = () => {
+  try {
+    if (loadingTimeout) clearTimeout(loadingTimeout);
+    localStorage.setItem("skipLoading", "true");
+    localStorage.removeItem("goOffline"); // Ensure only one mode is active
+    targetProgress.value = 100;
+    animateProgress();
+    // Set session start time for limited mode
+    localStorage.setItem("limitedModeStartTime", new Date().toISOString());
+    notificationRef.value?.addNotification(
+      "Beperkte modus",
+      "Sommige functies zijn mogelijk niet beschikbaar in deze modus",
+      "info"
+    );
+  } catch (error) {
+    console.error("Error in skip loading:", error);
+    notificationRef.value?.addNotification(
+      "Error",
+      "Er is iets misgegaan",
+      "error"
+    );
+  }
+};
+
 const handleLoadingComplete = () => {
   if (loadingProgress.value === 100) {
+    loadingComplete.value = true;
+    // If loading completes normally, clear any offline/limited mode flags
+    if (!showOfflineOption.value && retryCount.value === 0) {
+      localStorage.removeItem("goOffline");
+      localStorage.removeItem("skipLoading");
+      localStorage.removeItem("offlineModeStartTime");
+      localStorage.removeItem("limitedModeStartTime");
+    }
     // Add fade out animation class
     document.querySelector(".min-h-screen")?.classList.add("fade-out");
     // Navigate and emit after animation
