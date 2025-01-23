@@ -8,15 +8,15 @@
       </div>
 
       <div class="flex gap-8 items-center">
-        <div class="flex flex-col items-center">
+        <RouterLink :to="{ path: '/profile/following', query: { tab: 'Volgend' } }" class="flex flex-col items-center cursor-pointer hover:text-blue-54 transition-colors">
           <p class="text-xs">{{ userData.following || 69 }}</p>
           <p class="text-xs text-black-40">volgend</p>
-        </div>
+        </RouterLink>
         <div class="h-8 w-[1px] bg-black-20"></div>
-        <div class="flex flex-col items-center">
+        <RouterLink :to="{ path: '/profile/following', query: { tab: 'Volgers' } }" class="flex flex-col items-center cursor-pointer hover:text-blue-54 transition-colors">
           <p class="text-xs">{{ userData.followers || 420 }}</p>
           <p class="text-xs text-black-40">volgers</p>
-        </div>
+        </RouterLink>
       </div>
 
       <RouterLink to="/profile/settings">
