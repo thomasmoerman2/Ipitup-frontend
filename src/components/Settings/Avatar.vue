@@ -1,17 +1,16 @@
 <template>
-  <div class="w-[10rem] h-[10rem] flex items-center justify-center relative">
-      <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
-      <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center drop-shadow-md justify-center absolute bottom-3 right-6">
-          <AppIcon name="pen" color="text-blue-108" :size="14" />
-      </div>
-  </div>
+    <div class="w-[10rem] h-[10rem] flex items-center justify-center relative">
+        <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
+        <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center drop-shadow-md justify-center absolute bottom-3 right-6">
+            <AppIcon name="pen" color="text-blue-108" :size="14" />
+        </div>
+    </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import AppIcon from '@/components/App/Icon.vue';
 import { Beanhead } from 'beanheads-vue';
-import Cookies from 'js-cookie';
 
 // Default avatar values
 const skin = ref('light');
@@ -30,18 +29,19 @@ const hatColor = ref('white');
 const accessory = ref('none');
 
 const props = defineProps({
-edit: {
-  type: String,
-  default: "false",
-},
+    edit: {
+        type: String,
+        default: "false",
+    },
+    id: {
+        type: String,
+        required: true,
+        default: "1",
+    },
 });
 const loadAvatar = async () => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/avatar/${Cookies.get('userId')}`, {
-            headers: {
-                'Authorization': `Bearer ${Cookies.get('authToken')}`
-            }
-        });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${props.id}`);
 
         if (!response.ok) {
             throw new Error('Failed to fetch avatar');
@@ -72,6 +72,6 @@ const loadAvatar = async () => {
 
 
 onMounted(() => {
-  loadAvatar();
+    loadAvatar();
 });
 </script>

@@ -1,17 +1,11 @@
 <template>
   <!-- Filter Buttons -->
   <div class="flex gap-2 justify-center w-full">
-    <button
-      @click="openSort"
-      class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2"
-    >
+    <button @click="openSort" class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2">
       <AppIcon name="ChevronsUpDown" :size="16" />
       <span class="text-sm">Sorteren op</span>
     </button>
-    <button
-      @click="openFilter"
-      class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2"
-    >
+    <button @click="openFilter" class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2">
       <AppIcon name="Filter" :size="16" />
       <span class="text-sm">Filter</span>
     </button>
@@ -21,12 +15,8 @@
 
   <!-- Podium -->
   <div class="flex items-end justify-center">
-    <div
-      v-for="(winner, index) in podiumWinners"
-      :key="winner.userId"
-      class="flex flex-col items-center"
-    >
-    <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" />
+    <div v-for="(winner, index) in podiumWinners" :key="winner.userId" class="flex flex-col items-center">
+      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="winner.userId" />
       <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">
         {{ winner.firstname }} {{ winner.lastname }}
       </p>
@@ -36,7 +26,7 @@
         <p class="text-xs font-bold text-blue-48">
           {{
             filters.locations.length > 0 &&
-            winner.totalLocationScore !== undefined
+              winner.totalLocationScore !== undefined
               ? winner.totalLocationScore
               : winner.totalScore
           }}
@@ -48,33 +38,17 @@
 
   <!-- Dialogs -->
   <Transition name="dialog">
-    <dialog
-      v-if="sortDialogOpen"
-      @click="sortDialogOpen = false"
-      class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0"
-    >
+    <dialog v-if="sortDialogOpen" @click="sortDialogOpen = false" class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0">
       <div class="dialog-content" @click.stop>
-        <DialogSort
-          :currentSort="selectedSort"
-          @updateSort="applySort"
-          @closeDialog="sortDialogOpen = false"
-        />
+        <DialogSort :currentSort="selectedSort" @updateSort="applySort" @closeDialog="sortDialogOpen = false" />
       </div>
     </dialog>
   </Transition>
 
   <Transition name="dialog">
-    <dialog
-      v-if="filterDialogOpen"
-      @click="filterDialogOpen = false"
-      class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0"
-    >
+    <dialog v-if="filterDialogOpen" @click="filterDialogOpen = false" class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0">
       <div class="dialog-content" @click.stop>
-        <DialogPodiumFilter
-          :currentFilters="filters"
-          @updateFilters="applyFilters"
-          @closeDialog="filterDialogOpen = false"
-        />
+        <DialogPodiumFilter :currentFilters="filters" @updateFilters="applyFilters" @closeDialog="filterDialogOpen = false" />
       </div>
     </dialog>
   </Transition>
@@ -84,12 +58,7 @@
 
   <!-- Leaderboard -->
   <div v-for="(player, index) in displayedLeaderboard" :key="player.userId">
-    <AppLeaderboardPostion
-      :position="player.rank ? player.rank : index + 4"
-      :name="`${player.firstname} ${player.lastname}`"
-      :amount="player.score"
-      :me="player.userId === userId ? 'true' : 'false'"
-    />
+    <AppLeaderboardPostion :position="player.rank ? player.rank : index + 4" :name="`${player.firstname} ${player.lastname}`" :amount="player.score" :me="player.userId === userId ? 'true' : 'false'" />
   </div>
 
 </template>
@@ -147,7 +116,7 @@ const displayedLeaderboard = computed(() => {
     ...player,
     score:
       filters.value.locations.length > 0 &&
-      player.totalLocationScore !== undefined
+        player.totalLocationScore !== undefined
         ? player.totalLocationScore
         : player.totalScore,
   }));
@@ -191,7 +160,7 @@ const fetchFilteredLeaderboard = async () => {
       if (data.length < 2) {
         console.warn("Not enough users found, switching to global.");
         selectedSort.value = "globaal";
-        
+
         // Reset de age filters om spam te voorkomen
         filters.value.minAge = null;
         filters.value.maxAge = null;
@@ -227,8 +196,7 @@ const fetchFilteredLeaderboard = async () => {
           let userData;
           if (filters.value.locations.length) {
             const locationResponse = await fetch(
-              `${import.meta.env.VITE_API_URL}/api/leaderboard/location/${
-                filters.value.locations[0]
+              `${import.meta.env.VITE_API_URL}/api/leaderboard/location/${filters.value.locations[0]
               }/user/${userId}`
             );
 
@@ -285,16 +253,16 @@ const fetchFilteredLeaderboard = async () => {
 
       const userRank = userIndex + 1;
 
-      podiumWinners.value = data.length >= 3 
-      ? [
+      podiumWinners.value = data.length >= 3
+        ? [
           { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
           { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
           { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) }
-        ] 
-      : data.slice(0, 3).map(winner => ({
+        ]
+        : data.slice(0, 3).map(winner => ({
           ...winner,
-        parsedAvatar: parseAvatar(winner?.avatar)
-      }));
+          parsedAvatar: parseAvatar(winner?.avatar)
+        }));
 
       leaderboardData.value = data.slice(3, 10);
 
@@ -307,7 +275,7 @@ const fetchFilteredLeaderboard = async () => {
             filters.value.locations.length > 0
               ? data[userIndex].totalLocationScore
               : data[userIndex].totalScore,
-          rank: userRank, 
+          rank: userRank,
         });
       }
     } else if (

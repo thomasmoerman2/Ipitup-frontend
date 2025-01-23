@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
-      <SettingsAvatar />
+      <SettingsAvatar :id="Cookies.get('userId')" />
       <div class="flex flex-col items-center">
         <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
         <p class="text-xs">{{ userData.username }}</p>
@@ -9,12 +9,12 @@
 
       <div class="flex gap-8 items-center">
         <RouterLink :to="{ path: '/profile/following', query: { tab: 'Volgend' } }" class="flex flex-col items-center cursor-pointer hover:text-blue-54 transition-colors">
-          <p class="text-xs">{{ userData.following || 69 }}</p>
+          <p class="text-xs">{{ userData.following }}</p>
           <p class="text-xs text-black-40">volgend</p>
         </RouterLink>
         <div class="h-8 w-[1px] bg-black-20"></div>
         <RouterLink :to="{ path: '/profile/following', query: { tab: 'Volgers' } }" class="flex flex-col items-center cursor-pointer hover:text-blue-54 transition-colors">
-          <p class="text-xs">{{ userData.followers || 420 }}</p>
+          <p class="text-xs">{{ userData.followers }}</p>
           <p class="text-xs text-black-40">volgers</p>
         </RouterLink>
       </div>
@@ -33,21 +33,16 @@
     <div>
       <p class="font-bold">Moving time</p>
       <div class="w-fit whitespace-nowrap py-3">
-        <AppOptions
-          :options="[
-            { text: 'Deze week', value: 'Deze week' },
-            { text: 'Deze maand', value: 'Deze maand' },
-          ]"
-          v-model="selectedOption"
-          @change="handleOptionChange"
-        />
+        <AppOptions :options="[
+          { text: 'Deze week', value: 'Deze week' },
+          { text: 'Deze maand', value: 'Deze maand' },
+        ]" v-model="selectedOption" @change="handleOptionChange" />
       </div>
       <div class="flex w-full bg-blue-6 h-[10rem] justify-center items-center text-center">[Grafiek]</div>
     </div>
 
     <div class="flex flex-col items-center gap-3">
       <p class="font-bold w-full">Badges</p>
-
       <div class="flex flex-wrap justify-center gap-2">
         <AppBadge v-for="badge in userBadges.slice(0, 8)" :key="badge.badgeId" :exercise="badge.badgeName" :amount="Number(badge.badgeAmount)" />
       </div>
@@ -166,11 +161,15 @@ const fetchUserBadges = async () => {
 const fetchUserFollowers = async () => {
   try {
     const userId = Cookies.get('userId');
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/followers/${userId}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}/followers`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('authToken')}`
+      }
+    });
     const data = await response.json();
     if (data && typeof data.count === 'number') {
       Cookies.set('followers', data.count, { expires: 1 });
-      userData.value.followers = data.count;
+      userData.value.followers = data.count ? data.count : 0;
     }
   } catch (error) {
     console.error('Error fetching followers count:', error);
@@ -180,11 +179,15 @@ const fetchUserFollowers = async () => {
 const fetchUserFollowing = async () => {
   try {
     const userId = Cookies.get('userId');
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/following/${userId}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}/following`, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('authToken')}`
+      }
+    });
     const data = await response.json();
     if (data && typeof data.count === 'number') {
       Cookies.set('following', data.count, { expires: 1 });
-      userData.value.following = data.count;
+      userData.value.following = data.count ? data.count : 0;
     }
   } catch (error) {
     console.error('Error fetching following count:', error);
