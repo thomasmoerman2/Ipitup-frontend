@@ -16,7 +16,7 @@
   <!-- Podium -->
   <div class="flex items-end justify-center">
     <div v-for="(winner, index) in podiumWinners" :key="winner.userId" class="flex flex-col items-center">
-      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="winner.userId" />
+      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="`${winner.userId}`"/>
       <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">
         {{ winner.firstname }} {{ winner.lastname }}
       </p>
@@ -188,8 +188,8 @@ const fetchFilteredLeaderboard = async () => {
       );
 
       if (userIndex === -1) {
-        console.warn(
-          `User ${userId} not already in leaderboard, fetching user score.`
+        console.log(
+          `User ${userId} not in Top 10 of leaderboard, fetching user score.`
         );
 
         try {
