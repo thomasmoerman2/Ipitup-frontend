@@ -21,6 +21,7 @@
       @updateFilters="handleFilterUpdate"
       :currentFilters="activeFilters"
       :dataset="exercises"
+      :version="'light'"
     />
 
     <!-- Workout Content -->
@@ -32,10 +33,10 @@
         :img="getExerciseImage(exercise.exerciseType)"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
-        :time="exercise.exerciseTime"
-        :isFavorite="isFavorite"
+        :time=String(exercise.exerciseTime)
+        :isFavorite="isFavorite || []"
         @setFavorite="setFavorite"
-        :id="exercise.exerciseId"
+        :id=String(exercise.exerciseId)
       />
       <div v-else>
         <p class="text-blue-54 text-sm">

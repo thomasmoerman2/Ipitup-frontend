@@ -1,5 +1,5 @@
 <template>
-    <Filters v-if="props.title" :text="props.title" @click="func_openDialog" :icon="props.icon" />
+    <Filters v-if="props.title" :text="props.title" @click="func_openDialog" :icon="props.icon" :version="props.version"/>
 
     <Transition name="dialog">
         <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
@@ -50,6 +50,14 @@ const props = defineProps({
     currentFilters: {
         type: Array,
         default: () => []
+    },
+    dataset: {
+        type: Array,
+        default: () => []
+    },
+    version: {  // Voeg deze prop toe
+        type: String,
+        default: 'light',
     }
 });
 

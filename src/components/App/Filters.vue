@@ -26,7 +26,7 @@ const props = defineProps({
 
   version: {
     type: String,
-    required: "true",
+    required: true,
     default: "light",
     validator: (value) => {
       return ["dark", "light"].includes(value);
