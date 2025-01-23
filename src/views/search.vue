@@ -15,7 +15,7 @@
         </div>
 
         <div class="flex flex-col gap-2.5">
-            <SearchProfile v-for="profile in profiles" :key="profile.id" :id="profile.id" :avatar="profile.avatar" :fullname="profile.firstname + ' ' + profile.lastname" :firstname="profile.firstname" />
+            <SearchProfile v-for="profile in profiles" :key="profile.id" :id=String(profile.id) :avatar="profile.avatar" :fullname="profile.firstname + ' ' + profile.lastname" :firstname="profile.firstname" />
             <p v-if="profiles.length === 0 && searchQuery.length > 0" class="text-blue-54 text-sm">Geen resultaten gevonden</p>
         </div>
     </div>
