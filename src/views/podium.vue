@@ -88,9 +88,10 @@
       :position="player.rank ? player.rank : index + 4"
       :name="`${player.firstname} ${player.lastname}`"
       :amount="player.score"
-      :class="{ 'font-bold': player.userId === userId }"
+      :me="player.userId === userId ? 'true' : 'false'"
     />
   </div>
+
 </template>
 
 <script setup>
@@ -108,23 +109,29 @@ import AppNotification from "@/components/App/Notification.vue";
 const searchQuery = ref("");
 const sortDialogOpen = ref(false);
 const filterDialogOpen = ref(false);
-
 const selectedSort = ref("globaal");
+const userId = Number(Cookies.get("userId"));
 
-const applySort = (sortType) => {
-  selectedSort.value = sortType;
-  fetchFilteredLeaderboard();
-};
+const podiumWinners = ref([]);
+const leaderboardData = ref([]);
 
-const openSort = () => {
-  sortDialogOpen.value = true;
-};
+const notification = ref(null);
+let notificationShown = false;
 
 const filters = ref({
   locations: [],
   minAge: null,
   maxAge: null,
 });
+
+const openSort = () => {
+  sortDialogOpen.value = true;
+};
+
+const applySort = (sortType) => {
+  selectedSort.value = sortType;
+  fetchFilteredLeaderboard();
+};
 
 const openFilter = () => {
   filterDialogOpen.value = true;
@@ -134,11 +141,6 @@ const applyFilters = (newFilters) => {
   filters.value = { ...newFilters }; // Sla de nieuwe filterwaarden op
   fetchFilteredLeaderboard();
 };
-
-const podiumWinners = ref([]);
-const leaderboardData = ref([]);
-
-const notification = ref(null);
 
 const displayedLeaderboard = computed(() => {
   return leaderboardData.value.map((player) => ({
@@ -167,7 +169,6 @@ const fetchFilteredLeaderboard = async () => {
     params.append("sortType", selectedSort.value);
   }
 
-  const userId = Number(Cookies.get("userId"));
   if (selectedSort.value === "volgend") {
     if (userId && userId !== 0) {
       params.append("userId", userId);
@@ -181,22 +182,24 @@ const fetchFilteredLeaderboard = async () => {
 
   try {
     const response = await fetch(
-      `${
-        import.meta.env.VITE_API_URL
-      }/api/leaderboard/filter?${params.toString()}`
+      `${import.meta.env.VITE_API_URL}/api/leaderboard/filter?${params.toString()}`
     );
     let data = await response.json();
     console.log("Leaderboard API response:", data);
 
     if (response.ok && Array.isArray(data)) {
-      // Controleer of er minder dan 2 volgend zijn, schakel naar globaal
-      if (data.length < 2 && selectedSort.value === "volgend") {
-        console.warn("Not enough following data found, switching to global.");
+      if (data.length < 2) {
+        console.warn("Not enough users found, switching to global.");
         selectedSort.value = "globaal";
+        
+        // Reset de age filters om spam te voorkomen
+        filters.value.minAge = null;
+        filters.value.maxAge = null;
+        filters.value.locations = [];
 
         notification.value?.addNotification(
-          "Minder dan 2 volgend",
-          "Je volgt minder dan 2 gebruikers dus we schakelen over naar de globale ranglijst.",
+          "Te weinig gebruikers",
+          "Er zijn te weinig gebruikers gevonden in deze leeftijdscategorie. We schakelen over naar de globale ranglijst.",
           "error"
         );
 
@@ -215,10 +218,9 @@ const fetchFilteredLeaderboard = async () => {
         (player) => Number(player.userId) === userId
       );
 
-      // Als de gebruiker niet in de lijst staat, voeg hem toe en herbereken
       if (userIndex === -1) {
         console.warn(
-          `User ${userId} not found in leaderboard, fetching user score.`
+          `User ${userId} not already in leaderboard, fetching user score.`
         );
 
         try {
@@ -229,11 +231,21 @@ const fetchFilteredLeaderboard = async () => {
                 filters.value.locations[0]
               }/user/${userId}`
             );
+
+            if (!locationResponse.ok) {
+              throw new Error(`No data found for user ${userId} at location`);
+            }
+
             userData = await locationResponse.json();
           } else {
             const userResponse = await fetch(
               `${import.meta.env.VITE_API_URL}/api/user/${userId}`
             );
+
+            if (!userResponse.ok) {
+              throw new Error(`No data found for user ${userId}`);
+            }
+
             userData = await userResponse.json();
           }
 
@@ -246,29 +258,37 @@ const fetchFilteredLeaderboard = async () => {
           };
 
           data.push(userEntry);
-
-          // Sorteer opnieuw met gebruiker toegevoegd
-          data.sort(
-            (a, b) =>
-              (b.totalLocationScore ?? b.totalScore) -
-              (a.totalLocationScore ?? a.totalScore)
-          );
-          userIndex = data.findIndex(
-            (player) => Number(player.userId) === userId
-          );
         } catch (fetchError) {
-          console.error("Error fetching user score:", fetchError);
+          console.warn(
+            `Error fetching user data, adding user with default values: ${fetchError.message}`
+          );
+
+          data.push({
+            userId: userId,
+            firstname: Cookies.get("userFirstname") || "Jij",
+            lastname: Cookies.get("userLastname") || "",
+            totalScore: 0,
+            totalLocationScore: 0,
+          });
         }
+
+        data.sort(
+          (a, b) =>
+            (b.totalLocationScore ?? b.totalScore) -
+            (a.totalLocationScore ?? a.totalScore)
+        );
+
+        userIndex = data.findIndex(
+          (player) => Number(player.userId) === userId
+        );
       }
 
       const userRank = userIndex + 1;
 
-      // Toon de top 10 spelers
       podiumWinners.value =
         data.length >= 3 ? [data[1], data[0], data[2]] : data.slice().reverse();
       leaderboardData.value = data.slice(3, 10);
 
-      // Als de gebruiker niet in de top 10 zit, voeg hem onderaan toe met correcte rang en juiste score
       if (userIndex >= 10) {
         leaderboardData.value.push({
           userId: userId,
@@ -278,18 +298,21 @@ const fetchFilteredLeaderboard = async () => {
             filters.value.locations.length > 0
               ? data[userIndex].totalLocationScore
               : data[userIndex].totalScore,
-          rank: userRank, // Correcte rang invoegen
+          rank: userRank, 
         });
       }
     } else if (
       response.status === 404 ||
       data.message === "No leaderboard entries found with given filters."
     ) {
-      // Geen resultaten gevonden, toon melding
       console.warn(
         "No leaderboard data found, switching to global leaderboard."
       );
+
       selectedSort.value = "globaal";
+      filters.value.minAge = null;
+      filters.value.maxAge = null;
+      filters.value.locations = [];
 
       notification.value?.addNotification(
         "Geen gebruikers gevonden",
@@ -307,6 +330,10 @@ const fetchFilteredLeaderboard = async () => {
     console.error("Error fetching leaderboard data:", error);
   }
 };
+
+
+
+
 
 onMounted(() => {
   fetchFilteredLeaderboard();
