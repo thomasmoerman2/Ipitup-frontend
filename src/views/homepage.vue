@@ -1,7 +1,7 @@
 <template>
   <div class=" flex w-full h-max gap-1 items-center bg-blue-6 p-2 rounded-full" v-if="isLoggedIn">
     <div class="w-16 h-16 bg-gradient-to-t from-blue-18 to-blue-12 rounded-full flex items-center justify-center aspect-square">
-      <img class="w-6" src="/public/fireblue.png" alt="Fire" />
+      <img class="w-6" src="/fireblue.png" alt="Fire" />
     </div>
     <div class="flex flex-col relative size-full">
       <p class="font-bold text-[.875rem]">Doe zo verder!</p>
@@ -10,7 +10,7 @@
   </div>
   <div class=" flex w-full h-max gap-1 items-center bg-blue-6 p-2 rounded-full" v-else>
     <div class="w-16 h-16 bg-gradient-to-t from-blue-18 to-blue-12 rounded-full flex items-center justify-center aspect-square">
-      <img class="w-8" src="/public/user.png" alt="User" />
+      <img class="w-8" src="/user.png" alt="User" />
     </div>
     <div class="flex flex-col relative size-full">
       <p class="font-bold text-[.875rem]">Wordt een echte Ipitup!</p>

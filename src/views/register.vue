@@ -119,7 +119,7 @@ const handleRegister = async () => {
         email: email.value,
         password: password.value,
         birthDate: dateOfBirth.value,
-        accountStatus: visibility.value.toLowerCase()
+        accountStatus: visibility.value === 'Publiek' ? 'public' : 'private'
       }),
     })
 

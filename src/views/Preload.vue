@@ -1,11 +1,7 @@
 <template>
-  <div
-    class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8"
-  >
+  <div class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8">
     <!-- Main content -->
-    <div
-      class="flex-1 flex flex-col items-center justify-center w-full max-w-sm"
-    >
+    <div class="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
       <!-- App intro -->
       <div class="flex flex-col items-center gap-4 mb-12">
         <h1 class="text-4xl font-bold text-blue-54 animate-fade-in">
@@ -21,15 +17,8 @@
         <div class="relative w-full flex items-center justify-center">
           <!-- Animated workout icon -->
           <div class="flex flex-col items-center gap-2">
-            <div
-              class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg"
-            >
-              <AppIcon
-                name="Dumbbell"
-                :size="32"
-                color="text-white"
-                class="animate-bounce-slow"
-              />
+            <div class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg">
+              <AppIcon name="Dumbbell" :size="32" color="text-white" class="animate-bounce-slow" />
             </div>
             <p class="text-2xl font-bold text-blue-54">
               {{ Math.round(loadingProgress) }}%
@@ -40,10 +29,7 @@
         <!-- Loading status -->
         <div class="flex flex-col items-center gap-4">
           <div class="w-48 h-1.5 bg-blue-12 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-blue-54 transition-all duration-700 ease-out"
-              :style="{ width: `${loadingProgress}%` }"
-            ></div>
+            <div class="h-full bg-blue-54 transition-all duration-700 ease-out" :style="{ width: `${loadingProgress}%` }"></div>
           </div>
           <div class="h-12 text-center">
             <transition name="fade" mode="out-in">
@@ -65,27 +51,11 @@
       </div>
 
       <!-- Only show buttons when there's an error or offline option needed -->
-      <div
-        v-if="
-          retryCount > 0 ||
-          (showOfflineOption &&
-            !Cookies.get('authToken') &&
-            loadingProgress < 100)
-        "
-        class="flex flex-col gap-4 mt-4"
-      >
-        <button
-          v-if="showOfflineOption || retryCount > 0"
-          @click="handleContinueOffline"
-          class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300"
-        >
+      <div v-if="retryCount > 0" class="flex flex-col gap-4 mt-4">
+        <button v-if="showOfflineOption || retryCount > 0" @click="handleContinueOffline" class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
           Doorgaan zonder internet
         </button>
-        <button
-          v-if="showOfflineOption && !Cookies.get('authToken')"
-          @click="router.push('/login')"
-          class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300"
-        >
+        <button v-if="showOfflineOption && !Cookies.get('authToken')" @click="router.push('/login')" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
           Inloggen
         </button>
       </div>
@@ -94,26 +64,12 @@
     <!-- Logos -->
     <div class="flex flex-col items-center gap-4">
       <strong class="text-xs text-black-60">Powered by</strong>
-      <div
-        class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl"
-      >
-        <div
-          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
-        >
-          <img
-            src="/logo/howest.png"
-            alt="Howest"
-            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
-          />
+      <div class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl">
+        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
+          <img src="/logo/howest.png" alt="Howest" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
         </div>
-        <div
-          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
-        >
-          <img
-            src="/logo/sport-beweging.png"
-            alt="Sport Beweging"
-            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
-          />
+        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
+          <img src="/logo/sport-beweging.png" alt="Sport Beweging" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
         </div>
       </div>
     </div>
@@ -515,6 +471,7 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(-5%);
