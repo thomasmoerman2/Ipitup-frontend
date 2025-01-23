@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <div class="flex uppercase text-blue-60 text-6xl justify-center items-center py-10 flex-col anim-letters" :class="{ animate: shouldAnimate }">
+  <div class="flex uppercase text-blue-60 text-6xl justify-center items-center py-10 flex-col anim-letters" :class="{ animate: shouldAnimate }" v-if="!isLoggedIn">
     <p class="font-bold">make</p>
     <p class="text-black-100 text-2xl text-center">your</p>
     <p>move</p>

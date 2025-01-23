@@ -116,6 +116,8 @@ const retryCount = ref(0);
 const retryCountdown = ref(0);
 let retryInterval = null;
 
+localStorage.removeItem('animationPlayed')
+
 const clearAllCookies = () => {
   Cookies.remove("authToken");
   Cookies.remove("userId");
