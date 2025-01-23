@@ -26,16 +26,34 @@
       {{ formattedAmount }}
     </span>
 
-    <!-- Onderste decoratie -->
-    <div
+    <!-- Onderste decoratie of vlam icoon -->
+    <div v-if="exercise !== 'Non-Stop'" 
       class="absolute -bottom-2 rounded-full border-[3px] p-2 border-white"
       :style="{ backgroundColor: badgeColor }"
     ></div>
+    
+    <div v-else class="absolute -bottom-2">
+      <AppIcon
+        name="Flame"
+        color="text-white"
+        :size="34"
+        :fill="'url(#flame-gradient)'"
+      />
+      <svg width="0" height="0">
+        <defs>
+          <linearGradient id="flame-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#FF0000" />
+            <stop offset="100%" stop-color="#FFD900" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import AppIcon from '@/components/App/Icon.vue';
 
 const props = defineProps({
   state: {
@@ -62,6 +80,7 @@ const badgeColor = computed(() => {
     "Squat": '#8B1F21',    // Rood
     "Pull-up": '#1F8B36',   // Groen
     "Sit-up": '#6C1F8B',    // Paars
+    "Non-Stop": '#D2992F', // Goudkleur voor Non-Stop
   }[props.exercise] || '#737373'; // Standaard grijs als fallback
 });
 
