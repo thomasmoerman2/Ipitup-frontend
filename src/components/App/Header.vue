@@ -1,17 +1,23 @@
 <template>
     <header class="flex justify-between items-center py-5">
-        <h1 class="text-lg font-semibold capitalize">{{ pageTitle }}</h1>
+        <h1 class="text-lg flex items-center gap-1 font-semibold capitalize">{{ pageTitle }} <span v-if="meta.name"> - {{ meta.name }}</span></h1>
         <Notification :messages="[]" />
     </header>
 </template>
 
 <script setup>
-import { computed, inject } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Notification from '@/components/Header/Notification.vue';
 
 const route = useRoute();
 
+const props = defineProps({
+    meta: {
+        type: String,
+        required: true,
+    },
+});
 
 const pageTitle = computed(() => {
     const segments = route.path.split('/').filter(Boolean);
