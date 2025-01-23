@@ -8,12 +8,11 @@
 
     <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
 
-    <div class="flex items-center gap-1 flex-wrap">
-      <AppCheckbox title="Mij herinneren" />
-      <RouterLink to="/forgot-password" class="text-blue-54 text-xs">Wachtwoord vergeten?</RouterLink>
-    </div>
     <AppNotification ref="notification" />
-    <AppButton text="Inloggen" version="primary" icon="false" :disabled="isLoading" />
+    <div class="flex flex-col gap-2">
+      <RouterLink to="/forgot-password" class="text-blue-54 text-xs">Wachtwoord vergeten?</RouterLink>
+      <AppButton text="Inloggen" version="primary" icon="false" :disabled="isLoading" />
+    </div>
   </form>
 
   <!-- Password Display Modal -->
