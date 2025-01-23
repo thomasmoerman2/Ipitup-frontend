@@ -57,7 +57,7 @@ import AppIcon from '@/components/App/Icon.vue';
 
 const props = defineProps({
   state: {
-    type: Boolean,  // Verander de type naar Boolean voor betere verwerking
+    type: [Boolean, String],  // Verander de type naar Boolean voor betere verwerking
     default: true,  // Standaard naar 'true' als badge is behaald
   },
   exercise: {

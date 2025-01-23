@@ -1,12 +1,12 @@
 <template>
     <RouterLink to="/profile" class="flex items-center gap-1">
-        <AppIcon name="ArrowLeft" size="24" />
+        <AppIcon name="ArrowLeft" :size="24" />
         <p class="font-medium text-[1.25rem]">Back</p>
     </RouterLink>
 
     <div class="w-full flex flex-col items-center justify-center gap-5">
         <RouterLink to="/profile/customize" class="w-max flex justify-center">
-            <SettingsAvatar edit="true" />
+            <SettingsAvatar :id="userId" edit="true" />
         </RouterLink>
         <p class="text-sm text-black-100 lowercase">{{ formData.username }}</p>
         <AppSmallButton icon="Globe" version="blue" :text="formData.accountStatus === 'Public' ? 'Publieke gebruiker' : 'Privé gebruiker'" />
@@ -55,6 +55,7 @@ import AppNotification from '@/components/App/Notification.vue'
 const router = useRouter()
 const notification = ref(null)
 const isLoading = ref(false)
+const userId = Cookies.get('userId') || '';
 
 // Form data with initial values from cookies
 const formData = ref({

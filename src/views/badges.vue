@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col gap-10">
       <RouterLink to="/profile" class="flex items-center gap-1">
-        <AppIcon name="ArrowLeft" size="24" />
+        <AppIcon name="ArrowLeft" :size="24" />
         <p class="font-medium text-[1.25rem]">Back</p>
       </RouterLink>
   
@@ -11,7 +11,7 @@
         </div>
         <div class="w-max flex items-center text-center">
           <p>Non-stop</p>
-          <AppIcon name="Flame" color="text-blue-48" size="20" />
+          <AppIcon name="Flame" color="text-blue-48" :size="20" />
           <p>{{ dailyStreak }}</p>
         </div>
       </div>
