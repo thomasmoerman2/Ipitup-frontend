@@ -18,6 +18,12 @@
     </div>
   </div>
 
+  <div class="flex uppercase text-blue-60 text-6xl justify-center items-center py-10 flex-col anim-letters" :class="{ animate: shouldAnimate }">
+    <p class="font-bold">make</p>
+    <p class="text-black-100 text-2xl text-center">your</p>
+    <p>move</p>
+  </div>
+
   <p class="text-orange-35 font-bold pb-4 pt-4" v-if="isLoggedIn">Welkom terug!</p>
   <h1 class="text-blue-60 text-3xl pb-8" v-if="isLoggedIn">
     Klaar voor de volgende <span class="font-bold"> training?</span>
@@ -48,7 +54,14 @@ import Cookies from 'js-cookie';
 const router = useRouter();
 const isLoggedIn = ref(false);
 const exercises = ref([]);
+const shouldAnimate = ref(false);
 
+onMounted(() => {
+  if (!localStorage.getItem('animationPlayed')) {
+    shouldAnimate.value = true;
+    localStorage.setItem('animationPlayed', 'true');
+  }
+});
 
 const fetch_3_exercises = async () => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/random`);
@@ -66,6 +79,77 @@ const func_change_page = () => {
   window.location.href = '/exercises';
 }
 
-
-
 </script>
+
+<style scoped>
+.anim-letters.animate p:nth-child(1) {
+  animation: anim-letters-down 1s ease-in-out;
+  animation-delay: 0.2s;
+  transform: translateY(-100%);
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+  will-change: transform, opacity;
+}
+
+.anim-letters.animate p:nth-child(2) {
+  animation: anim-letters-right 1s ease-in-out;
+  animation-delay: 0.4s;
+  transform: translateX(-100%);
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+  will-change: transform, opacity;
+}
+
+.anim-letters.animate p:nth-child(3) {
+  animation: anim-letters-up 1s ease-in-out;
+  animation-delay: 0.6s;
+  transform: translateY(100%);
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+  will-change: transform, opacity;
+}
+
+.anim-letters:not(.animate) p {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes anim-letters-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes anim-letters-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes anim-letters-right {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

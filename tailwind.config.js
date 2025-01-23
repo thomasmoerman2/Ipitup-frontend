@@ -19,6 +19,8 @@ export default {
         sm: ".9375rem",
         base: "1rem",
         lg: "1.5rem",
+        "5xl": "2rem",
+        "6xl": "2.5rem",
       },
       colors: {
         orange: {
