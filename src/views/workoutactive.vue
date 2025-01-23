@@ -21,7 +21,7 @@
     v-if="
       $route.path.includes('pushups') ||
       $route.path.includes('core') ||
-      $route.path.includes('squads') ||
+      $route.path.includes('squats') ||
       $route.path.includes('balance')
     "
     class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
@@ -118,6 +118,10 @@ const hasScored = ref(false);
 
 let holdInterval = null;
 
+// Add this ref to track the last push-up score time
+const lastPushUpScoreTime = ref(Date.now());
+const PUSH_UP_COOLDOWN = 1000; // 1 second cooldown
+
 // Lifecycle hooks
 onMounted(async () => {
   // Add this line at the start of onMounted
@@ -169,7 +173,7 @@ onMounted(async () => {
         if (
           lastSegment === "pushups" ||
           lastSegment === "core" ||
-          lastSegment === "squads" ||
+          lastSegment === "squats" ||
           lastSegment === "balance"
         ) {
           countdown.value = 30; // Reset to 30 seconds for pushups and core
@@ -327,8 +331,8 @@ const initPoseDetection = () => {
         detectPullUp(results.poseLandmarks);
       } else if (lastSegment === "core") {
         detectCore(results.poseLandmarks);
-      } else if (lastSegment === "squads") {
-        detectSquads(results.poseLandmarks);
+      } else if (lastSegment === "squats") {
+        detectSquats(results.poseLandmarks);
       } else if (lastSegment === "balance") {
         detectBalance(results.poseLandmarks);
       }
@@ -409,9 +413,9 @@ const detectBalance = (landmarks) => {
   }
 };
 
-const detectSquads = (landmarks) => {
+const detectSquats = (landmarks) => {
   if (!isWorkoutActive.value) return;
-  console.log("SQUADS DETECTED");
+  console.log("SQUAtS DETECTED");
   const leftHip = landmarks[23];
   const rightHip = landmarks[24];
   const leftKnee = landmarks[25];
@@ -577,7 +581,7 @@ const detectPullUp = (landmarks) => {
   }
 };
 
-// Modified detectPushUp function with timing
+// Modified detectPushUp function with cooldown
 const detectPushUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
@@ -588,18 +592,26 @@ const detectPushUp = (landmarks) => {
   const distance = calculateDistance(leftShoulder, leftWrist);
 
   // Define thresholds
-  const CLOSE_THRESHOLD = 0.1; // Threshold for "really close"
-  const STRETCH_THRESHOLD = 0.15; // Threshold for "arms stretched out"
+  const CLOSE_THRESHOLD = 0.08; // Threshold for "really close"
+  const STRETCH_THRESHOLD = 0.11; // Threshold for "arms stretched out"
   console.log(distance);
+
+  const currentTime = Date.now();
+
   // Check if arms are stretched out
   if (distance > STRETCH_THRESHOLD) {
     isInDownPosition.value = false; // Reset the down position
   }
 
-  // Increment score if the distance is below the close threshold and arms were stretched out
-  if (distance < CLOSE_THRESHOLD && !isInDownPosition.value) {
+  // Increment score if the distance is below the close threshold, arms were stretched out, and cooldown has passed
+  if (
+    distance < CLOSE_THRESHOLD &&
+    !isInDownPosition.value &&
+    currentTime - lastPushUpScoreTime.value > PUSH_UP_COOLDOWN
+  ) {
     score.value++;
     isInDownPosition.value = true; // Set the down position
+    lastPushUpScoreTime.value = currentTime; // Update the last score time
     console.log("Push-up detected: left shoulder and wrist are close!");
   }
 };

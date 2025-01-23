@@ -1,7 +1,11 @@
 <template>
   <div class="flex flex-col gap-4">
     <!-- Selected Filters Display -->
-    <div v-if="activeFilters.length > 0" class="flex flex-wrap gap-2 px-4">
+    <div
+      v-if="activeFilters.length > 0"
+      data-type="filter"
+      class="flex flex-wrap gap-2 px-4"
+    >
       <div
         v-for="filter in activeFilters"
         :key="filter.id"
@@ -29,11 +33,12 @@
         v-if="exercises.length > 0"
         v-for="exercise in filteredExercises"
         :key="exercise.id"
-        :img="exercise.image"
+        :img="exercise.exerciseType"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
         :time="exercise.exerciseTime"
         :isFavorite="isFavorite"
+        :type="exercise.exerciseType"
         @setFavorite="setFavorite"
         :id="exercise.exerciseId"
       />
@@ -91,9 +96,10 @@ const filteredExercises = computed(() => {
   return exercises.value.filter((exercise) => {
     // Check each filter category
     return activeFilters.value.every((filter) => {
+      console.log(filter.name, exercise.exerciseType);
       switch (filter.category) {
         case "exercise":
-          return exercise.type === filter.name;
+          return exercise.exerciseType === filter.name;
         case "level":
           return exercise.level === parseInt(filter.name.split(" ")[1]);
         case "switch":
