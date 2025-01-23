@@ -120,7 +120,7 @@ const fetchUserActivitiesCount = async () => {
     const data = await response.json();
     if (data && typeof data.count === 'number') {
       Cookies.set('activitiesCount', data.count, { expires: 1 }); // Sla altijd op en vernieuw cookie
-      userData.value.activitiesCount = data.count;
+      userData.value.activitiesCount = data.count ? data.count : 0;
     }
   } catch (error) {
     console.error('Error fetching activity count:', error);
@@ -134,7 +134,7 @@ const fetchUserBadgeCount = async () => {
     const data = await response.json();
     if (data && typeof data.count === 'number') {
       Cookies.set('badgeCount', data.count, { expires: 1 }); // Sla in cookies op
-      userData.value.badgeCount = data.count; // Update de state
+      userData.value.badgeCount = data.count ? data.count : 0; // Update de state
     }
   } catch (error) {
     console.error('Error fetching badge count:', error);
@@ -149,7 +149,6 @@ const fetchUserBadges = async () => {
 
     if (data && Array.isArray(data.badges)) {
       userBadges.value = data.badges;
-      console.log('Fetched badges: ', userBadges.value);
     } else {
       console.warn('No badges found');
     }
@@ -161,16 +160,13 @@ const fetchUserBadges = async () => {
 const fetchUserFollowers = async () => {
   try {
     const userId = Cookies.get('userId');
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}/followers`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/followers/${userId}`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('authToken')}`
       }
     });
     const data = await response.json();
-    if (data && typeof data.count === 'number') {
-      Cookies.set('followers', data.count, { expires: 1 });
-      userData.value.followers = data.count ? data.count : 0;
-    }
+    userData.value.followers = data.followers.length;
   } catch (error) {
     console.error('Error fetching followers count:', error);
   }
@@ -179,16 +175,13 @@ const fetchUserFollowers = async () => {
 const fetchUserFollowing = async () => {
   try {
     const userId = Cookies.get('userId');
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}/following`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/following/${userId}`, {
       headers: {
         Authorization: `Bearer ${Cookies.get('authToken')}`
       }
     });
     const data = await response.json();
-    if (data && typeof data.count === 'number') {
-      Cookies.set('following', data.count, { expires: 1 });
-      userData.value.following = data.count ? data.count : 0;
-    }
+    userData.value.following = data.following.length;
   } catch (error) {
     console.error('Error fetching following count:', error);
   }
