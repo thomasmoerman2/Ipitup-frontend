@@ -29,7 +29,7 @@
         v-if="exercises.length > 0"
         v-for="exercise in filteredExercises"
         :key="exercise.id"
-        :img="exercise.image"
+        :img="getExerciseImage(exercise.exerciseType)"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
         :time="exercise.exerciseTime"
@@ -115,10 +115,11 @@ function setFavorite(exerciseId) {
   Cookies.set("isFavorite", isFavorite.value);
 }
 
+const getExerciseImage = (exerciseType) => {
+  return `/workoutimages/${exerciseType.toLowerCase()}.png`;
+};
+
+
 // Initial fetch
 fetch_exercises();
 </script>
-
-<style scoped>
-/* Add any additional styles you need */
-</style>
