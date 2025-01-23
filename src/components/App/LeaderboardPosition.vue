@@ -13,7 +13,7 @@
       <p class="text-xs">{{ name }}</p>
     </div>
     <div class="flex items-center gap-1">
-      <AppIcon name="Gem" color="text-blue-48" size="12" />
+      <AppIcon name="Gem" color="text-blue-48" :size="12" />
       <p class="text-xs text-blue-48">{{ amount }}</p>
     </div>
   </div>
@@ -24,7 +24,7 @@ import AppIcon from "@/components/App/Icon.vue";
 
 const props = defineProps({
   me: {
-    type: String,
+    type: [String, Boolean],
     default: false,
   },
   position: {
