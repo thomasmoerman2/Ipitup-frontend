@@ -9,7 +9,6 @@
         <span class="w-2 h-2 rounded-full animate-pulse" :class="{ 'bg-red-400': hasErrors, 'bg-yellow-400': isOfflineMode && !hasErrors, 'bg-blue-200': isLimitedMode && !isOfflineMode && !hasErrors }"></span>
         <span class="flex items-center gap-1">
           {{ limitedModeMessage }}
-          <span v-if="hasErrors" class="text-red-200">• {{ errorCount }} errors</span>
         </span>
         <span class="text-[10px] opacity-75 border-l border-white/20 pl-2">{{ timeSinceActivation }}</span>
       </div>
@@ -96,8 +95,8 @@ watch(() => route.path, () => {
 });
 
 const limitedModeMessage = computed(() => {
-  if (isOfflineMode.value) return 'Offline modus • Beperkte functionaliteit';
-  if (isSkipMode.value) return 'Beperkte modus • Sommige functies niet beschikbaar';
+  if (isOfflineMode.value) return hasErrors.value ? 'Offline modus • Beperkte verbinding' : 'Offline modus • Beperkte functionaliteit';
+  if (isSkipMode.value) return hasErrors.value ? 'Beperkte modus • Verbindingsproblemen' : 'Beperkte modus • Sommige functies niet beschikbaar';
   return '';
 });
 
