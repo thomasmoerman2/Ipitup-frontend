@@ -168,7 +168,7 @@ const fetchFilteredLeaderboard = async () => {
 
         notification.value?.addNotification(
           "Te weinig gebruikers",
-          "Er zijn te weinig gebruikers gevonden in deze leeftijdscategorie. We schakelen over naar de globale ranglijst.",
+          "Geen gebruikers gevonden. We schakelen over naar de globale ranglijst.",
           "error"
         );
 
