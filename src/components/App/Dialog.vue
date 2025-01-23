@@ -1,5 +1,5 @@
 <template>
-    <Filters :text="props.title" @click="func_openDialog" :icon="props.icon" />
+    <Filters v-if="props.title" :text="props.title" @click="func_openDialog" :icon="props.icon" />
 
     <Transition name="dialog">
         <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
@@ -12,6 +12,7 @@
                 <DialogFilter @closeDialog="func_closeDialog" @updateFilters="handleFilterUpdate" v-if="props.type === 'filter'" :currentFilters="currentFilters" />
                 <DialogPodiumFilter @closeDialog="func_closeDialog" v-if="props.type === 'podium-filter'" />
                 <DialogPodiumSort @closeDialog="func_closeDialog" v-if="props.type === 'podium-sort'" />
+                <DialogWelcomer @closeDialog="func_closeDialog" v-if="props.type === 'welcomer'" />
             </div>
         </dialog>
     </Transition>
@@ -23,6 +24,7 @@ import DialogSlider from '@/components/Dialog/Slider.vue';
 import DialogFilter from '@/components/Dialog/Filter.vue';
 import DialogPodiumFilter from '@/components/Dialog/PodiumFilter.vue';
 import DialogPodiumSort from '@/components/Dialog/Sort.vue';
+import DialogWelcomer from '@/components/Dialog/Welcomer.vue';
 import Filters from '@/components/App/Filters.vue';
 import { ref, onUnmounted } from 'vue';
 
@@ -39,8 +41,7 @@ const props = defineProps({
         default: 'search',
     },
     title: {
-        type: String,
-        default: 'Open Dialog',
+        type: String
     },
     icon: {
         type: String,

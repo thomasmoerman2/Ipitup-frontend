@@ -23,10 +23,12 @@
     <KeyRound v-if="props.name === 'KeyRound'" :class="color" :size="size" />
     <UserCircle2 v-if="props.name === 'UserCircle2'" :class="color" :size="size" />
     <Check v-if="props.name === 'Check'" :class="color" :size="size" />
+    <Lock v-if="props.name === 'Lock'" :class="color" :size="size" />
+    <Atom v-if="props.name === 'Atom'" :class="color" :size="size" />
 </template>
 
 <script setup>
-import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, ArrowLeft, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter, Flame, Dumbbell, UserCircle2, KeyRound, Check } from 'lucide-vue-next';
+import { Eye, EyeOff, Search, Camera, Pen, ArrowUpRight, ArrowLeft, UserRoundMinus, Award, RefreshCw, Gem, Globe, User, Star, ChevronRight, ChevronsUpDown, Timer, X, Filter, Flame, Dumbbell, UserCircle2, KeyRound, Check, Lock, Atom } from 'lucide-vue-next';
 
 const props = defineProps({
     name: {

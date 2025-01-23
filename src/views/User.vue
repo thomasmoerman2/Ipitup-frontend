@@ -9,25 +9,33 @@
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar :src="userData?.avatar" />
       <div class="flex flex-col items-center">
-        <p class="font-bold mb-[0.3125rem]">Jefke</p>
-        <p class="text-xs">@Jefke1998</p>
+        <p class="font-bold mb-[0.3125rem]">{{ userData?.firstname }} {{ userData?.lastname }}</p>
+        <p class="text-xs">@{{ userData?.firstname }}</p>
         <div class="flex pt-2.5">
           <p class="text-2xs italic text-black-50">Gebruiker sinds&nbsp;</p>
-          <p class="text-2xs italic text-blue-36">{{ userData?.joinDate }}</p>
+          <p class="text-2xs italic text-blue-36">{{ userData?.createdAt }}</p>
         </div>
       </div>
-      <AppSmallButton icon="User" version="blue" text="Volgen" />
+      <AppDialog type="welcomer" :title="userData?.accountStatus === 1 ? 'Volg verzoeken' : 'Volgen'" icon="User" v-if="!Cookies.get('userId')" />
+      <div v-else>
+        <AppSmallButton v-if="!userData?.isFollowing" icon="User" :version="userData?.isPending ? 'orange' : 'blue'" :text="!userData?.isPending ? 'Volgen' : 'Verzoek annuleren'" @click="func_isFollowing()" />
+        <AppSmallButton v-else icon="UserRoundMinus" version="orange" text="Ontvolgen" @click="func_isFollowing()" />
+      </div>
+    </div>
+
+    <div class="flex flex-col items-center gap-2" v-if="userData?.accountStatus === 1">
+      <AppIcon name="Lock" :size="24" :color="userData?.accountStatus === 0 ? 'text-blue-54' : 'text-black-50'" />
+      <p class="text-xs">Deze gebruiker is <strong class="text-blue-54">privé</strong></p>
     </div>
 
     <!-- Recente Activiteiten -->
-    <div class="flex flex-col gap-5">
+    <div class="flex flex-col gap-5" v-if="userData?.accountStatus === 0">
       <p class="text-xs">Recente activiteiten</p>
-      <WorkoutRecent img="https://picsum.photos/100" title="pushups" level="1" time="10" amount="251" />
-      <WorkoutRecent img="https://picsum.photos/100" title="pushups" level="1" time="10" amount="251" />
+      <WorkoutRecent v-for="workout in userData?.exercises" :key="workout.id" :img="workout.image" :title="workout.name" :level="workout.type" :time="workout.time" :amount="workout.score" />
     </div>
 
     <!-- Toggle: Badges / Leaderboard -->
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3" v-if="userData?.accountStatus === 0">
       <div class="flex justify-between mx-8">
         <button @click="activeTab = 'badges'" :class="['text-sm', activeTab === 'badges' ? 'font-bold underline underline-offset-8' : 'text-black-50']">
           Badges
@@ -38,40 +46,62 @@
       </div>
 
       <!-- Badges Sectie -->
-      <div v-if="activeTab === 'badges'" class="flex flex-col full-width-section bg-black-8 pb-5">
+      <div v-if="activeTab === 'badges' && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
         <div class="flex my-5 justify-center items-center text-xs">
           <p>
-            <strong>Jefke</strong>&nbsp;heeft momenteel&nbsp;<strong>6</strong>&nbsp;actieve badges.
+            <strong>{{ userData?.firstname }}</strong>&nbsp;heeft momenteel&nbsp;<strong>{{ userData?.achievements.length }}</strong>&nbsp;actieve badges.
           </p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-2">
-          <AppBadge exercise="Pushup" amount="100" />
-          <AppBadge exercise="Squat" amount="500" />
-          <AppBadge exercise="Pullup" amount="200" />
-          <AppBadge exercise="Situp" amount="50" />
+          <AppBadge v-for="badge in userData?.achievements" :key="badge.id" :exercise="badge.name" :amount="badge.amount" />
         </div>
       </div>
 
       <!-- Leaderboard Sectie -->
-      <div v-if="activeTab === 'leaderboard'" class="flex flex-col full-width-section bg-black-8 pb-5">
+      <div v-if="activeTab === 'leaderboard' && Cookies.get('userId') && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
         <div class="flex flex-col items-center my-5 gap-2.5">
           <div class="flex items-center gap-1.5">
             <AppIcon name="Gem" color="text-blue-48" size="24" />
-            <p class="text-3xl font-bold">9624</p>
+            <p class="text-3xl font-bold">{{ userData?.leaderboard.score }}</p>
           </div>
           <p>3de Plaats</p>
-          <AppSmallButton version="blue" text="Bekijk op leaderboard" />
+          <AppSmallButton version="blue" text="Bekijk op leaderboard" @click="router.push('/podium')" />
         </div>
 
         <div class="flex flex-col gap-[0.3125rem]">
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" position="1" name="Jefke" amount="9739" />
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" position="2" name="Pietjepuk" amount="9739" />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="leaderboardPosition[0].amount" />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" :position="2" :name="leaderboardPosition[1].name" :amount="leaderboardPosition[1].amount" />
         </div>
 
         <div class="flex my-5 justify-center items-center text-xs">
           <p>
-            Je staat&nbsp;<strong>115</strong>&nbsp;punten achter&nbsp;<strong>Jefke</strong>!&nbsp;Ga ervoor!
+            Je staat&nbsp;<strong>{{ (leaderboardPosition[1].amount > leaderboardPosition[0].amount) ? leaderboardPosition[1].amount - leaderboardPosition[0].amount : leaderboardPosition[0].amount - leaderboardPosition[1].amount }}</strong>&nbsp;{{ leaderboardPosition[1].amount > leaderboardPosition[0].amount ? 'achter' : 'voor' }}&nbsp;<strong>{{ leaderboardPosition[1].name }}</strong>!&nbsp;Ga ervoor!
+          </p>
+        </div>
+      </div>
+
+      <!-- Leaderboard if user not logged in -->
+      <div v-if="activeTab === 'leaderboard' && !Cookies.get('userId') && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
+        <div class="flex flex-col items-center my-5 gap-2.5">
+          <div class="flex items-center gap-1.5">
+            <AppIcon name="Gem" color="text-blue-48" size="24" />
+            <p class="text-3xl font-bold">{{ userData?.leaderboard.score }}</p>
+          </div>
+          <p>3de Plaats</p>
+          <AppSmallButton version="blue" text="Log in om je positie te zien" />
+        </div>
+
+        <div class="flex flex-col gap-[0.3125rem]">
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="leaderboardPosition[0].amount" />
+          <div class="bg-black-20 rounded-md mx-8 px-4 py-3">
+            <p class="text-sm text-black-50">Log in om je positie te zien</p>
+          </div>
+        </div>
+
+        <div class="flex my-5 justify-center items-center text-xs">
+          <p>
+            Log in om je positie te zien en je score te vergelijken met anderen!
           </p>
         </div>
       </div>
@@ -81,31 +111,130 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import SettingsAvatar from "@/components/Settings/Avatar.vue";
 import AppSmallButton from "@/components/App/SmallButton.vue";
 import AppIcon from "@/components/App/Icon.vue";
 import WorkoutRecent from "@/components/Workout/Recent.vue";
 import AppBadge from "@/components/App/Badge.vue";
+import AppDialog from "@/components/App/Dialog.vue";
 import AppLeaderboardPosition from "@/components/App/LeaderboardPosition.vue";
-
+import Cookies from 'js-cookie';
 const route = useRoute();
+const router = useRouter();
+
 const userData = ref(null);
 const error = ref(null);
+const leaderboardPosition = ref(null);
+
+if (Cookies.get('userId') == route.params.id) {
+  router.push('/profile');
+}
 
 const fetchUserData = async () => {
   try {
     error.value = null;
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/info/${route.params.id}`);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/info/${route.params.id}`, {
+      headers: {
+        'Authorization': `Bearer ${Cookies.get('authToken')}`,
+      },
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
     userData.value = data;
+    console.log("userData ->", userData.value);
+
+    if (userData.value.accountStatus === 0) {
+      leaderboardPosition.value = [
+        {
+          name: userData.value.firstname,
+          amount: userData.value.leaderboard.score,
+        },
+        {
+          name: Cookies.get("userFirstname"),
+          amount: Cookies.get("userLeaderboardScore") || 0,
+        },
+      ];
+      leaderboardPosition.value.sort((a, b) => b.amount - a.amount);
+    }
+
+    if (userData.value.isPending) {
+      userData.value.isFollowing = false;
+      userData.value.isPending = true;
+    }
   } catch (e) {
     console.error('Error fetching user data:', e);
     error.value = 'Er is een fout opgetreden bij het ophalen van de gebruikersgegevens.';
     userData.value = null;
+  }
+}
+
+const func_isFollowing = () => {
+  if (Cookies.get('userId')) {
+    if (userData.value.isFollowing || userData.value.isPending) {
+      fetchUnfollowUser();
+    } else {
+      fetchFollowUser();
+    }
+  } else {
+
+  }
+}
+
+const fetchFollowUser = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/follow`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Cookies.get('authToken')}`,
+      },
+      body: JSON.stringify({
+        "followerId": Cookies.get('userId'),
+        "followingId": route.params.id,
+        "status": userData.value.accountStatus === 0 ? 'Accepted' : 'Pending'
+      }),
+    });
+
+    if (response.ok) {
+      if (userData.value.accountStatus === 1) {
+        userData.value.isFollowing = false;
+        userData.value.isPending = true;
+      } else {
+        userData.value.isFollowing = true;
+        userData.value.isPending = false;
+      }
+    }
+
+  } catch (e) {
+    console.error('Error fetching user data:', e);
+  }
+}
+
+const fetchUnfollowUser = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/unfollow`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Cookies.get('authToken')}`,
+      },
+      body: JSON.stringify({
+        "followerId": Cookies.get('userId'),
+        "followingId": route.params.id,
+      }),
+    });
+    console.log("response ->", response);
+
+    if (response.ok) {
+      userData.value.isFollowing = false;
+      userData.value.isPending = false;
+    }
+
+  } catch (e) {
+    console.error('Error fetching user data:', e);
   }
 }
 

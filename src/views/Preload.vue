@@ -120,6 +120,7 @@ const clearAllCookies = () => {
   Cookies.remove("userEmail");
   Cookies.remove("accountStatus");
   Cookies.remove("isAdmin");
+  Cookies.remove("userLeaderboardScore");
 };
 const validateToken = async () => {
   const authToken = Cookies.get("authToken");
@@ -174,7 +175,7 @@ const validateToken = async () => {
       Cookies.set("userEmail", userData.email);
       Cookies.set("accountStatus", userData.accountStatus);
       Cookies.set("isAdmin", userData.isAdmin || false);
-
+      Cookies.set("userLeaderboardScore", userData.totalScore);
       console.log("User data updated successfully");
     } catch (error) {
       console.error("Failed to update user data:", error);
@@ -216,32 +217,6 @@ const startRetryCountdown = () => {
     }
   }, 1000);
 };
-
-const handleLoadingError = (error, step) => {
-  console.error("Loading failed at step:", step, error);
-
-  if (retryCount.value < MAX_RETRIES) {
-    retryCount.value++;
-    startRetryCountdown();
-
-    notificationRef.value?.addNotification(
-      "Verbinding mislukt",
-      `Opnieuw proberen over ${retryCountdown.value} seconden... (Poging ${retryCount.value}/${MAX_RETRIES})`,
-      "error"
-    );
-
-    setTimeout(() => {
-      startLoading();
-    }, RETRY_DELAY);
-  } else {
-    notificationRef.value?.addNotification(
-      "Laden mislukt",
-      "Maximum aantal pogingen bereikt. Ververs de pagina handmatig om opnieuw te proberen.",
-      "error"
-    );
-  }
-};
-
 // Progress animation function
 const animateProgress = () => {
   if (progressInterval) clearInterval(progressInterval);
