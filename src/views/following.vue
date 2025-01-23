@@ -5,14 +5,12 @@
       <p class="font-medium text-[1.25rem]">Back</p>
     </RouterLink>
 
-    <h1 class="font-bold text-xl">{{ profileName }}</h1>
-
     <AppToggle name="followType" v-model="selectedTab" type="radio" :items="['Volgend', 'Volgers']" @update:modelValue="handleTabChange" />
 
     <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @input="handleSearch" />
 
     <div class="flex flex-col gap-4">
-      <SearchProfile v-for="user in filteredUsers" :key="user.id" :id="user.id" :img="user.img" :name="user.name" :username="user.username" />
+      <SearchProfile v-for="user in results" :key="user.id" :id="user.id" :avatar="user.avatar" :fullname="user.firstname + ' ' + user.lastname" :firstname="user.firstname" />
     </div>
   </div>
 </template>
@@ -29,8 +27,8 @@ import Cookies from 'js-cookie';
 const route = useRoute();
 const selectedTab = ref(route.query.tab || 'Volgend');
 const searchQuery = ref('');
-const users = ref([]);
 const profileName = ref('');
+const results = ref([]);
 
 onMounted(() => {
   const firstName = Cookies.get('userFirstname');
@@ -57,15 +55,10 @@ const fetchUsers = async () => {
     if (!response.ok) throw new Error('Failed to fetch users');
 
     const data = await response.json();
-    users.value = data.map((user) => ({
-      id: user.userId,
-      name: `${user.firstName} ${user.lastName}`,
-      username: user.username,
-      img: user.profileImage
-    }));
+    results.value = data;
   } catch (error) {
     console.error('Error fetching users:', error);
-    users.value = [];
+    results.value = [];
   }
 };
 
@@ -73,13 +66,4 @@ const handleTabChange = (value) => {
   selectedTab.value = value;
   fetchUsers();
 };
-
-const handleSearch = () => {};
-
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value;
-
-  const query = searchQuery.value.toLowerCase();
-  return users.value.filter((user) => user.name.toLowerCase().includes(query) || user.username.toLowerCase().includes(query));
-});
 </script>

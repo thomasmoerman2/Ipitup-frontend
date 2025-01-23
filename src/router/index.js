@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-
+import Cookies from 'js-cookie';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -52,6 +52,9 @@ const router = createRouter({
       path: '/profile/following',
       name: 'following',
       component: () => import('../views/following.vue'),
+      meta: {
+        name: Cookies.get('userFirstname') + ' ' + Cookies.get('userLastname'),
+      },
     },
     {
       path: '/profile/settings',
