@@ -123,15 +123,20 @@ const fetchUserActivitiesCount = async () => {
     const userId = Cookies.get('userId');
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/total/${userId}`);
     const data = await response.json();
-    if (data && typeof data.count === 'number') {
-      Cookies.set('activitiesCount', data.count, { expires: 1 }); // Sla altijd op en vernieuw cookie
-      userData.value.activitiesCount = data.count ? data.count : 0;
+    if (data) {
+      Cookies.set('activitiesCount', data.count || 0, { expires: 1 }); // Sla altijd op en vernieuw cookie
+      userData.value.activitiesCount = data.count || 0;
+      userData.value.activitiesData = data.activities || [];
 
       console.log("Activity user data: ", data);
-      func_set_chart();
+      console.log("Activity user data: ", userData.value.activitiesData);
+      if (userData.value.activitiesData.length > 0) {
+        func_set_chart();
+      }
     }
   } catch (error) {
     console.error('Error fetching activity count:', error);
+    userData.value.activitiesData = [];
   }
 };
 
@@ -196,17 +201,42 @@ const fetchUserFollowing = async () => {
 };
 
 const func_set_chart = () => {
+  if (!userData.value.activitiesData || userData.value.activitiesData.length === 0) {
+    console.warn('No activity data available for chart');
+    return;
+  }
+
+  const activitiesData = userData.value.activitiesData.reduce((acc, item) => {
+    const date = new Date(item.activityDate).toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' });
+    acc[date] = (acc[date] || 0) + item.activityScore;
+    return acc;
+  }, {});
+
+  //sort by date
+  const sortedActivitiesData = Object.entries(activitiesData).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+  //get last 7 days
+  const last7Days = sortedActivitiesData.slice(-7);
+
   const ctx = document.getElementById('myChart').getContext('2d');
   const myChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: chartXLabels.value,
+      labels: last7Days.map(item => item[0]),
       datasets: [{
-        label: '',
+        label: 'Activity Score',
         backgroundColor: 'rgb(255, 99, 132)',
         borderColor: 'rgb(255, 99, 132)',
-        data: chartYLabels.value
+        data: last7Days.map(item => item[1])
       }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
     }
   });
 }
