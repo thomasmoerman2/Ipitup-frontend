@@ -8,10 +8,10 @@
 
     <AppToggle name="followType" v-model="selectedTab" type="radio" :items="['Volgend', 'Volgers']" @update:modelValue="handleTabChange" />
 
-    <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @input="handleSearch" />
+    <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @input="set_searchQuery" />
 
     <div class="flex flex-col gap-4">
-      <div v-for="user in results" :key="String(user.id)" class="flex items-center justify-between">
+      <div v-for="user in filteredResults" :key="String(user.id)" class="flex items-center justify-between">
         <SearchProfile 
           :id="String(user.id)" 
           :avatar="user.avatar" 
@@ -24,8 +24,7 @@
         
         <AppSmallButton v-if="selectedTab === 'Volgers'" @click="removeFollower(user.id)"  icon="X" version="orange" text="Verwijder" />
       </div>
-
-</div>
+    </div>
   </div>
 </template>
 
@@ -43,16 +42,10 @@ import AppSmallButton from "@/components/App/SmallButton.vue";
 const route = useRoute();
 const selectedTab = ref(route.query.tab || 'Volgend');
 const searchQuery = ref('');
-const profileName = ref('');
 const results = ref([]);
 const notification = ref(null);
 
 onMounted(() => {
-  const firstName = Cookies.get('userFirstname');
-  const lastName = Cookies.get('userLastname');
-  if (firstName && lastName) {
-    profileName.value = `${firstName} ${lastName}`;
-  }
   fetchUsers();
 });
 
@@ -84,16 +77,19 @@ const handleTabChange = (value) => {
   fetchUsers();
 };
 
-
-const handleSearch = () => {
-  if (searchQuery.value.trim() === '') {
-    fetchUsers();
-  } else {
-    results.value = results.value.filter((user) =>
-      `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  }
+const set_searchQuery = (value) => {
+  searchQuery.value = value.toLowerCase();
 };
+
+// Gefilterde resultaten afhankelijk van zoekquery
+const filteredResults = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return results.value;
+  }
+  return results.value.filter((user) =>
+    `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchQuery.value)
+  );
+});
 
 const removeFollower = async (followerId) => {
   try {
@@ -115,18 +111,16 @@ const removeFollower = async (followerId) => {
       }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to remove follower');
+      throw new Error('Failed to remove follower');
     }
 
-    console.log('Follower removed successfully:', data.message);
     notification.value?.addNotification(
       'Volger verwijderd',
       'Deze volger is succesvol verwijderd.',
       'success'
     );
+
     // Verwijder de volger uit de lijst
     results.value = results.value.filter(user => user.id !== followerId);
 
@@ -155,16 +149,13 @@ const unfollowUser = async (followingId) => {
       }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to unfollow user');
+      throw new Error('Failed to unfollow user');
     }
 
-    console.log('User unfollowed successfully:', data.message);
     notification.value?.addNotification(
       'Ontvolgd',
-      'Je volgt deze gebruiker niet meer.',
+      'Succesvol deze gebruiker ontvolgt.',
       'success'
     );
 
@@ -175,6 +166,5 @@ const unfollowUser = async (followingId) => {
     console.error('Error unfollowing user:', error.message);
   }
 };
-
 
 </script>
