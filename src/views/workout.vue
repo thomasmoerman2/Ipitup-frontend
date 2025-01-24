@@ -1,7 +1,11 @@
 <template>
   <div class="flex flex-col gap-4">
     <!-- Selected Filters Display -->
-    <div v-if="activeFilters.length > 0" class="flex flex-wrap gap-2 px-4">
+    <div
+      v-if="activeFilters.length > 0"
+      data-type="filter"
+      class="flex flex-wrap gap-2 px-4"
+    >
       <div
         v-for="filter in activeFilters"
         :key="filter.id"
@@ -30,13 +34,14 @@
         v-if="exercises.length > 0"
         v-for="exercise in filteredExercises"
         :key="exercise.id"
-        :img="getExerciseImage(exercise.exerciseType)"
+        :img="exercise.exerciseType"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
-        :time=String(exercise.exerciseTime)
-        :isFavorite="isFavorite || []"
+        :time="exercise.exerciseTime"
+        :isFavorite="isFavorite"
+        :type="exercise.exerciseType"
         @setFavorite="setFavorite"
-        :id=String(exercise.exerciseId)
+        :id="String(exercise.exerciseId)"
       />
       <div v-else>
         <p class="text-blue-54 text-sm">
@@ -90,20 +95,12 @@ const filteredExercises = computed(() => {
   }
 
   return exercises.value.filter((exercise) => {
-    // Check each filter category
-    return activeFilters.value.every((filter) => {
+    // Check if exercise matches any filter category
+    return activeFilters.value.some((filter) => {
+      console.log(exercise.exerciseType, filter);
       switch (filter.category) {
         case "exercise":
-          return exercise.type === filter.name;
-        case "level":
-          return exercise.level === parseInt(filter.name.split(" ")[1]);
-        case "switch":
-          if (filter.id === "bundles") {
-            return exercise.isBundle;
-          } else if (filter.id === "favorites") {
-            return exercise.isFavorite;
-          }
-          return true;
+          return exercise.exerciseType === filter.name;
         default:
           return true;
       }
@@ -119,7 +116,6 @@ function setFavorite(exerciseId) {
 const getExerciseImage = (exerciseType) => {
   return `/workoutimages/${exerciseType.toLowerCase()}.png`;
 };
-
 
 // Initial fetch
 fetch_exercises();

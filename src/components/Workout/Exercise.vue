@@ -1,8 +1,18 @@
 <template>
-  <RouterLink :to="`/workout/active/${id}`" class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border">
-    <div class="relative ">
-      <img :src="img" alt="image" class="min-w-[86px] h-[74px] rounded-md aspect-square" />
-      <div class="absolute bottom-0 left-0 p-0.5 bg-black-5 bg-opacity-80 rounded-tr rounded-bl-md">
+  <RouterLink
+    :to="`/workout/active/${id}`"
+    :data-type="type"
+    class="flex gap-3 items-center justify-between rounded-md p-3 h-max bg-black-10 box-border"
+  >
+    <div class="relative">
+      <img
+        :src="`./public/${img}.png`"
+        alt="image"
+        class="min-w-[86px] h-[74px] rounded-md aspect-square"
+      />
+      <div
+        class="absolute bottom-0 left-0 p-0.5 bg-black-5 bg-opacity-80 rounded-tr rounded-bl-md"
+      >
         <AppIcon name="Star" color="text-blue-48" :size="16" />
       </div>
     </div>
@@ -16,21 +26,23 @@
         <p class="uppercase">{{ time }} sec</p>
       </div>
     </div>
-    <div class="w-[22px] h-[22px] grid place-items-center bg-blue-54 rounded-full aspect-square text-white">
+    <div
+      class="w-[22px] h-[22px] grid place-items-center bg-blue-54 rounded-full aspect-square text-white"
+    >
       <AppIcon name="ChevronRight" :size="16" />
     </div>
   </RouterLink>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router';
+import { RouterLink } from "vue-router";
 import AppIcon from "@/components/App/Icon.vue";
 
-const emit = defineEmits(['setFavorite'])
+const emit = defineEmits(["setFavorite"]);
 
 const setFavorite = (exerciseId) => {
-  emit('setFavorite', exerciseId)
-}
+  emit("setFavorite", exerciseId);
+};
 
 defineProps({
   id: {
@@ -55,6 +67,10 @@ defineProps({
   },
   isFavorite: {
     type: Array,
+    required: true,
+  },
+  type: {
+    type: String,
     required: true,
   },
 });

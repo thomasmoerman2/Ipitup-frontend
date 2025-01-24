@@ -1,25 +1,49 @@
 <template>
   <AppLoading v-if="loading" />
   <div class="flex flex-col" v-else>
-    <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
+    <video
+      ref="video"
+      autoplay
+      playsinline
+      muted
+      :class="{ 'camera-flipped': isFrontCamera }"
+    ></video>
     <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
     <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-    <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
+    <p
+      :key="score"
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
+    >
       {{ score }}
     </p>
 
-    <!-- Show countdown -->
-    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] bg-black bg-opacity-50 px-6 py-3 rounded-lg">
-      <p :key="countdown" class="text-white text-6xl font-bold countdown-animation">{{ countdown }}</p>
-    </div>
+    <!-- Show countdown only for pushups -->
+    <p
+      v-if="
+        $route.path.includes('pushups') ||
+        $route.path.includes('core') ||
+        $route.path.includes('squats') ||
+        $route.path.includes('balance')
+      "
+      class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
+    >
+      {{ countdown }}
+    </p>
 
     <!-- Display hold time -->
 
     <!-- Modified Time's Up popup -->
-    <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-      <div class="bg-white p-8 rounded-xl shadow-lg text-center w-[90%] max-w-md">
-        <div class="bg-blue-6 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+    <div
+      v-if="showPopup"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+    >
+      <div
+        class="bg-white p-8 rounded-xl shadow-lg text-center w-[90%] max-w-md"
+      >
+        <div
+          class="bg-blue-6 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6"
+        >
           <span class="text-blue-60 text-3xl">🎉</span>
         </div>
         <h2 class="text-2xl font-bold text-blue-60 mb-2">Great Job!</h2>
@@ -27,14 +51,23 @@
         <div class="bg-blue-6 rounded-lg p-4 mb-6">
           <div class="flex justify-center items-center gap-3">
             <span class="text-blue-60">Score:</span>
-            <span class="text-3xl font-bold text-blue-60 score-animate">{{ displayScore }}</span>
+            <span class="text-3xl font-bold text-blue-60 score-animate">{{
+              displayScore
+            }}</span>
           </div>
         </div>
         <div class="flex gap-4 justify-center">
-          <button @click="restartWorkout" class="bg-blue-60 text-white px-6 py-3 rounded-lg hover:bg-blue-30 transition-colors">
+          <button
+            @click="restartWorkout"
+            class="bg-blue-60 text-white px-6 py-3 rounded-lg hover:bg-blue-30 transition-colors"
+          >
             Try Again
           </button>
-          <RouterLink to="/workout" class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors" @click="saveActivity">
+          <RouterLink
+            to="/workout"
+            class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+            @click="saveActivity"
+          >
             Back
           </RouterLink>
         </div>
@@ -42,20 +75,30 @@
     </div>
 
     <!-- Modified Get Ready popup with collapsible instructions -->
-    <div v-if="showGetReadyPopup" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[9998] w-[90%] max-w-md get-ready-slide-up">
+    <div
+      v-if="showGetReadyPopup"
+      class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[9998] w-[90%] max-w-md get-ready-slide-up"
+    >
       <div class="bg-white p-6 rounded-xl shadow-lg">
         <div class="flex items-center gap-4 mb-4">
-          <div :class="[
-            'rounded-lg p-3 transition-colors duration-300',
-            instructionsOpen ? 'bg-gray-200' : 'bg-blue-60'
-          ]">
-            <h2 class="text-xl font-bold" :class="instructionsOpen ? 'text-blue-60' : 'text-white'">
+          <div
+            :class="[
+              'rounded-lg p-3 transition-colors duration-300',
+              instructionsOpen ? 'bg-gray-200' : 'bg-blue-60',
+            ]"
+          >
+            <h2
+              class="text-xl font-bold"
+              :class="instructionsOpen ? 'text-blue-60' : 'text-white'"
+            >
               {{ getReadyCountdown }}
               <span v-if="instructionsOpen" class="text-sm block">paused</span>
             </h2>
           </div>
           <div>
-            <h1 class="text-xl font-bold text-blue-60">{{ exerciseData.exerciseName }}</h1>
+            <h1 class="text-xl font-bold text-blue-60">
+              {{ exerciseData.exerciseName }}
+            </h1>
             <p class="text-sm text-gray-600">Get ready for your workout!</p>
           </div>
         </div>
@@ -74,16 +117,26 @@
         </div>
 
         <!-- Collapsible Instructions -->
-        <details class="mb-4 cursor-pointer" @toggle="instructionsOpen = $event.target.open">
-          <summary class="text-blue-60 font-medium mb-2 hover:text-blue-30 transition-colors">
+        <details
+          class="mb-4 cursor-pointer"
+          @toggle="instructionsOpen = $event.target.open"
+        >
+          <summary
+            class="text-blue-60 font-medium mb-2 hover:text-blue-30 transition-colors"
+          >
             View Instructions
           </summary>
           <div class="bg-gray-50 rounded-lg p-4 mt-2">
-            <p class="text-sm text-gray-600 whitespace-pre-line">{{ exerciseData.exerciseInstructions.replace(/<br>/g, '\n') }}</p>
+            <p class="text-sm text-gray-600 whitespace-pre-line">
+              {{ exerciseData.exerciseInstructions.replace(/<br />/g, '\n') }}
+            </p>
           </div>
         </details>
 
-        <RouterLink to="/workout" class="block w-full bg-blue-60 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-30 transition-colors">
+        <RouterLink
+          to="/workout"
+          class="block w-full bg-blue-60 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-30 transition-colors"
+        >
           Cancel
         </RouterLink>
       </div>
@@ -131,60 +184,42 @@ const pullUpInterval = ref(null);
 const hasScored = ref(false);
 
 let holdInterval = null;
-const leftArmDistance = ref(0);
-const rightArmDistance = ref(0);
-const predictions = ref([
-  { className: "", probability: 0 },
-  { className: "", probability: 0 },
-  { className: "", probability: 0 },
-]);
 
-const isInDownPosition = ref(false);
-const MIN_TIME_BETWEEN_REPS = 500;
-const lastRepTime = ref(Date.now());
+// Add this ref to track the last push-up score time
+const lastPushUpScoreTime = ref(Date.now());
+const PUSH_UP_COOLDOWN = 1000; // 1 second cooldown
 
-const exercise = ref(route.params.exercise);
+// Lifecycle hooks
+onMounted(async () => {
+  // Add this line at the start of onMounted
 
-console.log("exercise ->", exercise.value);
-const exerciseData = ref(null);
-
-// Add these refs after other refs
-const isPageActive = ref(true);
-const cameraEnabled = ref(true);
-
-// Add this ref at the top with other refs
-const countdownStarted = ref(false);
-
-// Add this ref at the top with other refs
-const instructionsOpen = ref(false);
-
-// Add these refs at the top
-const animatingScore = ref(false);
-const displayScore = ref(0);
-const finalScore = ref(0);
-
-const func_preload = async () => {
   try {
-    loading.value = true;
-    countdownStarted.value = false;
+    const tfScript = document.createElement("script");
+    tfScript.src =
+      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
 
-    // Fetch exercise data
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercise/${exercise.value}`)
-    const data = await response.json();
-    exerciseData.value = data;
-    console.log("exerciseData loaded ->", exerciseData.value);
+    const tmScript = document.createElement("script");
+    tmScript.src =
+      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
 
-    // Initialize camera smoothly
-    await new Promise(resolve => setTimeout(resolve, 300));
-    startCamera();
-    enableCamera();
+    const loadScripts = new Promise((resolve, reject) => {
+      tfScript.onload = () => {
+        document.head.appendChild(tmScript);
+      };
 
-    // Set countdown value
-    countdown.value = exerciseData.value.exerciseTime || 30;
+      tmScript.onload = () => {
+        resolve();
+      };
 
-    // Smooth transition to workout
-    await new Promise(resolve => setTimeout(resolve, 800));
-    loading.value = false;
+      tfScript.onerror = (error) => reject(error);
+      tmScript.onerror = (error) => reject(error);
+    });
+
+    document.head.appendChild(tfScript);
+    await loadScripts;
+
+    await initModel();
+    await startCamera();
 
     // Start get ready sequence
     showGetReadyPopup.value = true;
@@ -208,26 +243,28 @@ const func_preload = async () => {
           showGetReadyPopup.value = false;
           isWorkoutActive.value = true;
 
-          // Add small delay before starting main countdown
-          setTimeout(() => {
-            if (!countdownStarted.value) {
-              countdownStarted.value = true;
-              countdownInterval = setInterval(() => {
-                if (countdown.value > 0) {
-                  setTimeout(() => {
-                    countdown.value--;
-                  }, 100);
-                } else {
-                  clearInterval(countdownInterval);
-                  countdownStarted.value = false;
-                  isWorkoutActive.value = false;
-                  savedScore.value += score.value;
-                  showPopup.value = true;
-                  animateScore(); // Start score animation when workout completes
-                }
-              }, 1000);
+        // Start main countdown only for pushups URL
+        const path = window.location.pathname;
+        const lastSegment = path
+          .split("/")
+          .filter((segment) => segment)
+          .pop();
+        if (
+          lastSegment === "pushups" ||
+          lastSegment === "core" ||
+          lastSegment === "squats" ||
+          lastSegment === "balance"
+        ) {
+          countdown.value = 30; // Reset to 30 seconds for pushups and core
+          countdownInterval = setInterval(() => {
+            if (countdown.value > 0) {
+              countdown.value--;
+            } else {
+              clearInterval(countdownInterval);
+              isWorkoutActive.value = false;
+              showPopup.value = true;
             }
-          }, 500);
+          }, 1000);
         }
       }
     }, 1000);
@@ -441,8 +478,8 @@ const initPoseDetection = () => {
         detectPullUp(results.poseLandmarks);
       } else if (lastSegment === "core") {
         detectCore(results.poseLandmarks);
-      } else if (lastSegment === "squads") {
-        detectSquads(results.poseLandmarks);
+      } else if (lastSegment === "squats") {
+        detectSquats(results.poseLandmarks);
       } else if (lastSegment === "balance") {
         detectBalance(results.poseLandmarks);
       }
@@ -523,9 +560,9 @@ const detectBalance = (landmarks) => {
   }
 };
 
-const detectSquads = (landmarks) => {
+const detectSquats = (landmarks) => {
   if (!isWorkoutActive.value) return;
-  console.log("SQUADS DETECTED");
+  console.log("SQUAtS DETECTED");
   const leftHip = landmarks[23];
   const rightHip = landmarks[24];
   const leftKnee = landmarks[25];
@@ -691,7 +728,7 @@ const detectPullUp = (landmarks) => {
   }
 };
 
-// Modified detectPushUp function with timing
+// Modified detectPushUp function with cooldown
 const detectPushUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
@@ -702,18 +739,28 @@ const detectPushUp = (landmarks) => {
   const distance = calculateDistance(leftShoulder, leftWrist);
 
   // Define thresholds
-  const CLOSE_THRESHOLD = 0.1; // Threshold for "really close"
-  const STRETCH_THRESHOLD = 0.15; // Threshold for "arms stretched out"
-  console.log(distance);
+  const CLOSE_THRESHOLD = 0.08; // Threshold for "really close"
+  const STRETCH_THRESHOLD = 0.11; // Threshold for "arms stretched out"
+
+  console.log(leftWrist);
+  console.log(leftShoulder);
+
+  const currentTime = Date.now();
+
   // Check if arms are stretched out
   if (distance > STRETCH_THRESHOLD) {
     isInDownPosition.value = false; // Reset the down position
   }
 
-  // Increment score if the distance is below the close threshold and arms were stretched out
-  if (distance < CLOSE_THRESHOLD && !isInDownPosition.value) {
+  // Increment score if the distance is below the close threshold, arms were stretched out, and cooldown has passed
+  if (
+    distance < CLOSE_THRESHOLD &&
+    !isInDownPosition.value &&
+    currentTime - lastPushUpScoreTime.value > PUSH_UP_COOLDOWN
+  ) {
     score.value++;
     isInDownPosition.value = true; // Set the down position
+    lastPushUpScoreTime.value = currentTime; // Update the last score time
     console.log("Push-up detected: left shoulder and wrist are close!");
   }
 };
@@ -905,7 +952,6 @@ const saveActivity = async () => {
     console.error('Error saving activity:', error);
   }
 };
-
 </script>
 
 <style scoped>
@@ -992,22 +1038,22 @@ canvas {
 }
 
 /* Add styles for the details element */
-details>summary {
+details > summary {
   list-style: none;
 }
 
-details>summary::-webkit-details-marker {
+details > summary::-webkit-details-marker {
   display: none;
 }
 
-details>summary::after {
-  content: '▼';
+details > summary::after {
+  content: "▼";
   display: inline-block;
   margin-left: 0.5rem;
   transition: transform 0.2s;
 }
 
-details[open]>summary::after {
+details[open] > summary::after {
   transform: rotate(180deg);
 }
 
