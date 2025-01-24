@@ -16,20 +16,13 @@
   <!-- Podium -->
   <div class="flex items-end justify-center">
     <div v-for="(winner, index) in podiumWinners" :key="winner.userId" class="flex flex-col items-center">
-      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="`${winner.userId}`"/>
-      <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">
-        {{ winner.firstname }} {{ winner.lastname }}
-      </p>
+      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="`${winner.userId}`" />
+      <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">{{ winner.firstname }} {{ winner.lastname }}</p>
 
       <div class="flex items-center gap-1 mb-4">
         <AppIcon name="Gem" :size="10" color="text-blue-48" />
         <p class="text-xs font-bold text-blue-48">
-          {{
-            filters.locations.length > 0 &&
-              winner.totalLocationScore !== undefined
-              ? winner.totalLocationScore
-              : winner.totalScore
-          }}
+          {{ filters.locations.length > 0 && winner.totalLocationScore !== undefined ? winner.totalLocationScore : winner.totalScore }}
         </p>
       </div>
       <PodiumSvg :position="[2, 1, 3][index]" />
@@ -60,26 +53,25 @@
   <div v-for="(player, index) in displayedLeaderboard" :key="player.userId">
     <AppLeaderboardPostion :position="player.rank ? player.rank : index + 4" :name="`${player.firstname} ${player.lastname}`" :amount="player.score" :me="player.userId === userId ? 'true' : 'false'" />
   </div>
-
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import AppIcon from "@/components/App/Icon.vue";
-import DialogSort from "@/components/Dialog/Sort.vue";
-import DialogPodiumFilter from "@/components/Dialog/PodiumFilter.vue";
-import SettingsAvatar from "@/components/Settings/Avatar.vue";
-import PodiumSvg from "@/components/Podium/PodiumSvg.vue";
-import AppInput from "@/components/App/Input.vue";
-import AppLeaderboardPostion from "@/components/App/LeaderboardPosition.vue";
-import Cookies from "js-cookie";
-import AppNotification from "@/components/App/Notification.vue";
+import { ref, onMounted, computed } from 'vue';
+import AppIcon from '@/components/App/Icon.vue';
+import DialogSort from '@/components/Dialog/Sort.vue';
+import DialogPodiumFilter from '@/components/Dialog/PodiumFilter.vue';
+import SettingsAvatar from '@/components/Settings/Avatar.vue';
+import PodiumSvg from '@/components/Podium/PodiumSvg.vue';
+import AppInput from '@/components/App/Input.vue';
+import AppLeaderboardPostion from '@/components/App/LeaderboardPosition.vue';
+import Cookies from 'js-cookie';
+import AppNotification from '@/components/App/Notification.vue';
 
-const searchQuery = ref("");
+const searchQuery = ref('');
 const sortDialogOpen = ref(false);
 const filterDialogOpen = ref(false);
-const selectedSort = ref("globaal");
-const userId = Number(Cookies.get("userId"));
+const selectedSort = ref('globaal');
+const userId = Number(Cookies.get('userId'));
 
 const podiumWinners = ref([]);
 const leaderboardData = ref([]);
@@ -114,11 +106,7 @@ const applyFilters = (newFilters) => {
 const displayedLeaderboard = computed(() => {
   return leaderboardData.value.map((player) => ({
     ...player,
-    score:
-      filters.value.locations.length > 0 &&
-        player.totalLocationScore !== undefined
-        ? player.totalLocationScore
-        : player.totalScore,
+    score: filters.value.locations.length > 0 && player.totalLocationScore !== undefined ? player.totalLocationScore : player.totalScore,
   }));
 });
 
@@ -126,79 +114,62 @@ const fetchFilteredLeaderboard = async () => {
   const params = new URLSearchParams();
 
   if (filters.value.locations.length) {
-    params.append("locationIds", filters.value.locations.join(","));
+    params.append('locationIds', filters.value.locations.join(','));
   }
   if (filters.value.minAge) {
-    params.append("minAge", filters.value.minAge);
+    params.append('minAge', filters.value.minAge);
   }
   if (filters.value.maxAge) {
-    params.append("maxAge", filters.value.maxAge);
+    params.append('maxAge', filters.value.maxAge);
   }
   if (selectedSort.value) {
-    params.append("sortType", selectedSort.value);
+    params.append('sortType', selectedSort.value);
   }
 
-  if (selectedSort.value === "volgend") {
+  if (selectedSort.value === 'volgend') {
     if (userId && userId !== 0) {
-      params.append("userId", userId);
+      params.append('userId', userId);
     } else {
-      console.error("User ID is missing or invalid.");
+      console.error('User ID is missing or invalid.');
       return;
     }
   }
 
-  console.log("API request:", params.toString());
+  console.log('API request:', params.toString());
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leaderboard/filter?${params.toString()}`
-    );
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/filter?${params.toString()}`);
     let data = await response.json();
-    console.log("Leaderboard API response:", data);
+    console.log('Leaderboard API response:', data);
 
     if (response.ok && Array.isArray(data)) {
       if (data.length < 2) {
-        console.warn("Not enough users found, switching to global.");
-        selectedSort.value = "globaal";
+        console.warn('Not enough users found, switching to global.');
+        selectedSort.value = 'globaal';
 
         // Reset de age filters om spam te voorkomen
         filters.value.minAge = null;
         filters.value.maxAge = null;
         filters.value.locations = [];
 
-        notification.value?.addNotification(
-          "Te weinig gebruikers",
-          "Geen gebruikers gevonden. We schakelen over naar de globale ranglijst.",
-          "error"
-        );
+        notification.value?.addNotification('Te weinig gebruikers', 'Geen gebruikers gevonden. We schakelen over naar de globale ranglijst.', 'error');
 
         fetchFilteredLeaderboard();
         return;
       }
 
       // Sorteer de lijst en bepaal de positie van de gebruiker
-      data.sort(
-        (a, b) =>
-          (b.totalLocationScore ?? b.totalScore) -
-          (a.totalLocationScore ?? a.totalScore)
-      );
+      data.sort((a, b) => (b.totalLocationScore ?? b.totalScore) - (a.totalLocationScore ?? a.totalScore));
 
-      let userIndex = data.findIndex(
-        (player) => Number(player.userId) === userId
-      );
+      let userIndex = data.findIndex((player) => Number(player.userId) === userId);
 
       if (userIndex === -1) {
-        console.log(
-          `User ${userId} not in Top 10 of leaderboard, fetching user score.`
-        );
+        console.log(`User ${userId} not in Top 10 of leaderboard, fetching user score.`);
 
         try {
           let userData;
           if (filters.value.locations.length) {
-            const locationResponse = await fetch(
-              `${import.meta.env.VITE_API_URL}/api/leaderboard/location/${filters.value.locations[0]
-              }/user/${userId}`
-            );
+            const locationResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/location/${filters.value.locations[0]}/user/${userId}`);
 
             if (!locationResponse.ok) {
               throw new Error(`No data found for user ${userId} at location`);
@@ -206,9 +177,7 @@ const fetchFilteredLeaderboard = async () => {
 
             userData = await locationResponse.json();
           } else {
-            const userResponse = await fetch(
-              `${import.meta.env.VITE_API_URL}/api/user/${userId}`
-            );
+            const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`);
 
             if (!userResponse.ok) {
               throw new Error(`No data found for user ${userId}`);
@@ -219,95 +188,74 @@ const fetchFilteredLeaderboard = async () => {
 
           const userEntry = {
             userId: userId,
-            firstname: userData.firstname || "Jij",
-            lastname: userData.lastname || "",
+            firstname: userData.firstname || 'Jij',
+            lastname: userData.lastname || '',
             totalScore: userData.totalScore || 0,
             totalLocationScore: userData.totalLocationScore || 0,
           };
 
           data.push(userEntry);
         } catch (fetchError) {
-          console.warn(
-            `Error fetching user data, adding user with default values: ${fetchError.message}`
-          );
+          console.warn(`Error fetching user data, adding user with default values: ${fetchError.message}`);
 
           data.push({
             userId: userId,
-            firstname: Cookies.get("userFirstname") || "Jij",
-            lastname: Cookies.get("userLastname") || "",
+            firstname: Cookies.get('userFirstname') || 'Jij',
+            lastname: Cookies.get('userLastname') || '',
             totalScore: 0,
             totalLocationScore: 0,
           });
         }
 
-        data.sort(
-          (a, b) =>
-            (b.totalLocationScore ?? b.totalScore) -
-            (a.totalLocationScore ?? a.totalScore)
-        );
+        data.sort((a, b) => (b.totalLocationScore ?? b.totalScore) - (a.totalLocationScore ?? a.totalScore));
 
-        userIndex = data.findIndex(
-          (player) => Number(player.userId) === userId
-        );
+        userIndex = data.findIndex((player) => Number(player.userId) === userId);
       }
 
       const userRank = userIndex + 1;
 
-      podiumWinners.value = data.length >= 3
-        ? [
-          { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
-          { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
-          { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) }
-        ]
-        : data.slice(0, 3).map(winner => ({
-          ...winner,
-          parsedAvatar: parseAvatar(winner?.avatar)
-        }));
+      podiumWinners.value =
+        data.length >= 3
+          ? [
+              { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
+              { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
+              { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) },
+            ]
+          : data.slice(0, 3).map((winner) => ({
+              ...winner,
+              parsedAvatar: parseAvatar(winner?.avatar),
+            }));
 
       leaderboardData.value = data.slice(3, 10);
 
       if (userIndex >= 10) {
         leaderboardData.value.push({
           userId: userId,
-          firstname: Cookies.get("userFirstname") || "Jij",
-          lastname: Cookies.get("userLastname") || "",
-          totalScore:
-            filters.value.locations.length > 0
-              ? data[userIndex].totalLocationScore
-              : data[userIndex].totalScore,
+          firstname: Cookies.get('userFirstname') || 'Jij',
+          lastname: Cookies.get('userLastname') || '',
+          totalScore: filters.value.locations.length > 0 ? data[userIndex].totalLocationScore : data[userIndex].totalScore,
           rank: userRank,
         });
       }
-    } else if (
-      response.status === 404 ||
-      data.message === "No leaderboard entries found with given filters."
-    ) {
-      console.warn(
-        "No leaderboard data found, switching to global leaderboard."
-      );
+    } else if (response.status === 404 || data.message === 'No leaderboard entries found with given filters.') {
+      console.warn('No leaderboard data found, switching to global leaderboard.');
 
-      selectedSort.value = "globaal";
+      selectedSort.value = 'globaal';
       filters.value.minAge = null;
       filters.value.maxAge = null;
       filters.value.locations = [];
 
-      notification.value?.addNotification(
-        "Geen gebruikers gevonden",
-        "We schakelen over naar de globale ranglijst.",
-        "error"
-      );
+      notification.value?.addNotification('Geen gebruikers gevonden', 'We schakelen over naar de globale ranglijst.', 'error');
 
       fetchFilteredLeaderboard();
     } else {
-      console.warn("No leaderboard data found:", data.message);
+      console.warn('No leaderboard data found:', data.message);
       podiumWinners.value = [];
       leaderboardData.value = [];
     }
   } catch (error) {
-    console.error("Error fetching leaderboard data:", error);
+    console.error('Error fetching leaderboard data:', error);
   }
-
-
 };
 
 const parseAvatar = (avatarString) => {
@@ -349,9 +297,6 @@ const parseAvatar = (avatarString) => {
     accessory: avatarParts[13] || 'none',
   };
 };
-
-
-
 
 onMounted(() => {
   fetchFilteredLeaderboard();
