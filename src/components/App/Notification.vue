@@ -2,7 +2,7 @@
     <TransitionGroup tag="div" name="notification" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-sm px-4">
         <div v-for="notification in notifications" :key="notification.id" class="flex items-center gap-3 p-4 rounded-lg shadow-lg transform transition-all duration-300" :class="[
             notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-white text-black-100',
-            notification.type === 'success' ? 'border-l-4 border-blue-54' : ''
+            notification.type === 'success' ? 'border-l-4 bg-blue-18' : ''
         ]">
             <!-- Icon -->
             <div class="flex-shrink-0">

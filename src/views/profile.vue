@@ -1,9 +1,11 @@
+
+
 <template>
   <div class="flex flex-col justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar :id="Cookies.get('userId')" />
       <div class="flex flex-col items-center">
-        <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
+       <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
         <p class="text-xs">{{ userData.username }}</p>
       </div>
 
