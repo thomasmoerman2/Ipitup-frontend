@@ -37,25 +37,17 @@
     </div>
 
     <!-- Level Selection -->
-    <div class="flex flex-col gap-2">
+    <!-- <div class="flex flex-col gap-2">
       <p class="text-sm">Level</p>
       <AppOptions
         :options="levelOptions"
         v-model="selectedLevel"
         @change="handleLevelChange"
       />
-    </div>
+    </div> -->
 
     <!-- Switches -->
     <div class="flex flex-col gap-4">
-      <div class="flex justify-between items-center">
-        <span class="text-sm">Alleen bundels</span>
-        <AppSwitch
-          v-model="bundlesOnly"
-          id="bundles-switch"
-          @change="handleSwitchChange"
-        />
-      </div>
       <div class="flex justify-between items-center">
         <span class="text-sm">Alleen favorieten</span>
         <AppSwitch

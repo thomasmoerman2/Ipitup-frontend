@@ -94,21 +94,12 @@ const filteredExercises = computed(() => {
   }
 
   return exercises.value.filter((exercise) => {
-    // Check each filter category
-    return activeFilters.value.every((filter) => {
-      console.log(filter.name, exercise.exerciseType);
+    // Check if exercise matches any filter category
+    return activeFilters.value.some((filter) => {
+      console.log(exercise.exerciseType, filter);
       switch (filter.category) {
         case "exercise":
           return exercise.exerciseType === filter.name;
-        case "level":
-          return exercise.level === parseInt(filter.name.split(" ")[1]);
-        case "switch":
-          if (filter.id === "bundles") {
-            return exercise.isBundle;
-          } else if (filter.id === "favorites") {
-            return exercise.isFavorite;
-          }
-          return true;
         default:
           return true;
       }

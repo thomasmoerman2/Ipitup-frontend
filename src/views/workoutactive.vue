@@ -594,7 +594,9 @@ const detectPushUp = (landmarks) => {
   // Define thresholds
   const CLOSE_THRESHOLD = 0.08; // Threshold for "really close"
   const STRETCH_THRESHOLD = 0.11; // Threshold for "arms stretched out"
-  console.log(distance);
+
+  console.log(leftWrist);
+  console.log(leftShoulder);
 
   const currentTime = Date.now();
 
