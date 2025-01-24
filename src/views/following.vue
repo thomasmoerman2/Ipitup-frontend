@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <RouterLink to="/profile" class="flex items-center gap-1">
-      <AppIcon name="ArrowLeft" size="24" />
+      <AppIcon name="ArrowLeft" :size="24" />
       <p class="font-medium text-[1.25rem]">Back</p>
     </RouterLink>
 
@@ -10,7 +10,7 @@
     <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @input="handleSearch" />
 
     <div class="flex flex-col gap-4">
-      <SearchProfile v-for="user in results" :key="user.id" :id="user.id" :avatar="user.avatar" :fullname="user.firstname + ' ' + user.lastname" :firstname="user.firstname" />
+      <SearchProfile v-for="user in results" :key="String(user.id)" :id="String(user.id)" :avatar="user.avatar" :fullname="user.firstname + ' ' + user.lastname" :firstname="user.firstname" />
     </div>
   </div>
 </template>
@@ -66,4 +66,16 @@ const handleTabChange = (value) => {
   selectedTab.value = value;
   fetchUsers();
 };
+
+
+const handleSearch = () => {
+  if (searchQuery.value.trim() === '') {
+    fetchUsers();
+  } else {
+    results.value = results.value.filter((user) =>
+      `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+};
+
 </script>

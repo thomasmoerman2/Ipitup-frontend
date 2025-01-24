@@ -37,8 +37,8 @@
         :img="exercise.exerciseType"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
-        :time="exercise.exerciseTime"
-        :isFavorite="isFavorite"
+        :time=String(exercise.exerciseTime)
+        :isFavorite="isFavorite ?? []"
         :type="exercise.exerciseType"
         @setFavorite="setFavorite"
         :id="String(exercise.exerciseId)"
