@@ -1,11 +1,9 @@
-
-
 <template>
   <div class="flex flex-col justify-between gap-10">
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar :id="Cookies.get('userId')" />
       <div class="flex flex-col items-center">
-       <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
+        <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
       </div>
 
       <div class="flex gap-8 items-center">
@@ -39,7 +37,9 @@
           { text: 'Deze maand', value: 'Deze maand' },
         ]" v-model="selectedOption" @change="handleOptionChange" />
       </div>
-      <div class="flex w-full bg-blue-6 h-[10rem] justify-center items-center text-center">[Grafiek]</div>
+      <div class="flex w-full bg-blue-6 h-max justify-center items-center text-center">
+        <canvas id="myChart" class="w-full h-full"></canvas>
+      </div>
     </div>
 
     <div class="flex flex-col items-center gap-3">
@@ -60,15 +60,19 @@ import AppSmallButton from '@/components/App/SmallButton.vue';
 import ProfileInfo from '@/components/Profile/Info.vue';
 import AppOptions from '@/components/App/Options.vue';
 import AppBadge from '@/components/App/Badge.vue';
-import AppIcon from '@/components/App/Icon.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
+import Chart from 'chart.js/auto';
+
 
 const router = useRouter();
 const selectedOption = ref('1');
 const userBadges = ref([]);
 const isLoading = ref(false);
+
+const chartXLabels = ref([]);
+const chartYLabels = ref([]);
 
 const userData = ref({
   firstname: Cookies.get('userFirstname') || '',
@@ -122,6 +126,9 @@ const fetchUserActivitiesCount = async () => {
     if (data && typeof data.count === 'number') {
       Cookies.set('activitiesCount', data.count, { expires: 1 }); // Sla altijd op en vernieuw cookie
       userData.value.activitiesCount = data.count ? data.count : 0;
+
+      console.log("Activity user data: ", data);
+      func_set_chart();
     }
   } catch (error) {
     console.error('Error fetching activity count:', error);
@@ -187,4 +194,20 @@ const fetchUserFollowing = async () => {
     console.error('Error fetching following count:', error);
   }
 };
+
+const func_set_chart = () => {
+  const ctx = document.getElementById('myChart').getContext('2d');
+  const myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartXLabels.value,
+      datasets: [{
+        label: '',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: chartYLabels.value
+      }]
+    }
+  });
+}
 </script>
