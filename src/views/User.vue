@@ -7,7 +7,8 @@
 
     <!-- Gebruiker Informatie -->
     <div class="flex flex-col items-center gap-5">
-      <SettingsAvatar :src="userData?.avatar" />
+      <SettingsAvatar v-if="userData?.userId" :src="userData.avatar" :id="String(userData.userId)" />
+
       <div class="flex flex-col items-center">
         <p class="font-bold mb-[0.3125rem]">{{ userData?.firstname }} {{ userData?.lastname }}</p>
         <p class="text-xs">@{{ userData?.firstname }}</p>
@@ -31,7 +32,7 @@
     <!-- Recente Activiteiten -->
     <div class="flex flex-col gap-5" v-if="userData?.accountStatus === 0">
       <p class="text-xs">Recente activiteiten</p>
-      <WorkoutRecent v-for="workout in userData?.exercises" :key="workout.id" :img="workout.image" :title="workout.name" :level="workout.type" :time="workout.time" :amount="workout.score" />
+      <WorkoutRecent v-for="workout in userData?.exercises" :key=String(workout.id) :img="getExerciseImage(workout.type)"  :title="workout.name" :level="workout.type" :time=String(workout.time) :amount=String(workout.score) />
     </div>
 
     <!-- Toggle: Badges / Leaderboard -->
@@ -145,6 +146,7 @@ const fetchUserData = async () => {
     const data = await response.json();
     userData.value = data;
     console.log("userData ->", userData.value);
+    console.log("Fetched exercises:", userData.value?.exercises);
 
     if (userData.value.accountStatus === 0) {
       leaderboardPosition.value = [
@@ -244,6 +246,14 @@ onMounted(async () => {
 
 // Toggle tussen Badges en Leaderboard
 const activeTab = ref('badges');
+
+
+
+const getExerciseImage = (exerciseType) => {
+  return `/workoutimages/${exerciseType.toLowerCase()}.png`;
+};
+
+
 </script>
 
 <style scoped>

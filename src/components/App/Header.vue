@@ -14,7 +14,7 @@ const route = useRoute();
 
 const props = defineProps({
     meta: {
-        type: String,
+        type: Object,
         required: true,
     },
 });

@@ -12,7 +12,8 @@
       </div>
     </div>
 
-    <AppHeader v-if="!hideNavigation" class="pt-16 z-[65]" :meta="route.meta" />
+    <AppHeader v-if="!hideNavigation" class="pt-16 z-[65]" :meta="route.meta || {}" />
+
     <RouterView :key="refreshKey" />
     <div v-if="!hideNavigation" class="pb-20"></div>
     <AppNavigation v-if="!hideNavigation" class="z-[65]" />

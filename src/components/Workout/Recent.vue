@@ -12,10 +12,10 @@
     <div class="flex flex-col justify-between w-full h-max">
       <div class="flex flex-col text-left">
         <strong class="capitalize">{{ title }}</strong>
-        <p class="uppercase text-[12px] font-light">Level {{ level }}</p>
+        <p class="uppercase text-[12px] font-light">{{ level }}</p>
       </div>
       <div class="flex items-center gap-1 text-[12px]">
-        <AppIcon name="Timer" size="12" />
+        <AppIcon name="Timer" :size="12" />
         <p class="uppercase">{{ time }} min</p>
       </div>
     </div>
