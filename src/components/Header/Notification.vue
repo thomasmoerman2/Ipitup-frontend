@@ -16,7 +16,22 @@
                 <div class="flex flex-col gap-1 p-3">
                     <div class="flex items-center w-max gap-2">
                         <div class="w-2 h-2 rounded-full bg-blue-90"></div>
-                        <strong>{{ notification.type }}</strong>
+                        <strong class="capitalize">{{ (() => {
+                            switch (notification.type) {
+                                case 0:
+                                    return "alert";
+                                    break;
+                                case 1:
+                                    return "reminder";
+                                    break;
+                                case 2:
+                                    return "achievement";
+                                    break;
+                                case 3:
+                                    return "friendRequest";
+                                    break;
+                            }
+                        })() }}</strong>
                     </div>
                     <p class="text-sm">{{ notification.message }}</p>
                 </div>
