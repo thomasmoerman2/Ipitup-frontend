@@ -18,17 +18,17 @@
     </div>
   </div>
 
-  <div class="flex uppercase text-blue-60 text-6xl justify-center items-center py-10 flex-col anim-letters" :class="{ animate: shouldAnimate }" v-if="!isLoggedIn">
+  <div class="flex uppercase text-blue-60 text-6xl justify-center items-center py-5 flex-col anim-letters" :class="{ animate: shouldAnimate }" v-if="!isLoggedIn">
     <p class="font-bold">make</p>
     <p class="text-black-100 text-2xl text-center">your</p>
     <p>move</p>
   </div>
 
-  <p class="text-orange-35 font-bold pb-4 pt-4" v-if="isLoggedIn">Welkom terug!</p>
-  <h1 class="text-blue-60 text-3xl pb-8" v-if="isLoggedIn">
+  <p class="text-orange-35 font-bold pb-4" v-if="isLoggedIn">Welkom terug!</p>
+  <h1 class="text-blue-60 text-3xl" v-if="isLoggedIn">
     Klaar voor de volgende <span class="font-bold"> training?</span>
   </h1>
-  <h1 class="text-blue-60 text-3xl pb-8" v-else>
+  <h1 class="text-blue-60 text-3xl" v-else>
     Klaar voor jouw eerste<span class="font-bold"> training?</span>
   </h1>
 
