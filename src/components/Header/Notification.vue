@@ -6,17 +6,17 @@
                 <X class="absolute transition-all duration-300 ease-in-out" :class="blnOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'" />
             </div>
             <!-- Notification Badge -->
-            <div v-show="props.messages.length > 0" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-blue-12 text-white text-xs rounded-full grid place-items-center px-1">
-                {{ props.messages.length }}
+            <div v-show="messages.length > 0" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-blue-12 text-white text-xs rounded-full grid place-items-center px-1">
+                {{ messages.length }}
             </div>
         </button>
 
         <TransitionGroup name="notification-list" tag="div" class="absolute -right-2 top-[45px] w-[280px] flex flex-col gap-2 z-[60]">
-            <div v-if="blnOpen" v-for="(notification, index) in props.messages" :key="index" class="rounded-md border border-blue-90 bg-blue-12 text-black-100 shadow-nav" :style="{ transitionDelay: `${index * 100}ms` }">
+            <div v-if="blnOpen" v-for="(notification, index) in messages" :key="index" class="rounded-md border border-blue-90 bg-blue-12 text-black-100 shadow-nav" :style="{ transitionDelay: `${index * 100}ms` }">
                 <div class="flex flex-col gap-1 p-3">
                     <div class="flex items-center w-max gap-2">
                         <div class="w-2 h-2 rounded-full bg-blue-90"></div>
-                        <strong>{{ notification.title }}</strong>
+                        <strong>{{ notification.type }}</strong>
                     </div>
                     <p class="text-sm">{{ notification.message }}</p>
                 </div>
@@ -28,28 +28,41 @@
 <script setup>
 import { ref, TransitionGroup } from 'vue';
 import { Bell, X } from 'lucide-vue-next'
+import Cookies from 'js-cookie';
 
 const blnOpen = ref(false);
 
 const props = defineProps({
     messages: {
-        type: Array,
-        default: () => [{
-            title: "This is a test message",
-            message: "This is a test message"
-        }, {
-            title: "This is another test message",
-            message: "This is another test message"
-        }, {
-            title: "This is the last test message",
-            message: "This is the last test message"
-        }]
+        type: Array
     }
 });
 
 const func_toggle = () => {
     blnOpen.value = !blnOpen.value;
+
+    if (!blnOpen.value) {
+        fetch_notifications_asreaded();
+    }
 }
+
+const fetch_notifications_asreaded = async () => {
+    const userId = Cookies.get('userId');
+    const notifications = props.messages.map(notification => notification.notificationId);
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}/read`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${Cookies.get('authToken')}`
+        },
+        body: JSON.stringify(notifications)
+    });
+
+    const data = await response.json();
+    console.log(data);
+}
+
 </script>
 
 <style scoped>
