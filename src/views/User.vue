@@ -8,12 +8,9 @@
     <!-- Gebruiker Informatie -->
     <div class="flex flex-col items-center gap-5">
       <SettingsAvatar v-if="userData?.userId" :src="userData.avatar" :id="String(userData.userId)" />
-
       <div class="flex flex-col items-center">
-        <p class="font-bold mb-[0.3125rem]">{{ userData?.firstname }} {{ userData?.lastname }}</p>
-        <p class="text-xs">@{{ userData?.firstname }}</p>
+        <p class="font-bold">{{ userData?.firstname }} {{ userData?.lastname }}</p>
         <div class="flex pt-2.5">
-          <p class="text-2xs italic text-black-50">Gebruiker sinds&nbsp;</p>
           <p class="text-2xs italic text-blue-36">{{ userData?.createdAt }}</p>
         </div>
       </div>

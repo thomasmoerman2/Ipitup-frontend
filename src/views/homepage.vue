@@ -34,14 +34,42 @@
 
   <div class="flex flex-col gap-4">
     <div class="flex justify-between">
-      <p class="text-xs text-blue-54" v-if="isLoggedIn">Jouw recente oefeningen</p>
-      <p class="text-xs text-blue-54" v-else>Hier een paar oefeningen voor je</p>
+      <p class="text-xs text-blue-54" v-if="isLoggedIn && userActivities.length > 0">
+        Jouw recente oefeningen
+      </p>
+      <p class="text-xs text-blue-54" v-else>
+        Ontdek enkele van onze oefeningen
+      </p>
     </div>
-    <WorkoutExercise v-if="exercises.length > 0" v-for="exercise in exercises" :key="exercise.id" :img="exercise.image" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
+    <template v-if="userActivities.length > 0">
+      <WorkoutExercise 
+        v-for="activity in userActivities"
+        :key="activity.id || activity.exerciseId" 
+        :id="String(activity.id || activity.exerciseId)" 
+        :img="getExerciseImage(activity.type)"  
+        :title="activity.name" 
+        :level="String(activity.level)" 
+        :time="String(activity.time)"
+        :type="activity.type"
+        :isFavorite="isFavorite"
+      />
+    </template>
+
+    <template v-else-if="exercises.length > 0">
+      <WorkoutExercise 
+        v-for="exercise in exercises"
+        :key="exercise.id" 
+        :img="getExerciseImage(exercise.type)"  
+        :title="exercise.name" 
+        :level="exercise.level" 
+        :time="exercise.time"
+      />
+    </template>
+
     <div v-else>
       <p class="text-blue-54 text-sm">Er zijn momenteel geen oefeningen beschikbaar.</p>
     </div>
-    <AppButton text="Ontdek meer" icon="false" version="1" @click="func_change_page" v-if="!isLoggedIn" />
+
   </div>
 </template>
 <script setup>
@@ -51,23 +79,90 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
 
+
 const router = useRouter();
 const isLoggedIn = ref(false);
 const exercises = ref([]);
 const shouldAnimate = ref(false);
+const userActivities = ref([]);
+const isFavorite = ref([]);
 
-onMounted(() => {
-  if (!localStorage.getItem('animationPlayed')) {
-    shouldAnimate.value = true;
-    localStorage.setItem('animationPlayed', 'true');
+// Wanneer de component wordt gemount, check of de gebruiker is ingelogd
+onMounted(async () => {
+  if (Cookies.get('authToken')) {
+    isLoggedIn.value = true;
+    await fetchUserActivities();
+  } else {
+    console.log("Gebruiker is niet ingelogd, ophalen van random oefeningen.");
+    await fetch_3_exercises();
   }
 });
 
+
+
+// 3 activiteiten tonen als je geen recente activiteiten hebt
 const fetch_3_exercises = async () => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/random`);
-  const data = await response.json();
-  exercises.value = data;
-}
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/random?count=3`);
+    const data = await response.json();
+    console.log("Fetched exercises:", data);
+
+    if (Array.isArray(data) && data.length > 0) {
+      exercises.value = data.map(ex => ({
+        id: ex.exerciseId || `unknown-${Math.random().toString(36).substr(2, 9)}`, // Gebruik juiste veldnaam
+        type: ex.exerciseType || "unknown",
+        name: ex.exerciseName || "Onbekende oefening",
+        level: ex.exerciseType || "Onbekend",
+        time: ex.exerciseTime || "0",
+      }));
+    } else {
+      console.warn("Geen oefeningen ontvangen bij het ophalen van random oefeningen.");
+    }
+  } catch (error) {
+    console.error("Fout bij ophalen van oefeningen:", error);
+  }
+};
+
+
+
+// Functie om de laatste 3 activiteiten van de gebruiker op te halen
+const fetchUserActivities = async () => {
+  try {
+    const userId = Cookies.get('userId'); // Haal userId uit cookies
+    if (!userId) {
+      console.error("Geen userId gevonden in cookies, ophalen van willekeurige oefeningen.");
+      await fetch_3_exercises();
+      return;
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/info/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${Cookies.get('authToken')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data && data.exercises && Array.isArray(data.exercises) && data.exercises.length > 0) {
+      userActivities.value = data.exercises.slice(0, 3);
+    }
+
+    // Controleer of we minder dan 3 activiteiten hebben en vul aan met random oefeningen
+    if (userActivities.value.length < 3) {
+      console.info("Minder dan 3 activiteiten, ophalen van extra willekeurige oefeningen.");
+      await fetch_3_exercises();
+    }
+  } catch (error) {
+    console.error("Fout bij ophalen van activiteiten:", error);
+    await fetch_3_exercises();
+  }
+};
+
+
 
 if (Cookies.get('authToken')) {
   isLoggedIn.value = true;
@@ -75,9 +170,18 @@ if (Cookies.get('authToken')) {
   fetch_3_exercises();
 }
 
+
+// Functie om naar de oefeningenpagina te navigeren
 const func_change_page = () => {
   window.location.href = '/exercises';
-}
+};
+
+
+const getExerciseImage = (exerciseType) => {
+  return `/workoutimages/${exerciseType.toLowerCase()}`;
+};
+
+
 
 </script>
 

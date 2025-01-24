@@ -6,7 +6,6 @@
       <SettingsAvatar :id="Cookies.get('userId')" />
       <div class="flex flex-col items-center">
        <p class="font-bold mb-[0.3125rem]">{{ userData.firstname }} {{ userData.lastname }}</p>
-        <p class="text-xs">{{ userData.username }}</p>
       </div>
 
       <div class="flex gap-8 items-center">

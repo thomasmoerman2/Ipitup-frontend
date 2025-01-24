@@ -34,7 +34,7 @@
         v-if="exercises.length > 0"
         v-for="exercise in filteredExercises"
         :key="exercise.id"
-        :img="exercise.exerciseType"
+        :img="getExerciseImage(exercise.exerciseType)"
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
         :time=String(exercise.exerciseTime)
@@ -114,7 +114,7 @@ function setFavorite(exerciseId) {
 }
 
 const getExerciseImage = (exerciseType) => {
-  return `/workoutimages/${exerciseType.toLowerCase()}.png`;
+  return `/workoutimages/${exerciseType.toLowerCase()}`;
 };
 
 // Initial fetch
