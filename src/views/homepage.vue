@@ -45,12 +45,12 @@
       <WorkoutExercise 
         v-for="activity in userActivities"
         :key="activity.id || activity.exerciseId" 
+        :type="String(activity.type)"
         :id="String(activity.id || activity.exerciseId)" 
         :img="getExerciseImage(activity.type)"  
         :title="activity.name" 
-        :level="String(activity.level)" 
+        :level="String(activity.type)" 
         :time="String(activity.time)"
-        :type="activity.type"
         :isFavorite="isFavorite"
       />
     </template>
