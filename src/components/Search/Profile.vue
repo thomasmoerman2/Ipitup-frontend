@@ -6,7 +6,7 @@
       </div>
       <p class="font-bold">{{ fullname }}</p>
     </div>
-    <p class="text-xs text-black-40">@{{ firstname }}</p>
+    <p v-if="showUsername" class="text-xs text-black-40">@{{ firstname }}</p>
   </RouterLink>
 </template>
 
@@ -28,6 +28,10 @@ const props = defineProps({
   firstname: {
     type: String,
     required: true,
+  },
+  showUsername: {
+    type: Boolean,
+    default: true, // Standaard tonen we de username
   },
 });
 
