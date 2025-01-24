@@ -63,7 +63,7 @@
       <div v-if="activeTab === 'leaderboard' && Cookies.get('userId') && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
         <div class="flex flex-col items-center my-5 gap-2.5">
           <div class="flex items-center gap-1.5">
-            <AppIcon name="Gem" color="text-blue-48" size="24" />
+            <AppIcon name="Gem" color="text-blue-48" :size="24" />
             <p class="text-3xl font-bold">{{ userData?.leaderboard.score }}</p>
           </div>
           <p>3de Plaats</p>
@@ -71,14 +71,31 @@
         </div>
 
         <div class="flex flex-col gap-[0.3125rem]">
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="leaderboardPosition[0].amount" />
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" :position="2" :name="leaderboardPosition[1].name" :amount="leaderboardPosition[1].amount" />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="Number(leaderboardPosition[0].amount)"  />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" :position="2" :name="leaderboardPosition[1].name" :amount="Number(leaderboardPosition[1].amount)"  />
         </div>
 
         <div class="flex my-5 justify-center items-center text-xs">
           <p>
-            Je staat&nbsp;<strong>{{ (leaderboardPosition[1].amount > leaderboardPosition[0].amount) ? leaderboardPosition[1].amount - leaderboardPosition[0].amount : leaderboardPosition[0].amount - leaderboardPosition[1].amount }}</strong>&nbsp;{{ leaderboardPosition[1].amount > leaderboardPosition[0].amount ? 'achter' : 'voor' }}&nbsp;<strong>{{ leaderboardPosition[1].name }}</strong>!&nbsp;Ga ervoor!
+            Je staat
+            <strong>{{
+              Math.abs(Number(leaderboardPosition[0].amount) - Number(leaderboardPosition[1].amount))
+            }}</strong>&nbsp;punten
+            {{
+              leaderboardPosition[0].name === Cookies.get("userFirstname")
+                ? "voor"
+                : "achter"
+            }}
+            <strong>{{
+              leaderboardPosition[0].name === Cookies.get("userFirstname")
+                ? leaderboardPosition[1].name
+                : leaderboardPosition[0].name
+            }}</strong>!&nbsp;Ga ervoor!
           </p>
+
+
+
+
         </div>
       </div>
 
