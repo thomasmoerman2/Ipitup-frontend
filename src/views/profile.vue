@@ -39,7 +39,7 @@
       </div>
       <div class="flex w-full bg-blue-6 h-max justify-center items-center text-center">
         <canvas v-if="userData.activitiesCount > 0" id="myChart" class="w-full h-full"></canvas>
-        <p v-else>Geen activiteiten gevonden</p>
+        <p v-else class="text-center py-20">Geen activiteiten gevonden</p>
       </div>
     </div>
 
