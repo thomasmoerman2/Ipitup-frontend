@@ -53,6 +53,7 @@ const props = defineProps({
     }
 });
 
+
 const func_toggle = () => {
     blnOpen.value = !blnOpen.value;
 
@@ -75,8 +76,24 @@ const fetch_notifications_asreaded = async () => {
     });
 
     const data = await response.json();
-    console.log(data);
 }
+
+const fetch_notifications = async () => {
+    const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
+    const data = await response.json();
+    console.log("data.notifications ->", data.notifications);
+
+    if (data.notifications.length > 0) {
+        for (let i = 0; i < data.notifications.length; i++) {
+            if (data.notifications[i].date_published > new Date() && data.notifications[i].date_deleted < new Date()) {
+                messages.value.push(data.notifications[i]);
+            }
+        }
+    }
+}
+
+fetch_notifications();
+// setInterval(fetch_notifications, 1000);
 
 </script>
 

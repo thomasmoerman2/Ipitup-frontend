@@ -47,7 +47,6 @@ const fetch_notifications = async () => {
     });
 
     const data = await response.json();
-    console.log(data);
     notifications.value = data;
 }
 

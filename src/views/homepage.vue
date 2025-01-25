@@ -42,28 +42,11 @@
       </p>
     </div>
     <template v-if="userActivities.length > 0">
-      <WorkoutExercise 
-        v-for="activity in userActivities"
-        :key="activity.id || activity.exerciseId" 
-        :type="String(activity.type)"
-        :id="String(activity.id || activity.exerciseId)" 
-        :img="getExerciseImage(activity.type)"  
-        :title="activity.name" 
-        :level="String(activity.type)" 
-        :time="String(activity.time)"
-        :isFavorite="isFavorite"
-      />
+      <WorkoutExercise v-for="activity in userActivities" :key="activity.id || activity.exerciseId" :type="String(activity.type)" :id="String(activity.id || activity.exerciseId)" :img="getExerciseImage(activity.type)" :title="activity.name" :level="String(activity.type)" :time="String(activity.time)" :isFavorite="isFavorite" />
     </template>
 
     <template v-else-if="exercises.length > 0">
-      <WorkoutExercise 
-        v-for="exercise in exercises"
-        :key="exercise.id" 
-        :img="getExerciseImage(exercise.type)"  
-        :title="exercise.name" 
-        :level="exercise.level" 
-        :time="exercise.time"
-      />
+      <WorkoutExercise v-for="exercise in exercises" :key="exercise.id" :img="getExerciseImage(exercise.type)" :title="exercise.name" :level="exercise.level" :time="exercise.time" />
     </template>
 
     <div v-else>
@@ -78,7 +61,6 @@ import AppButton from "@/components/App/Button.vue";
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
-
 
 const router = useRouter();
 const isLoggedIn = ref(false);

@@ -10,8 +10,8 @@
     </RouterLink>
     <p class="text-sm text-black-100 lowercase">{{ formData.username }}</p>
     <AppSmallButton icon="Globe" :version="formData.accountStatus === 'Public' ? 'blue' : 'orange'" :text="formData.accountStatus === 'Public'
-        ? 'Publieke gebruiker'
-        : 'Privé gebruiker'
+      ? 'Publieke gebruiker'
+      : 'Privé gebruiker'
       " @click="toggleAccountStatus" />
   </div>
 
@@ -41,10 +41,7 @@
     <AppButton text="Account verwijderen" version="4" icon="false" />
   </div>
   <div class="flex flex-wrap gap-3">
-    <AppButton text="Credits" version="link" icon="false" />
-    <AppButton text="Privacybeleid" version="link" icon="false" />
-    <AppButton text="Cookiebeleid" version="link" icon="false" />
-    <AppButton text="Disclaimer" version="link" icon="false" />
+    <AppButton v-for="policy in policies" :key="policy.id" :text="policy.name" :link="policy.url" version="link" icon="false" />
   </div>
   <AppNotification ref="notification" />
 </template>
@@ -64,7 +61,7 @@ const router = useRouter();
 const notification = ref(null);
 const isLoading = ref(false);
 const userId = Cookies.get("userId") || "";
-
+const policies = ref([]);
 // Form data with initial values from cookies
 const formData = ref({
   firstname: Cookies.get("userFirstname") || "",
@@ -126,6 +123,15 @@ const handleSave = async () => {
     isLoading.value = false;
   }
 };
+
+const fetch_policies = async () => {
+  const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
+  const data = await response.json();
+  console.log("data.policies ->", data.policies);
+  policies.value = data.policies;
+}
+
+fetch_policies();
 
 // Add auth check on mount
 onMounted(() => {

@@ -135,10 +135,7 @@ const clearAllCookies = () => {
 };
 const validateToken = async () => {
   const authToken = Cookies.get("authToken");
-  console.log(
-    "Checking auth token:",
-    authToken ? "Token exists" : "No token found"
-  );
+  console.log("Checking auth token:", authToken ? "Token exists" : "No token found");
   if (!authToken) {
     console.log("No auth token found, validation failed");
     return false;

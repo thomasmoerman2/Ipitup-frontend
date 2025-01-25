@@ -1,5 +1,5 @@
 <template>
-  <button :class="[
+  <button @click="handleClick" :class="[
     {
       'bg-blue-54 text-white rounded-[10px] flex gap-3 items-center justify-center w-full py-3 disabled:opacity-50':
         props.version === 'primary' || props.version === '1',
@@ -20,6 +20,26 @@
 
 <script setup>
 import { ArrowUpRight } from "lucide-vue-next";
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const handleClick = () => {
+  console.log("handleClick");
+  if (props.version === "link") {
+    console.log("props.version ->", props.version);
+    if (props.link) {
+      console.log("props.link ->", props.link);
+      if (!props.link.startsWith("/")) {
+        console.log("open in new tab");
+        window.open(props.link, '_blank');
+      } else {
+        console.log("open in router");
+        router.push(props.link);
+      }
+    }
+  }
+}
 
 const props = defineProps({
   text: {
@@ -29,6 +49,10 @@ const props = defineProps({
   icon: {
     type: String,
     default: "true",
+  },
+  link: {
+    type: String,
+    default: "",
   },
   version: {
     type: String,
