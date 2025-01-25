@@ -66,34 +66,19 @@ const fetch_notifications_asreaded = async () => {
     const userId = Cookies.get('userId');
     const notifications = props.messages.map(notification => notification.notificationId);
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}/read`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Cookies.get('authToken')}`
-        },
-        body: JSON.stringify(notifications)
-    });
+    if (userId) {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}/read`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${Cookies.get('authToken')}`
+            },
+            body: JSON.stringify(notifications)
+        });
 
-    const data = await response.json();
-}
-
-const fetch_notifications = async () => {
-    const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
-    const data = await response.json();
-    console.log("data.notifications ->", data.notifications);
-
-    if (data.notifications.length > 0) {
-        for (let i = 0; i < data.notifications.length; i++) {
-            if (data.notifications[i].date_published > new Date() && data.notifications[i].date_deleted < new Date()) {
-                messages.value.push(data.notifications[i]);
-            }
-        }
+        const data = await response.json();
     }
 }
-
-fetch_notifications();
-// setInterval(fetch_notifications, 1000);
 
 </script>
 

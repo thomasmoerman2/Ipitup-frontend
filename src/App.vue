@@ -1,9 +1,12 @@
 <template>
+
   <div v-if="isLoading" class="flex flex-col gap-5 overflow-x-hidden">
     <Preload @loading-complete="handleLoadingComplete" />
   </div>
   <div v-if="isOffline" v-html="offlineContent"></div>
   <div v-else-if="!isLoading" class="flex flex-col gap-5 container mx-auto overflow-x-hidden" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+    <ConfigNotification v-if="activeNotification && activeNotification.message" :message="activeNotification.message" />
+
     <!-- Pull to refresh indicator -->
     <div v-if="pullDistance > 0" class="fixed top-0 left-0 right-0 flex justify-center py-3 bg-blue-6 text-blue-54 z-50" :style="{ transform: `translateY(${pullDistance}px)` }">
       <div class="flex items-center gap-2">
@@ -13,7 +16,7 @@
       </div>
     </div>
 
-    <AppHeader v-if="!hideNavigation" class="pt-16 z-[65]" :meta="route.meta || {}" />
+    <AppHeader v-if="!hideNavigation" :class="['pt-16 z-[65]', activeNotification && activeNotification.message && 'pt-20']" :meta="route.meta || {}" />
 
     <RouterView :key="refreshKey" />
     <div v-if="!hideNavigation" class="pb-20"></div>
@@ -27,6 +30,7 @@ import { useRoute } from 'vue-router';
 import AppHeader from './components/App/Header.vue';
 import AppNavigation from './components/App/Navigation.vue';
 import Preload from './views/Preload.vue';
+import ConfigNotification from './components/Header/ConfigNotification.vue';
 
 const isLoading = ref(true);
 const isOffline = ref(false);
@@ -40,6 +44,8 @@ const route = useRoute();
 
 const hideNavigation = computed(() => route.meta.hideNavigation);
 
+const activeNotification = ref(null);
+
 // Check website status
 const checkWebsiteStatus = async () => {
   try {
@@ -51,27 +57,28 @@ const checkWebsiteStatus = async () => {
       const onlineDate = new Date(data.website_settings.date_online);
       const offlineDate = new Date(data.website_settings.date_offline);
 
-      if (onlineDate > currentTime || offlineDate < currentTime) {
-        isOffline.value = true;
-        // Check if offline_page is a URL (starts with http:// or https://)
-        if (data.website_settings.offline_page.startsWith('http')) {
-          try {
-            const offlineResponse = await fetch(data.website_settings.offline_page);
-            offlineContent.value = await offlineResponse.text();
-          } catch (error) {
-            console.error('Failed to fetch offline page:', error);
-            offlineContent.value = 'Site is currently offline. Please try again later.';
-          }
-        } else {
-          // Use the content directly if it's not a URL
-          offlineContent.value = data.website_settings.offline_page;
-        }
-      } else {
+      if (offlineDate > currentTime) {
         isOffline.value = false;
+      } else {
+        if (onlineDate < currentTime) {
+          isOffline.value = false;
+        } else {
+          isOffline.value = true;
+          if (data.website_settings.offline_page.startsWith('http')) {
+            try {
+              const offlineResponse = await fetch(data.website_settings.offline_page);
+              offlineContent.value = await offlineResponse.text();
+            } catch (error) {
+              offlineContent.value = 'Site is currently offline. Please try again later.';
+            }
+          } else {
+            // Use the content directly if it's not a URL
+            offlineContent.value = data.website_settings.offline_page;
+          }
+        }
       }
     }
   } catch (error) {
-    console.error('Failed to check website status:', error);
   }
 };
 
@@ -121,6 +128,41 @@ const handleTouchEnd = async () => {
 const handleLoadingComplete = () => {
   isLoading.value = false;
 };
+
+const fetch_config_notifications = async () => {
+  try {
+    const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
+    const data = await response.json();
+
+    if (data.notifications && data.notifications.message) {
+      // Only check dates if they exist in the config
+      if (data.notifications.date_published && data.notifications.date_deleted) {
+        const currentDate = new Date();
+        const publishedDate = new Date(data.notifications.date_published);
+        const deletedDate = new Date(data.notifications.date_deleted);
+
+        // Check if the dates are valid
+        if (!isNaN(publishedDate.getTime()) && !isNaN(deletedDate.getTime())) {
+          if (currentDate >= publishedDate && currentDate <= deletedDate) {
+            activeNotification.value = data.notifications;
+          } else {
+            activeNotification.value = null;
+          }
+        }
+      } else {
+        // If no dates are specified, show the notification
+        activeNotification.value = data.notifications;
+      }
+    } else {
+      activeNotification.value = null;
+    }
+  } catch (error) {
+    activeNotification.value = null;
+  }
+}
+
+fetch_config_notifications();
+setInterval(fetch_config_notifications, 1000);
 </script>
 
 <style>

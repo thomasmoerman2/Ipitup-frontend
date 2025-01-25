@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Notification from '@/components/Header/Notification.vue';
 import Cookies from 'js-cookie';
@@ -39,16 +39,42 @@ const pageTitle = computed(() => {
     return routeNames[segments[0]] || segments[0];
 });
 
-const fetch_notifications = async () => {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${Cookies.get('userId')}`, {
-        headers: {
-            Authorization: `Bearer ${Cookies.get('authToken')}`
-        }
-    });
 
-    const data = await response.json();
-    notifications.value = data;
+const fetch_notifications = async () => {
+    try {
+        const userId = Cookies.get('userId');
+        const authToken = Cookies.get('authToken');
+
+        if (!userId || !authToken) {
+            notifications.value = [];
+            return;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${authToken}`
+            }
+        });
+
+        if (!response.ok) {
+            notifications.value = [];
+            return;
+        }
+
+        const text = await response.text();
+        if (!text) {
+            notifications.value = [];
+            return;
+        }
+
+        const data = JSON.parse(text);
+        notifications.value = data;
+    } catch {
+        notifications.value = [];
+    }
 }
+
+
 
 onMounted(() => {
     fetch_notifications();
