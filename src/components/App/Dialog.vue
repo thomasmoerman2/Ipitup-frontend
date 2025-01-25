@@ -1,5 +1,5 @@
 <template>
-  <Filters v-if="props.title" :text="props.title" @click="func_openDialog" :icon="props.icon" :version="props.version" :buttonClass="props.buttonClass" />
+  <Filters v-if="props.title" :text="props.title" @click="func_openDialog" :icon="props.icon" :version="props.version" :filterClass="props.buttonClass" />
 
   <Transition name="dialog">
     <dialog v-if="isOpen" @click="handleClickOutside" class="z-[66]">
