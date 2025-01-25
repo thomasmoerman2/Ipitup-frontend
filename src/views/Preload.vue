@@ -127,6 +127,11 @@ const clearAllCookies = () => {
   Cookies.remove("accountStatus");
   Cookies.remove("isAdmin");
   Cookies.remove("userLeaderboardScore");
+  Cookies.remove("totalScore");
+  Cookies.remove("activitiesCount");
+  Cookies.remove("badgeCount");
+  Cookies.remove("followers");
+  Cookies.remove("following");
 };
 const validateToken = async () => {
   const authToken = Cookies.get("authToken");
