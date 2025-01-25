@@ -207,7 +207,7 @@ const fetchFilteredLeaderboard = async () => {
           });
         }
 
-        data.sort((a, b) => (b.totalLocationScore ?? b.totalScore) - (a.totalLocationScore ?? a.totalScore));
+        data.sort((a, b) => b.totalLocationScore - a.totalLocationScore || b.totalScore - a.totalScore);
 
         userIndex = data.findIndex((player) => Number(player.userId) === userId);
       }

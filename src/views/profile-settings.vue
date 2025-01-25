@@ -9,47 +9,17 @@
       <SettingsAvatar :id="userId" edit="true" />
     </RouterLink>
     <p class="text-sm text-black-100 lowercase">{{ formData.username }}</p>
-    <AppSmallButton
-      icon="Globe"
-      :version="formData.accountStatus === 'Public' ? 'blue' : 'orange'"
-      :text="
-        formData.accountStatus === 'Public'
-          ? 'Publieke gebruiker'
-          : 'Privé gebruiker'
-      "
-      @click="toggleAccountStatus"
-    />
+    <AppSmallButton icon="Globe" :version="formData.accountStatus === 'Public' ? 'blue' : 'orange'" :text="formData.accountStatus === 'Public'
+        ? 'Publieke gebruiker'
+        : 'Privé gebruiker'
+      " @click="toggleAccountStatus" />
   </div>
 
   <form class="flex flex-col gap-5" @submit.prevent="handleSave">
-    <AppInput
-      label="Voornaam"
-      placeholder="Voornaam"
-      v-model="formData.firstname"
-      :value="formData.firstname"
-      :disabled="isLoading"
-    />
-    <AppInput
-      label="Achternaam"
-      placeholder="Achternaam"
-      v-model="formData.lastname"
-      :value="formData.lastname"
-      :disabled="isLoading"
-    />
-    <AppInput
-      label="E-mail"
-      placeholder="E-mail"
-      v-model="formData.email"
-      :value="formData.email"
-      :disabled="isLoading"
-    />
-    <AppButton
-      text="Wijzigingen opslaan"
-      version="primary"
-      icon="false"
-      type="submit"
-      :disabled="isLoading"
-    />
+    <AppInput label="Voornaam" placeholder="Voornaam" v-model="formData.firstname" :value="formData.firstname" :disabled="isLoading" />
+    <AppInput label="Achternaam" placeholder="Achternaam" v-model="formData.lastname" :value="formData.lastname" :disabled="isLoading" />
+    <AppInput label="E-mail" placeholder="E-mail" v-model="formData.email" :value="formData.email" :disabled="isLoading" />
+    <AppButton text="Wijzigingen opslaan" version="primary" icon="false" type="submit" :disabled="isLoading" />
   </form>
 
   <div class="flex flex-col gap-3">
@@ -58,13 +28,7 @@
   </div>
   <div class="flex flex-col gap-3">
     <strong>Mij uitloggen</strong>
-    <AppButton
-      text="Uitloggen"
-      version="3"
-      icon="false"
-      @click="handleLogout"
-      :disabled="isLoading"
-    />
+    <AppButton text="Uitloggen" version="3" icon="false" @click="handleLogout" :disabled="isLoading" />
   </div>
   <div class="flex flex-col gap-3">
     <strong>Account verwijderen</strong>
@@ -191,12 +155,20 @@ const handleLogout = async () => {
     }
 
     // Clear all cookies
-    Cookies.remove("userId");
+
     Cookies.remove("authToken");
+    Cookies.remove("userId");
     Cookies.remove("userFirstname");
     Cookies.remove("userLastname");
     Cookies.remove("userEmail");
     Cookies.remove("accountStatus");
+    Cookies.remove("isAdmin");
+    Cookies.remove("userLeaderboardScore");
+    Cookies.remove("totalScore");
+    Cookies.remove("activitiesCount");
+    Cookies.remove("badgeCount");
+    Cookies.remove("followers");
+    Cookies.remove("following");
 
     router.push("/");
   } catch (error) {

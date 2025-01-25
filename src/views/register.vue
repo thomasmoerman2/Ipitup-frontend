@@ -151,7 +151,7 @@ const handleRegister = async () => {
       throw new Error('Failed to set user data')
     }
 
-    router.push('/')
+    window.location.reload();
   } catch (error) {
     console.error('Registration error:', error)
     clearAllCookies()  // Clear any partial data on error
