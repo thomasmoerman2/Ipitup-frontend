@@ -1,14 +1,8 @@
 <template>
   <!-- Filter Buttons -->
   <div class="flex gap-2 justify-center w-full">
-    <button @click="openSort" class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2">
-      <AppIcon name="ChevronsUpDown" :size="16" />
-      <span class="text-sm">Sorteren op</span>
-    </button>
-    <button @click="openFilter" class="flex items-center justify-center gap-2 bg-[#E8F8F8] text-blue-48 rounded-lg px-4 py-2 w-1/2">
-      <AppIcon name="Filter" :size="16" />
-      <span class="text-sm">Filter</span>
-    </button>
+    <AppDialog type="sort" :currentSort="selectedSort" @updateSort="applySort" @closeDialog="sortDialogOpen = false" title="Sorteren op" icon="ChevronsUpDown" buttonClass="w-1/2" />
+    <AppDialog type="podium-filter" :currentFilters="filters" @updateFilters="applyFilters" @closeDialog="filterDialogOpen = false" title="Filter" icon="Filter" buttonClass="w-1/2" />
   </div>
 
   <AppNotification ref="notification" />
@@ -29,23 +23,6 @@
     </div>
   </div>
 
-  <!-- Dialogs -->
-  <Transition name="dialog">
-    <dialog v-if="sortDialogOpen" @click="sortDialogOpen = false" class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0">
-      <div class="dialog-content" @click.stop>
-        <DialogSort :currentSort="selectedSort" @updateSort="applySort" @closeDialog="sortDialogOpen = false" />
-      </div>
-    </dialog>
-  </Transition>
-
-  <Transition name="dialog">
-    <dialog v-if="filterDialogOpen" @click="filterDialogOpen = false" class="z-[66] border-none bg-transparent w-full h-full fixed top-0 left-0 flex items-end p-0">
-      <div class="dialog-content" @click.stop>
-        <DialogPodiumFilter :currentFilters="filters" @updateFilters="applyFilters" @closeDialog="filterDialogOpen = false" />
-      </div>
-    </dialog>
-  </Transition>
-
   <!-- Search -->
   <AppInput icon="search" placeholder="Search" />
 
@@ -58,8 +35,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import AppIcon from '@/components/App/Icon.vue';
-import DialogSort from '@/components/Dialog/Sort.vue';
-import DialogPodiumFilter from '@/components/Dialog/PodiumFilter.vue';
+import AppDialog from '@/components/App/Dialog.vue';
 import SettingsAvatar from '@/components/Settings/Avatar.vue';
 import PodiumSvg from '@/components/Podium/PodiumSvg.vue';
 import AppInput from '@/components/App/Input.vue';
@@ -67,7 +43,6 @@ import AppLeaderboardPostion from '@/components/App/LeaderboardPosition.vue';
 import Cookies from 'js-cookie';
 import AppNotification from '@/components/App/Notification.vue';
 
-const searchQuery = ref('');
 const sortDialogOpen = ref(false);
 const filterDialogOpen = ref(false);
 const selectedSort = ref('globaal');
@@ -77,7 +52,6 @@ const podiumWinners = ref([]);
 const leaderboardData = ref([]);
 
 const notification = ref(null);
-let notificationShown = false;
 
 const filters = ref({
   locations: [],
@@ -85,17 +59,9 @@ const filters = ref({
   maxAge: null,
 });
 
-const openSort = () => {
-  sortDialogOpen.value = true;
-};
-
 const applySort = (sortType) => {
   selectedSort.value = sortType;
   fetchFilteredLeaderboard();
-};
-
-const openFilter = () => {
-  filterDialogOpen.value = true;
 };
 
 const applyFilters = (newFilters) => {
@@ -217,14 +183,14 @@ const fetchFilteredLeaderboard = async () => {
       podiumWinners.value =
         data.length >= 3
           ? [
-              { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
-              { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
-              { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) },
-            ]
+            { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
+            { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
+            { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) },
+          ]
           : data.slice(0, 3).map((winner) => ({
-              ...winner,
-              parsedAvatar: parseAvatar(winner?.avatar),
-            }));
+            ...winner,
+            parsedAvatar: parseAvatar(winner?.avatar),
+          }));
 
       leaderboardData.value = data.slice(3, 10);
 
