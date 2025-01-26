@@ -21,19 +21,19 @@
       </div>
     </div>
 
-    <div class="flex flex-col items-center gap-2" v-if="userData?.accountStatus === 1">
+    <div class="flex flex-col items-center gap-2" v-if="userData?.accountStatus === 1 && !userData?.isFollowing">
       <AppIcon name="Lock" :size="24" :color="userData?.accountStatus === 0 ? 'text-blue-54' : 'text-black-50'" />
       <p class="text-xs">Deze gebruiker is <strong class="text-blue-54">privé</strong></p>
     </div>
 
     <!-- Recente Activiteiten -->
-    <div class="flex flex-col gap-5" v-if="userData?.accountStatus === 0">
+    <div class="flex flex-col gap-5" v-if="userData?.accountStatus === 0 || userData?.isFollowing">
       <p class="text-xs">Recente activiteiten</p>
-      <WorkoutRecent v-for="workout in userData?.exercises" :key=String(workout.id) :img="getExerciseImage(workout.type)"  :title="workout.name" :level="workout.type" :time=String(workout.time) :amount=String(workout.score) />
+      <WorkoutRecent v-for="workout in userData?.exercises" :key=String(workout.id) :img="getExerciseImage(workout.type)" :title="workout.name" :level="workout.type" :time=String(workout.time) :amount=String(workout.score) />
     </div>
 
     <!-- Toggle: Badges / Leaderboard -->
-    <div class="flex flex-col gap-3" v-if="userData?.accountStatus === 0">
+    <div class="flex flex-col gap-3" v-if="userData?.accountStatus === 0 || userData?.isFollowing">
       <div class="flex justify-between mx-8">
         <button @click="activeTab = 'badges'" :class="['text-sm', activeTab === 'badges' ? 'font-bold underline underline-offset-8' : 'text-black-50']">
           Badges
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Badges Sectie -->
-      <div v-if="activeTab === 'badges' && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
+      <div v-if="activeTab === 'badges' && (userData?.accountStatus === 0 || userData?.isFollowing)" class="flex flex-col full-width-section bg-black-8 pb-5">
         <div class="flex my-5 justify-center items-center text-xs">
           <p>
             <strong>{{ userData?.firstname }}</strong>&nbsp;heeft momenteel&nbsp;<strong>{{ userData?.achievements.length }}</strong>&nbsp;actieve badges.
@@ -57,19 +57,18 @@
       </div>
 
       <!-- Leaderboard Sectie -->
-      <div v-if="activeTab === 'leaderboard' && Cookies.get('userId') && userData?.accountStatus === 0" class="flex flex-col full-width-section bg-black-8 pb-5">
+      <div v-if="activeTab === 'leaderboard' && Cookies.get('userId') && (userData?.accountStatus === 0 || userData?.isFollowing)" class="flex flex-col full-width-section bg-black-8 pb-5">
         <div class="flex flex-col items-center my-5 gap-2.5">
           <div class="flex items-center gap-1.5">
             <AppIcon name="Gem" color="text-blue-48" :size="24" />
             <p class="text-3xl font-bold">{{ userData?.leaderboard.score }}</p>
           </div>
-          <p>3de Plaats</p>
           <AppSmallButton version="blue" text="Bekijk op leaderboard" @click="router.push('/podium')" />
         </div>
 
         <div class="flex flex-col gap-[0.3125rem]">
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="Number(leaderboardPosition[0].amount)"  />
-          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" :position="2" :name="leaderboardPosition[1].name" :amount="Number(leaderboardPosition[1].amount)"  />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" :position="1" :name="leaderboardPosition[0].name" :amount="Number(leaderboardPosition[0].amount)" />
+          <AppLeaderboardPosition class="bg-black-20 rounded-md mx-8 px-4 py-3" me="true" :position="2" :name="leaderboardPosition[1].name" :amount="Number(leaderboardPosition[1].amount)" />
         </div>
 
         <div class="flex my-5 justify-center items-center text-xs">
@@ -90,9 +89,6 @@
             }}</strong>!&nbsp;Ga ervoor!
           </p>
 
-
-
-
         </div>
       </div>
 
@@ -103,7 +99,6 @@
             <AppIcon name="Gem" color="text-blue-48" size="24" />
             <p class="text-3xl font-bold">{{ userData?.leaderboard.score }}</p>
           </div>
-          <p>3de Plaats</p>
           <AppSmallButton version="blue" text="Log in om je positie te zien" />
         </div>
 
@@ -162,7 +157,7 @@ const fetchUserData = async () => {
     console.log("userData ->", userData.value);
     console.log("Fetched exercises:", userData.value?.exercises);
 
-    if (userData.value.accountStatus === 0) {
+    if (userData.value.accountStatus === 0 || userData.value.isFollowing) {
       leaderboardPosition.value = [
         {
           name: userData.value.firstname,

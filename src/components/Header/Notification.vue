@@ -12,28 +12,31 @@
         </button>
 
         <TransitionGroup name="notification-list" tag="div" class="absolute -right-2 top-[45px] w-[280px] flex flex-col gap-2 z-[60]">
-            <div v-if="blnOpen" v-for="(notification, index) in messages" :key="index" class="rounded-md border border-blue-90 bg-blue-12 text-black-100 shadow-nav" :style="{ transitionDelay: `${index * 100}ms` }">
+            <div v-if="blnOpen" v-for="(notification, index) in arrMessages" :key="index" class="rounded-md border border-blue-90 bg-blue-12 text-black-100 shadow-nav" :style="{ transitionDelay: `${index * 100}ms` }">
                 <div class="flex flex-col gap-1 p-3">
                     <div class="flex items-center w-max gap-2">
                         <div class="w-2 h-2 rounded-full bg-blue-90"></div>
                         <strong class="capitalize">{{ (() => {
                             switch (notification.type) {
                                 case 0:
-                                    return "alert";
+                                    return "Melding";
                                     break;
                                 case 1:
-                                    return "reminder";
-                                    break;
-                                case 2:
-                                    return "achievement";
+                                    return "herinnering";
                                     break;
                                 case 3:
-                                    return "friendRequest";
+                                    return "prestatie";
+                                    break;
+                                case 2:
+                                    return "volgverzoek";
                                     break;
                             }
                         })() }}</strong>
                     </div>
                     <p class="text-sm">{{ notification.message }}</p>
+                </div>
+                <div class="flex justify-end p-3" v-if="notification.type === 2">
+                    <AppButton text="Bekijken" icon="false" version="2" link="/profile/following?tab=Volgers" @click="func_toggle" />
                 </div>
             </div>
         </TransitionGroup>
@@ -41,10 +44,10 @@
 </template>
 
 <script setup>
-import { ref, TransitionGroup } from 'vue';
+import { ref, TransitionGroup, onMounted, watch } from 'vue';
 import { Bell, X } from 'lucide-vue-next'
 import Cookies from 'js-cookie';
-
+import AppButton from '@/components/App/Button.vue';
 const blnOpen = ref(false);
 
 const props = defineProps({
@@ -53,6 +56,11 @@ const props = defineProps({
     }
 });
 
+const arrMessages = ref(props.messages);
+
+watch(() => props.messages, (newMessages) => {
+    arrMessages.value = newMessages;
+});
 
 const func_toggle = () => {
     blnOpen.value = !blnOpen.value;
@@ -65,18 +73,19 @@ const func_toggle = () => {
 const fetch_notifications_asreaded = async () => {
     const userId = Cookies.get('userId');
     const notifications = props.messages.map(notification => notification.notificationId);
+    console.log("notifications ID ->", notifications);
 
     if (userId) {
+        console.log("userId ->", userId);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}/read`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${Cookies.get('authToken')}`
-            },
-            body: JSON.stringify(notifications)
+            }
         });
-
-        const data = await response.json();
+        console.log("response ->", response);
+        arrMessages.value.length = 0;
     }
 }
 

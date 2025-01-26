@@ -12,17 +12,15 @@
 
     <div class="flex flex-col gap-4">
       <div v-for="user in filteredResults" :key="String(user.id)" class="flex items-center justify-between">
-        <SearchProfile 
-          :id="String(user.id)" 
-          :avatar="user.avatar" 
-          :fullname="user.firstname + ' ' + user.lastname" 
-          :firstname="user.firstname" 
-          :showUsername="false"
-        />
+        <SearchProfile :id="String(user.id)" :avatar="user.avatar" :fullname="user.firstname + ' ' + user.lastname" :firstname="user.firstname" :showUsername="false" />
 
-        <AppSmallButton v-if="selectedTab === 'Volgend'" @click="unfollowUser(user.id)" icon="UserRoundMinus" version="orange" text="Ontvolgen" />
-        
-        <AppSmallButton v-if="selectedTab === 'Volgers'" @click="removeFollower(user.id)"  icon="X" version="orange" text="Verwijder" />
+        <div class="flex gap-2">
+          <AppSmallButton v-if="selectedTab === 'Volgers' && user.isFollowing == false" @click="acceptFriendRequest(user.id)" icon="Check" version="blue" text="" />
+
+          <AppSmallButton v-if="selectedTab === 'Volgend'" @click="unfollowUser(user.id)" icon="UserRoundMinus" version="orange" text="" />
+
+          <AppSmallButton v-if="selectedTab === 'Volgers'" @click="removeFollower(user.id)" icon="Trash" version="orange" text="" />
+        </div>
       </div>
     </div>
   </div>
@@ -66,6 +64,7 @@ const fetchUsers = async () => {
 
     const data = await response.json();
     results.value = data;
+    console.log("results.value ->", results.value);
   } catch (error) {
     console.error('Error fetching users:', error);
     results.value = [];
@@ -86,6 +85,13 @@ const filteredResults = computed(() => {
   if (!searchQuery.value.trim()) {
     return results.value;
   }
+
+  if (selectedTab.value === 'Volgers' && searchQuery.value.startsWith('#')) {
+    if (searchQuery.value.includes('request')) {
+      return results.value.filter((user) => user.isFollowing == false);
+    }
+  }
+
   return results.value.filter((user) =>
     `${user.firstname} ${user.lastname}`.toLowerCase().includes(searchQuery.value)
   );
@@ -164,6 +170,37 @@ const unfollowUser = async (followingId) => {
 
   } catch (error) {
     console.error('Error unfollowing user:', error.message);
+  }
+};
+
+const acceptFriendRequest = async (followerId) => {
+  try {
+    const authToken = Cookies.get('authToken');
+    if (!authToken) {
+      console.error('Authentication token is missing.');
+      return;
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/follow/accept`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        "followerId": followerId,
+        "followingId": Cookies.get('userId')
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to accept friend request');
+    }
+
+    notification.value?.addNotification('Volgverzoek geaccepteerd', 'Deze volgverzoek is succesvol geaccepteerd.', 'success');
+    fetchUsers();
+  } catch (error) {
+    console.error('Error accepting friend request:', error.message);
   }
 };
 

@@ -11,7 +11,12 @@ import { useRoute } from 'vue-router';
 import Notification from '@/components/Header/Notification.vue';
 import Cookies from 'js-cookie';
 
+const oldNotif = ref(0);
 const route = useRoute();
+const audio = new Audio('/sounds/notification.mp3');
+const intNotif = ref(null);
+
+const webConfigNotif = ref(1000);
 
 const props = defineProps({
     meta: {
@@ -39,9 +44,17 @@ const pageTitle = computed(() => {
     return routeNames[segments[0]] || segments[0];
 });
 
+const fetch_web_config = async () => {
+    const response = await fetch(`https://data.tm-dev.be/ipitup/config.json`);
+    const data = await response.json();
+    if (data.values.notifInterval) {
+        webConfigNotif.value = data.values.notifInterval;
+    }
+};
 
 const fetch_notifications = async () => {
     try {
+        await fetch_web_config();
         const userId = Cookies.get('userId');
         const authToken = Cookies.get('authToken');
 
@@ -61,6 +74,7 @@ const fetch_notifications = async () => {
             return;
         }
 
+
         const text = await response.text();
         if (!text) {
             notifications.value = [];
@@ -69,16 +83,32 @@ const fetch_notifications = async () => {
 
         const data = JSON.parse(text);
         notifications.value = data;
+
+
+        if (oldNotif.value < notifications.value.length) {
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Audio playback was prevented:", error);
+                });
+            }
+        }
+        oldNotif.value = notifications.value.length;
+
     } catch {
         notifications.value = [];
     }
 }
 
-
+watch(webConfigNotif, () => {
+    clearInterval(intNotif.value);
+    intNotif.value = setInterval(fetch_notifications, webConfigNotif.value);
+});
 
 onMounted(() => {
     fetch_notifications();
-    setInterval(fetch_notifications, 25000);
+    intNotif.value = setInterval(fetch_notifications, webConfigNotif.value);
 });
 
 </script>
