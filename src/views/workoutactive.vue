@@ -164,6 +164,9 @@ const showExplanationModal = ref(true);
 const explanationCountdown = ref(10);
 let explanationTimer;
 
+// Add this with other refs at the top of the file
+const lastKneePosition = ref("none"); // Track which knee was last raised
+
 // Lifecycle hooks
 onMounted(async () => {
   try {
@@ -527,6 +530,7 @@ const calculateAngle = (pointA, pointB, pointC) => {
   return angle * (180 / Math.PI);
 };
 
+// Modified detectCore function
 const detectCore = (landmarks) => {
   if (!isWorkoutActive.value) return;
 
@@ -536,7 +540,6 @@ const detectCore = (landmarks) => {
   const rightKnee = landmarks[26];
 
   const currentTime = Date.now();
-  const lastKneePosition = ref("none"); // Track which knee was last raised
 
   // Check left knee above left hip
   if (
