@@ -113,24 +113,38 @@ const displayedLeaderboard = computed(() => {
 const fetchFilteredLeaderboard = async () => {
   const params = new URLSearchParams();
 
+  // Voeg geselecteerde locatiefilters toe als ze aanwezig zijn
   if (filters.value.locations.length) {
     params.append('locationIds', filters.value.locations.join(','));
   }
+
+  // Voeg de minimum leeftijd toe aan de query als deze is ingesteld
   if (filters.value.minAge) {
     params.append('minAge', filters.value.minAge);
   }
+
+  // Voeg de maximum leeftijd toe aan de query als deze is ingesteld
   if (filters.value.maxAge) {
     params.append('maxAge', filters.value.maxAge);
   }
+
+  // Voeg het geselecteerde sorteertype toe ('globaal', 'locaal' 'volgend')
   if (selectedSort.value) {
     params.append('sortType', selectedSort.value);
   }
 
+
+  // Als de gebruiker op 'volgend' sorteert, moet zijn/haar ID worden toegevoegd aan de query
   if (selectedSort.value === 'volgend') {
     if (userId && userId !== 0) {
       params.append('userId', userId);
     } else {
       console.error('User ID is missing or invalid.');
+      notification.value?.addNotification(
+        'Fout',
+        'Gebruikers-ID ontbreekt of is ongeldig.',
+        'error'
+      );
       return;
     }
   }
@@ -138,45 +152,62 @@ const fetchFilteredLeaderboard = async () => {
   console.log('API request:', params.toString());
 
   try {
+    // Voer de API-aanroep uit om de leaderboard-gegevens op te halen
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/filter?${params.toString()}`);
     let data = await response.json();
     console.log('Leaderboard API response:', data);
 
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch leaderboard data');
+    }
+    // Controleer of de respons succesvol is en data een array bevat
     if (response.ok && Array.isArray(data)) {
+      
+      // Als er minder dan 2 gebruikers zijn, schakel dan over naar de globale ranglijst
       if (data.length < 2) {
         console.warn('Not enough users found, switching to global.');
         selectedSort.value = 'globaal';
 
-        // Reset de age filters om spam te voorkomen
+        // Reset filters om te voorkomen dat de lijst leeg blijft
         filters.value.minAge = null;
         filters.value.maxAge = null;
         filters.value.locations = [];
 
-        notification.value?.addNotification('Te weinig gebruikers', 'Geen gebruikers gevonden. We schakelen over naar de globale ranglijst.', 'error');
+        notification.value?.addNotification(
+          'Te weinig gebruikers',
+          'Geen gebruikers gevonden. We schakelen over naar de globale ranglijst.',
+          'error'
+        );
 
+        // Roep de functie opnieuw aan met de globale ranglijst
         fetchFilteredLeaderboard();
         return;
       }
 
-      // Sorteer de lijst en bepaal de positie van de gebruiker
-      data.sort((a, b) => (b.totalLocationScore ?? b.totalScore) - (a.totalLocationScore ?? a.totalScore));
-
+      // Sorteer de lijst van spelers op basis van hun scores
+      data = data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
+      
+      // Zoek de huidige gebruiker in de geretourneerde lijst
       let userIndex = data.findIndex((player) => Number(player.userId) === userId);
 
+      // Als de gebruiker niet in de top 10 staat, haal zijn/haar gegevens apart op
       if (userIndex === -1) {
         console.log(`User ${userId} not in Top 10 of leaderboard, fetching user score.`);
 
         try {
           let userData;
           if (filters.value.locations.length) {
+            // Haal de gebruikersscore op voor een specifieke locatie
+            const locationIds = filters.value.locations.join(',');
             const locationResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/location/${filters.value.locations[0]}/user/${userId}`);
-
+            console.log('API personal totalLocationScore:', locationResponse);
             if (!locationResponse.ok) {
               throw new Error(`No data found for user ${userId} at location`);
             }
 
             userData = await locationResponse.json();
           } else {
+            // Haal algemene gebruikersgegevens op
             const userResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userId}`);
 
             if (!userResponse.ok) {
@@ -186,6 +217,7 @@ const fetchFilteredLeaderboard = async () => {
             userData = await userResponse.json();
           }
 
+          // Voeg de huidige gebruiker toe aan de lijst met standaardwaarden als back-up
           const userEntry = {
             userId: userId,
             firstname: userData.firstname || 'Jij',
@@ -198,6 +230,7 @@ const fetchFilteredLeaderboard = async () => {
         } catch (fetchError) {
           console.warn(`Error fetching user data, adding user with default values: ${fetchError.message}`);
 
+          // Voeg een standaardgebruiker toe als er een probleem is bij het ophalen van de data
           data.push({
             userId: userId,
             firstname: Cookies.get('userFirstname') || 'Jij',
@@ -207,27 +240,32 @@ const fetchFilteredLeaderboard = async () => {
           });
         }
 
-        data.sort((a, b) => (b.totalLocationScore ?? b.totalScore) - (a.totalLocationScore ?? a.totalScore));
-
+        // Sorteer opnieuw om de toegevoegde gebruiker correct te plaatsen
+        data = data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
+        console.log('API personal added:', data);
+        // Zoek opnieuw naar de huidige gebruiker
         userIndex = data.findIndex((player) => Number(player.userId) === userId);
       }
 
       const userRank = userIndex + 1;
 
+      // Update het podium met de top 3 winnaars
       podiumWinners.value =
         data.length >= 3
           ? [
-              { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) },
-              { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) },
-              { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) },
+              { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) }, // Tweede plaats
+              { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) }, // Eerste plaats
+              { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) }, // Derde plaats
             ]
           : data.slice(0, 3).map((winner) => ({
               ...winner,
               parsedAvatar: parseAvatar(winner?.avatar),
             }));
 
+      // Toon de top 10 spelers behalve de podiumwinnaars
       leaderboardData.value = data.slice(3, 10);
 
+      // Als de gebruiker niet in de top 10 staat, voeg hem toe met zijn rang
       if (userIndex >= 10) {
         leaderboardData.value.push({
           userId: userId,
@@ -237,7 +275,9 @@ const fetchFilteredLeaderboard = async () => {
           rank: userRank,
         });
       }
-    } else if (response.status === 404 || data.message === 'No leaderboard entries found with given filters.') {
+    } 
+    // Als er geen gebruikers zijn gevonden, overschakelen naar globale ranglijst
+    else if (response.status === 404 || data.message === 'No leaderboard entries found with given filters.') {
       console.warn('No leaderboard data found, switching to global leaderboard.');
 
       selectedSort.value = 'globaal';
@@ -245,18 +285,38 @@ const fetchFilteredLeaderboard = async () => {
       filters.value.maxAge = null;
       filters.value.locations = [];
 
-      notification.value?.addNotification('Geen gebruikers gevonden', 'We schakelen over naar de globale ranglijst.', 'error');
+      notification.value?.addNotification(
+        'Geen gebruikers gevonden',
+        'We schakelen over naar de globale ranglijst.',
+        'error'
+      );
 
       fetchFilteredLeaderboard();
     } else {
+      // Indien er andere fouten optreden of geen data is ontvangen
       console.warn('No leaderboard data found:', data.message);
       podiumWinners.value = [];
       leaderboardData.value = [];
     }
   } catch (error) {
+    // Foutafhandeling bij netwerkaanvragen of andere onverwachte fouten
     console.error('Error fetching leaderboard data:', error);
+
+    notification.value?.addNotification(
+        'Geen gebruikers gevonden',
+        'We schakelen over naar de globale ranglijst.',
+        'error'
+      );
+    
+    selectedSort.value = 'globaal';
+    filters.value.minAge = null;
+    filters.value.maxAge = null;
+    filters.value.locations = [];
+
+    await fetchFilteredLeaderboard();
   }
 };
+
 
 const parseAvatar = (avatarString) => {
   if (!avatarString || typeof avatarString !== 'string') {
