@@ -23,9 +23,6 @@
     </div>
   </div>
 
-  <!-- Search -->
-  <AppInput icon="search" placeholder="Search" />
-
   <!-- Leaderboard -->
   <div v-for="(player, index) in displayedLeaderboard" :key="player.userId">
     <AppLeaderboardPostion :position="player.rank ? player.rank : index + 4" :name="`${player.firstname} ${player.lastname}`" :amount="player.score" :me="player.userId === userId ? 'true' : 'false'" />

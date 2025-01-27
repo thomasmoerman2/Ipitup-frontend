@@ -13,7 +13,7 @@
       >
         <span class="text-sm">{{ filter.name }}</span>
         <button @click="removeFilter(filter)" class="hover:text-blue-700">
-          <AppIcon name="Close" :size="16" />
+          <AppIcon name="X" :size="16" />
         </button>
       </div>
     </div>

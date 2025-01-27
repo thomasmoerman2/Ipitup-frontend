@@ -6,7 +6,7 @@
   >
     <div class="relative">
       <img
-        :src="`./public/${img}.png`"
+        :src="`${img}.png`"
         alt="image"
         class="min-w-[86px] h-[74px] rounded-md aspect-square"
       />

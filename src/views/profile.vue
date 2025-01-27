@@ -80,6 +80,7 @@ const userData = ref({
   accountStatus: Cookies.get('accountStatus') || 'Private',
   totalscore: Number(Cookies.get('totalScore')) || 0,
   activitiesCount: Number(Cookies.get('activitiesCount')) || 0,
+  totalActivitiesCount: Number(Cookies.get('totalActivitiesCount')) || 0,
   badgeCount: Number(Cookies.get('badgeCount')) || 0,
   followers: Number(Cookies.get('followers')) || 0,
   following: Number(Cookies.get('following')) || 0,
