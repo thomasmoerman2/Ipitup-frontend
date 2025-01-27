@@ -144,7 +144,9 @@ const handleLogin = async () => {
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)
-    clearAllCookies()  // Clear any partial data on error
+    clearAllCookies();  // Clear any partial data on error
+    email.value = '';
+    password.value = '';
     notification.value?.addNotification(
       'Login mislukt',
       error.message || 'Controleer je e-mail en wachtwoord',
