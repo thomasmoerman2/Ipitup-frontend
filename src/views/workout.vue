@@ -38,9 +38,7 @@
         :title="exercise.exerciseName"
         :level="exercise.exerciseType"
         :time=String(exercise.exerciseTime)
-        :isFavorite="isFavorite ?? []"
         :type="exercise.exerciseType"
-        @setFavorite="setFavorite"
         :id="String(exercise.exerciseId)"
       />
       <div v-else>
@@ -61,9 +59,6 @@ import Cookies from "js-cookie";
 
 const exercises = ref([]);
 const activeFilters = ref([]);
-const isFavorite = ref([]);
-
-isFavorite.value = Cookies.get("isFavorite");
 
 const fetch_exercises = async () => {
   try {
@@ -108,10 +103,6 @@ const filteredExercises = computed(() => {
   });
 });
 
-function setFavorite(exerciseId) {
-  isFavorite.value.push(exerciseId);
-  Cookies.set("isFavorite", isFavorite.value);
-}
 
 const getExerciseImage = (exerciseType) => {
   return `/workoutimages/${exerciseType.toLowerCase()}`;

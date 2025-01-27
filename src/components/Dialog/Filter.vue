@@ -46,17 +46,6 @@
       />
     </div> -->
 
-    <!-- Switches -->
-    <div class="flex flex-col gap-4">
-      <div class="flex justify-between items-center">
-        <span class="text-sm">Alleen favorieten</span>
-        <AppSwitch
-          v-model="favoritesOnly"
-          id="favorites-switch"
-          @change="handleSwitchChange"
-        />
-      </div>
-    </div>
 
     <AppButton
       text="Toepassen"
@@ -104,7 +93,6 @@ const selectedLevel = ref("all");
 
 // Switch states
 const bundlesOnly = ref(false);
-const favoritesOnly = ref(false);
 
 // Initialize filters from props
 onMounted(() => {
@@ -119,9 +107,7 @@ onMounted(() => {
       case "switch":
         if (filter.id === "bundles") {
           bundlesOnly.value = true;
-        } else if (filter.id === "favorites") {
-          favoritesOnly.value = true;
-        }
+        } 
         break;
     }
   });
@@ -157,13 +143,6 @@ const activeFilters = computed(() => {
       category: "switch",
     });
   }
-  if (favoritesOnly.value) {
-    filters.push({
-      id: "favorites",
-      name: "Alleen favorieten",
-      category: "switch",
-    });
-  }
 
   return filters;
 });
@@ -182,8 +161,6 @@ const removeFilter = (filter) => {
     case "switch":
       if (filter.id === "bundles") {
         bundlesOnly.value = false;
-      } else if (filter.id === "favorites") {
-        favoritesOnly.value = false;
       }
       break;
   }

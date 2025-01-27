@@ -10,11 +10,6 @@
         alt="image"
         class="min-w-[86px] h-[74px] rounded-md aspect-square"
       />
-      <div
-        class="absolute bottom-0 left-0 p-0.5 bg-black-5 bg-opacity-80 rounded-tr rounded-bl-md"
-      >
-        <AppIcon name="Star" color="text-blue-48" :size="16" />
-      </div>
     </div>
     <div class="flex flex-col justify-between w-full h-max">
       <div class="flex flex-col text-left">
@@ -38,11 +33,6 @@
 import { RouterLink } from "vue-router";
 import AppIcon from "@/components/App/Icon.vue";
 
-const emit = defineEmits(["setFavorite"]);
-
-const setFavorite = (exerciseId) => {
-  emit("setFavorite", exerciseId);
-};
 
 defineProps({
   id: {
@@ -63,10 +53,6 @@ defineProps({
   },
   time: {
     type: String,
-    required: true,
-  },
-  isFavorite: {
-    type: Array,
     required: true,
   },
   type: {

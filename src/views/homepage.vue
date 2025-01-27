@@ -42,7 +42,7 @@
       </p>
     </div>
     <template v-if="userActivities.length > 0">
-      <WorkoutExercise v-for="activity in userActivities" :key="activity.id || activity.exerciseId" :type="String(activity.type)" :id="String(activity.id || activity.exerciseId)" :img="getExerciseImage(activity.type)" :title="activity.name" :level="String(activity.type)" :time="String(activity.time)" :isFavorite="isFavorite" />
+      <WorkoutExercise v-for="activity in userActivities" :key="activity.id || activity.exerciseId" :type="String(activity.type)" :id="String(activity.id || activity.exerciseId)" :img="getExerciseImage(activity.type)" :title="activity.name" :level="String(activity.type)" :time="String(activity.time)" />
     </template>
 
     <template v-else-if="exercises.length > 0">
@@ -67,7 +67,6 @@ const isLoggedIn = ref(false);
 const exercises = ref([]);
 const shouldAnimate = ref(false);
 const userActivities = ref([]);
-const isFavorite = ref([]);
 const dailyStreak = ref(0);
 
 
