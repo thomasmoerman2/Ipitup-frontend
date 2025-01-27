@@ -119,7 +119,7 @@ const handleRegister = async () => {
         email: email.value,
         password: password.value,
         birthDate: dateOfBirth.value,
-        accountStatus: visibility.value === 'Publiek' ? 'public' : 'private'
+        accountStatus: visibility.value === 'Publiek' ? 0 : 1
       }),
     })
 
@@ -139,19 +139,24 @@ const handleRegister = async () => {
 
     // Then set user data
     try {
-      Cookies.set('userId', data.userId)
-      Cookies.set('userFirstname', data.firstname)
-      Cookies.set('userLastname', data.lastname)
-      Cookies.set('userEmail', data.email)
-      Cookies.set('accountStatus', data.accountStatus)
-      Cookies.set('isAdmin', data.isAdmin || false)
+      //logs data received from server
+      console.log("Data received from server:", data);
+
+      Cookies.set("userId", data.body.userId)
+      Cookies.set("userFirstname", data.body.firstname)
+      Cookies.set("userLastname", data.body.lastname)
+      Cookies.set("userEmail", data.body.email)
+      Cookies.set("accountStatus", data.body.accountStatus)
+      Cookies.set("isAdmin", data.body.isAdmin || false)
+
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     } catch (error) {
       console.error('Failed to set user data:', error)
       clearAllCookies()
       throw new Error('Failed to set user data')
     }
-
-    window.location.reload();
   } catch (error) {
     console.error('Registration error:', error)
     clearAllCookies()  // Clear any partial data on error
