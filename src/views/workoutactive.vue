@@ -379,19 +379,27 @@ const initPoseDetection = () => {
         .split("/")
         .filter((segment) => segment)
         .pop();
-      if (lastSegment === "1") {
-        detectPushUp(results.poseLandmarks);
-      } else if (lastSegment === "2") {
-        detectPullUp(results.poseLandmarks);
-      } else if (lastSegment === "3") {
-        detectCore(results.poseLandmarks);
-      } else if (lastSegment === "4") {
-        detectSquats(results.poseLandmarks);
-      } else if (lastSegment === "5") {
-        detectBalance(results.poseLandmarks);
+      console.log(
+        predictions.value[1].probability,
+        predictions.value[1].className
+      );
+      if (predictions.value[1].probability > 0.7) {
+        console.log("Not in position");
+      } else {
+        console.log("In position");
+
+        if (lastSegment === "1") {
+          detectPushUp(results.poseLandmarks);
+        } else if (lastSegment === "2") {
+          detectPullUp(results.poseLandmarks);
+        } else if (lastSegment === "3") {
+          detectCore(results.poseLandmarks);
+        } else if (lastSegment === "4") {
+          detectSquats(results.poseLandmarks);
+        } else if (lastSegment === "5") {
+          detectBalance(results.poseLandmarks);
+        }
       }
-    } else {
-      console.log("no pose detected");
     }
   });
 
@@ -656,7 +664,7 @@ const detectPushUp = (landmarks) => {
 
   const leftShoulder = landmarks[11];
   const leftWrist = landmarks[15];
-
+  console.log(leftShoulder.y, leftWrist.y);
   // Calculate the distance between left shoulder and left wrist
   const distance = calculateDistance(leftShoulder, leftWrist);
 
