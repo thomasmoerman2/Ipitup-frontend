@@ -71,6 +71,10 @@ const set_isChecked = (value) => {
   isChecked.value = value;
 }
 
+const set_visibility = (value) => {
+  visibility.value = value;
+}
+
 const clearAllCookies = () => {
   Cookies.remove('authToken');
   Cookies.remove('userId');
