@@ -1,7 +1,7 @@
 <template>
   <svg v-if="props.position === 2" width="95" height="63" viewBox="0 0 116 77" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect y="11" width="115.521" height="66" fill="#35BABF" />
-    <path d="M18.1838 0H115.521V11H0L18.1838 0Z" fill="#81D4D7" />
+    <rect y="11" width="115.621" height="66" fill="#35BABF" />
+    <path d="M18.838 0H115.621V11H0L18.1838 0Z" fill="#81D4D7" />
     <text x="58" y="50" fill="#D9D9D9" font-size="32" font-weight="medium" text-anchor="middle" dominant-baseline="middle">2</text>
   </svg>
 
@@ -17,10 +17,10 @@
     </defs>
   </svg>
 
-  <svg v-else-if="props.position === 3" class="position-3" width="95" height="51" viewBox="0 0 116 62" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.64316" y="12" width="115.326" height="50" fill="#35BABF" />
-    <path d="M97.816 0H0.479233V12H116L97.816 0Z" fill="#81D4D7" />
-    <text x="58" y="40" fill="#D9D9D9" font-size="32" font-weight="medium" text-anchor="middle" dominant-baseline="middle">3</text>
+  <svg v-else-if="props.position === 3" class="position-3" width="94.5" height="51" viewBox="0.4316 0 115.326 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="12" width="115.326" height="50" fill="#35BABF" />
+    <path d="M97.816 0H4.279233V12H116L97.816 0Z" fill="#81D4D7" />
+    <text x="60" y="40" fill="#D9D9D9" font-size="32" font-weight="medium" text-anchor="middle" dominant-baseline="middle">3</text>
   </svg>
 </template>
 

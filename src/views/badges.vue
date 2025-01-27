@@ -78,15 +78,30 @@
   };
   
   // Computed property om badges te groeperen op categorie (bijv. Push-up, Sit-up, Squat)
+  // Computed property om badges te groeperen op categorie (bijv. Push-up, Sit-up, Squat) en steden apart te groeperen
   const groupedBadges = computed(() => {
+    // Specificeer een lijst met steden
+    const cities = ["Kortrijk", "Brugge", "Gent", "Brussel", "Leuven", "Stad", "Antwerpen"]; // Voeg hier alle steden toe
+    
+    // Groepeer badges op basis van hun categorie of als 'Steden' indien de badge een stad is
     return allBadges.value.reduce((acc, badge) => {
-      if (!acc[badge.badgeName]) {
-        acc[badge.badgeName] = [];
+      if (cities.includes(badge.badgeName)) {
+        // Als het een stad is, voeg het toe aan de categorie 'Steden'
+        if (!acc["Steden"]) {
+          acc["Steden"] = [];
+        }
+        acc["Steden"].push(badge);
+      } else {
+        // Anders groepeer op basis van badgeName
+        if (!acc[badge.badgeName]) {
+          acc[badge.badgeName] = [];
+        }
+        acc[badge.badgeName].push(badge);
       }
-      acc[badge.badgeName].push(badge);
       return acc;
     }, {});
   });
+
   
   // Totaal aantal behaalde badges
   const obtainedBadgeCount = computed(() => {
@@ -103,5 +118,8 @@
     await fetchAllBadgesWithUserProgress();
     await fetchUserDailyStreak();
   });
+
+
+  
   </script>
   
