@@ -8,7 +8,9 @@
     <RouterLink to="/profile/customize" class="w-max flex justify-center">
       <SettingsAvatar :id="userId" edit="true" />
     </RouterLink>
-    <p class="text-sm text-black-100 lowercase">{{ formData.username }}</p>
+    <div class="flex flex-col items-center">
+        <p class="font-bold mb-[0.3125rem]">{{ formData.firstname }} {{ formData.lastname }}</p>
+      </div>
     <AppSmallButton icon="Globe" :version="formData.accountStatus === 'Public' ? 'blue' : 'orange'" :text="formData.accountStatus === 'Public'
       ? 'Publieke gebruiker'
       : 'Privé gebruiker'
@@ -23,24 +25,34 @@
   </form>
 
   <div class="flex flex-col gap-3">
-    <strong>Wachtwoord aanpassen</strong>
-    <AppButton text="Wachtwoord wijzigen" version="outline" icon="false" />
+  <strong>Wachtwoord aanpassen</strong>
+  <AppButton v-if="!showPasswordInput" text="Wachtwoord wijzigen" version="outline" icon="false" @click="showPasswordInput = true" />
+  <div v-if="showPasswordInput" class="flex flex-col gap-3">
+    <AppInput label="Huidig wachtwoord" type="password" placeholder="Huidig wachtwoord" v-model="passwordData.currentPassword" :disabled="isLoading" />
+    <AppInput label="Nieuw wachtwoord" type="password" placeholder="Nieuw wachtwoord" v-model="passwordData.newPassword" :disabled="isLoading" />
+    <AppButton text="Bevestigen" version="primary" icon="false" @click="handlePasswordChange" :disabled="isLoading" />
+    <AppButton text="Annuleren" version="outline" icon="false" @click="cancelPasswordChange" />
   </div>
-  <div class="flex flex-col gap-3">
-    <strong>Mij uitloggen</strong>
-    <AppButton text="Uitloggen" version="3" icon="false" @click="handleLogout" :disabled="isLoading" />
   </div>
-  <div class="flex flex-col gap-3">
-    <strong>Account verwijderen</strong>
-    <input v-if="showDeleteInput" v-model="deleteConfirmation" type="text" placeholder="Typ 'verwijder' om te bevestigen" class="p-2 border border-gray-300 rounded-md" />
-    <p v-if="showDeleteInput" class="text-sm text-black-100">
-      <strong class="text-purple-102 uppercase">Opgelet!</strong> Account
-      verwijderen is een eindige actie. Door deze actie te starten, wordt uw
-      account permanent verwijderd en kunnen alle gegevens die aan uw account
-      zijn gekoppeld, worden verwijderd. Dit kan niet worden teruggedraaid.
-    </p>
-    <AppButton text="Bevestig verwijdering" v-if="showDeleteInput" :disabled="deleteConfirmation !== 'verwijder'" version="4" icon="false" @click="handleAccountDeletion" />
-    <AppButton text="Account verwijderen" version="4" icon="false" @click="showDeleteInput = true" v-if="!showDeleteInput" />
+
+    <div class="flex flex-col gap-3">
+      <strong>Mij uitloggen</strong>
+      <AppButton text="Uitloggen" version="3" icon="false" @click="handleLogout" :disabled="isLoading" />
+    </div>
+    <div class="flex flex-col gap-3">
+      <strong>Account verwijderen</strong>
+      <div v-if="showDeleteInput" class="flex flex-col gap-3">
+        <AppInput v-model="deletePassword" type="password" placeholder="Huidig wachtwoord" class="border-gray-300 rounded-md"/>
+        <p class="text-sm text-black-100">
+          <strong class="text-black-100 uppercase">Opgelet!</strong> Account
+          verwijderen is een eindige actie. Door deze actie te starten, wordt uw
+          account permanent verwijderd en kunnen alle gegevens die aan uw account
+          zijn gekoppeld, worden verwijderd. Dit kan niet worden teruggedraaid.
+        </p>
+        <AppButton text="Bevestigen" version="primary" :disabled="!deletePassword" icon="false" @click="handleAccountDeletion"/>
+        <AppButton text="Annuleren" version="outline" icon="false" @click="cancelAccountDeletion" />
+      </div>
+      <AppButton text="Account verwijderen" version="4" icon="false" @click="showDeleteInput = true" v-if="!showDeleteInput"/>
   </div>
 
   <div class="flex flex-wrap gap-3">
@@ -55,10 +67,11 @@ import AppSmallButton from "@/components/App/SmallButton.vue";
 import AppButton from "@/components/App/Button.vue";
 import AppInput from "@/components/App/Input.vue";
 import AppIcon from "@/components/App/Icon.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Cookies from "js-cookie";
 import AppNotification from "@/components/App/Notification.vue";
+
 
 const router = useRouter();
 const notification = ref(null);
@@ -67,6 +80,13 @@ const userId = Cookies.get("userId") || "";
 const policies = ref([]);
 const deleteConfirmation = ref("");
 const showDeleteInput = ref(false);
+const deletePassword = ref("");
+
+const showPasswordInput = ref(false);
+const passwordData = ref({
+  currentPassword: "",
+  newPassword: "",
+});
 
 
 // Form data with initial values from cookies
@@ -79,13 +99,19 @@ const formData = ref({
 });
 
 const handleSave = async () => {
+  if (!isEmailValid.value) {
+    notification.value?.addNotification(
+      "Ongeldige e-mail",
+      "Voer een geldig e-mailadres in.",
+      "error"
+    );
+    return;
+  }
+
   try {
     isLoading.value = true;
     const authToken = Cookies.get("authToken");
     const userId = Cookies.get("userId");
-
-    // logs formData
-    console.log("formData ->", formData.value);
 
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/user/${userId}`,
@@ -107,7 +133,6 @@ const handleSave = async () => {
       throw new Error("Failed to update profile");
     }
 
-    // Update cookies with new values
     Cookies.set("userFirstname", formData.value.firstname);
     Cookies.set("userLastname", formData.value.lastname);
     Cookies.set("userEmail", formData.value.email);
@@ -129,6 +154,16 @@ const handleSave = async () => {
     isLoading.value = false;
   }
 };
+
+
+const fetch_policies = async () => {
+  const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
+  const data = await response.json();
+  console.log("data.policies ->", data.policies);
+  policies.value = data.policies;
+}
+
+fetch_policies();
 
 // Add auth check on mount
 onMounted(() => {
@@ -228,12 +263,11 @@ const toggleAccountStatus = async () => {
   }
 };
 
-
 const handleAccountDeletion = async () => {
-  if (deleteConfirmation.value !== "verwijder") {
+  if (!deletePassword.value) {
     notification.value?.addNotification(
       "Fout",
-      "Je moet 'verwijder' typen om door te gaan",
+      "Je moet je huidige wachtwoord invoeren om door te gaan",
       "error"
     );
     return;
@@ -248,13 +282,17 @@ const handleAccountDeletion = async () => {
       {
         method: "DELETE",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
+        body: JSON.stringify({ currentPassword: deletePassword.value }),  // Huidig wachtwoord verzenden
       }
     );
 
     if (!response.ok) {
-      throw new Error("Failed to delete account");
+      const error = await response.json();
+      notification.value?.addNotification("Fout", error.message, "error");
+      return;
     }
 
     // Verwijder cookies en stuur naar de homepagina
@@ -283,9 +321,69 @@ const handleAccountDeletion = async () => {
   } finally {
     isLoading.value = false;
     showDeleteInput.value = false;
-    deleteConfirmation.value = "";
+    deletePassword.value = "";
   }
 };
+
+
+const isEmailValid = computed(() => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(formData.value.email);
+});
+
+const handlePasswordChange = async () => {
+  try {
+    isLoading.value = true;
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/password/update`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Cookies.get("authToken")}`,
+      },
+      body: JSON.stringify({
+        currentPassword: passwordData.value.currentPassword,
+        newPassword: passwordData.value.newPassword,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      notification.value?.addNotification("Fout", error.message, "error");
+      return;
+    }
+
+    // Wachtwoord succesvol bijgewerkt
+    notification.value?.addNotification("Wachtwoord gewijzigd", "Je wachtwoord is succesvol aangepast", "success");
+
+    // Verberg de wachtwoordvelden
+    showPasswordInput.value = false;
+    passwordData.value.currentPassword = "";
+    passwordData.value.newPassword = "";
+
+  } catch (error) {
+    console.error("Error updating password:", error);
+    notification.value?.addNotification("Fout", "Er ging iets mis bij het wijzigen van je wachtwoord", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+
+
+const cancelPasswordChange = () => {
+  showPasswordInput.value = false;
+  passwordData.value.currentPassword = "";
+  passwordData.value.newPassword = "";
+};
+
+const cancelAccountDeletion = () => {
+  showDeleteInput.value = false; // Verberg het invoerveld voor wachtwoord
+  deletePassword.value = ""; // Wis het ingevoerde wachtwoord
+};
+
+
 
 
 </script>
