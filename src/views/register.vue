@@ -149,9 +149,9 @@ const handleRegister = async () => {
       Cookies.set("accountStatus", data.body.accountStatus)
       Cookies.set("isAdmin", data.body.isAdmin || false)
 
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 250);
     } catch (error) {
       console.error('Failed to set user data:', error)
       clearAllCookies()
