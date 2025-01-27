@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mb-4">
-            <AppInput icon="search" placeholder="Search" v-model="searchQuery" @update:value="set_searchQuery" />
+            <AppInput icon="search" placeholder="Search" @update:modelValue="set_searchQuery" />
         </div>
 
         <!-- Recent Searches -->

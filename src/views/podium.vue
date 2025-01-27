@@ -64,6 +64,11 @@ const applyFilters = (newFilters) => {
   fetchFilteredLeaderboard();
 };
 
+const applySort = (newSort) => {
+  selectedSort.value = newSort;
+  fetchFilteredLeaderboard();
+};
+
 const displayedLeaderboard = computed(() => {
   return leaderboardData.value.map((player) => ({
     ...player,
