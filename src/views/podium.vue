@@ -10,7 +10,7 @@
   <!-- Podium -->
   <div class="flex items-end justify-center">
     <div v-for="(winner, index) in podiumWinners" :key="winner.userId" class="flex flex-col items-center">
-      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" v-bind="winner.parsedAvatar" :id="`${winner.userId}`" />
+      <SettingsAvatar class="mb-2.5 max-w-16 max-h-16" :id="`${winner.userId}`" />
       <p class="text-xs" :class="{ 'font-bold': winner.userId === userId }">{{ winner.firstname }} {{ winner.lastname }}</p>
 
       <div class="flex items-center gap-1 mb-4">
@@ -58,11 +58,6 @@ const filters = ref({
   minAge: null,
   maxAge: null,
 });
-
-const applySort = (sortType) => {
-  selectedSort.value = sortType;
-  fetchFilteredLeaderboard();
-};
 
 const applyFilters = (newFilters) => {
   filters.value = { ...newFilters }; // Sla de nieuwe filterwaarden op
@@ -128,7 +123,7 @@ const fetchFilteredLeaderboard = async () => {
     }
     // Controleer of de respons succesvol is en data een array bevat
     if (response.ok && Array.isArray(data)) {
-      
+
       // Als er minder dan 2 gebruikers zijn, schakel dan over naar de globale ranglijst
       if (data.length < 2) {
         console.warn('Not enough users found, switching to global.');
@@ -152,7 +147,7 @@ const fetchFilteredLeaderboard = async () => {
 
       // Sorteer de lijst van spelers op basis van hun scores
       data = data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
-      
+
       // Zoek de huidige gebruiker in de geretourneerde lijst
       let userIndex = data.findIndex((player) => Number(player.userId) === userId);
 
@@ -207,7 +202,7 @@ const fetchFilteredLeaderboard = async () => {
         }
 
         // Sorteer opnieuw om de toegevoegde gebruiker correct te plaatsen
-        data = data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
+        data = await data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
         console.log('API personal added:', data);
         // Zoek opnieuw naar de huidige gebruiker
         userIndex = data.findIndex((player) => Number(player.userId) === userId);
@@ -219,10 +214,10 @@ const fetchFilteredLeaderboard = async () => {
       podiumWinners.value =
         data.length >= 3
           ? [
-              { ...data[1], parsedAvatar: parseAvatar(data[1].avatar) }, // Tweede plaats
-              { ...data[0], parsedAvatar: parseAvatar(data[0].avatar) }, // Eerste plaats
-              { ...data[2], parsedAvatar: parseAvatar(data[2].avatar) }, // Derde plaats
-            ]
+            { ...data[1], parsedAvatar: await parseAvatar(data[1].avatar) }, // Tweede plaats
+            { ...data[0], parsedAvatar: await parseAvatar(data[0].avatar) }, // Eerste plaats
+            { ...data[2], parsedAvatar: await parseAvatar(data[2].avatar) }, // Derde plaats
+          ]
           : data.slice(0, 3).map((winner) => ({
             ...winner,
             parsedAvatar: parseAvatar(winner?.avatar),
@@ -230,6 +225,8 @@ const fetchFilteredLeaderboard = async () => {
 
       // Toon de top 10 spelers behalve de podiumwinnaars
       leaderboardData.value = data.slice(3, 10);
+
+      console.log("leaderboardData ->", podiumWinners.value);
 
       // Als de gebruiker niet in de top 10 staat, voeg hem toe met zijn rang
       if (userIndex >= 10) {
@@ -241,7 +238,7 @@ const fetchFilteredLeaderboard = async () => {
           rank: userRank,
         });
       }
-    } 
+    }
     // Als er geen gebruikers zijn gevonden, overschakelen naar globale ranglijst
     else if (response.status === 404 || data.message === 'No leaderboard entries found with given filters.') {
       console.warn('No leaderboard data found, switching to global leaderboard.');
@@ -257,7 +254,7 @@ const fetchFilteredLeaderboard = async () => {
         'error'
       );
 
-      fetchFilteredLeaderboard();
+      await fetchFilteredLeaderboard();
     } else {
       // Indien er andere fouten optreden of geen data is ontvangen
       console.warn('No leaderboard data found:', data.message);
@@ -269,11 +266,11 @@ const fetchFilteredLeaderboard = async () => {
     console.error('Error fetching leaderboard data:', error);
 
     notification.value?.addNotification(
-        'Geen gebruikers gevonden',
-        'We schakelen over naar de globale ranglijst.',
-        'error'
-      );
-    
+      'Geen gebruikers gevonden',
+      'We schakelen over naar de globale ranglijst.',
+      'error'
+    );
+
     selectedSort.value = 'globaal';
     filters.value.minAge = null;
     filters.value.maxAge = null;

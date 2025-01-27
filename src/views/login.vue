@@ -4,9 +4,9 @@
   </p>
 
   <form class="flex flex-col gap-6" @submit.prevent="login">
-    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" :disabled="isLoading" @update:value="set_email" />
+    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="text" :disabled="isLoading" v-model="email" />
 
-    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
+    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" v-model="password" />
 
     <AppNotification ref="notification" />
     <div class="flex flex-col gap-2">
@@ -60,14 +60,6 @@ const password = ref('');
 const isLoading = ref(false);
 const showNewPasswordModal = ref(false);
 const newPassword = ref('');
-
-const set_email = (value) => {
-  email.value = value;
-}
-
-const set_password = (value) => {
-  password.value = value;
-}
 
 const copyPassword = async () => {
   try {

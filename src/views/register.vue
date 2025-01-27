@@ -4,11 +4,11 @@
   </p>
 
   <form class="flex flex-col gap-6" @submit.prevent="handleRegister">
-    <AppInput label="Voornaam" placeholder="Voeg uw voornaam in" type="text" :disabled="isLoading" @update:value="set_firstName" />
-    <AppInput label="Achternaam" placeholder="Voeg uw achternaam in" type="text" :disabled="isLoading" @update:value="set_lastName" />
-    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" :disabled="isLoading" @update:value="set_email" />
-    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" @update:value="set_password" />
-    <AppInput label="Geboortedatum" class="text-black-40" :placeholder="placeholder" type="date" :disabled="isLoading" @update:value="set_dateOfBirth" />
+    <AppInput label="Voornaam" placeholder="Voeg uw voornaam in" type="text" :disabled="isLoading" v-model="firstName" />
+    <AppInput label="Achternaam" placeholder="Voeg uw achternaam in" type="text" :disabled="isLoading" v-model="lastName" />
+    <AppInput label="E-mail" placeholder="Voeg uw e-mail in" type="email" :disabled="isLoading" v-model="email" />
+    <AppInput label="Wachtwoord" placeholder="Voeg uw wachtwoord in" type="password" :disabled="isLoading" v-model="password" />
+    <AppInput label="Geboortedatum" class="text-black-40" :placeholder="placeholder" type="date" :disabled="isLoading" v-model="dateOfBirth" />
 
     <div class="flex flex-col gap-2">
       <p class="text-sm">Zichtbaarheid</p>
@@ -55,34 +55,6 @@ const dateOfBirth = ref('');
 const isLoading = ref(false);
 const visibility = ref('Publiek');
 const isChecked = ref(false);
-
-const set_firstName = (value) => {
-  firstName.value = value;
-}
-
-const set_lastName = (value) => {
-  lastName.value = value;
-}
-
-const set_email = (value) => {
-  email.value = value;
-}
-
-const set_password = (value) => {
-  password.value = value;
-}
-
-const set_dateOfBirth = (value) => {
-  dateOfBirth.value = value;
-}
-
-const set_visibility = (value) => {
-  visibility.value = value;
-}
-
-const set_isChecked = (value) => {
-  isChecked.value = value;
-}
 
 const isFormValid = computed(() => {
   return (

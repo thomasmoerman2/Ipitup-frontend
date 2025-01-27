@@ -39,9 +39,12 @@ const props = defineProps({
         default: "1",
     },
 });
+
 const loadAvatar = async () => {
     try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${props.id}`);
+
+        console.log("response ->", response);
 
         if (!response.ok) {
             throw new Error('Failed to fetch avatar');
@@ -70,8 +73,5 @@ const loadAvatar = async () => {
     }
 };
 
-
-onMounted(() => {
-    loadAvatar();
-});
+loadAvatar();
 </script>
