@@ -30,14 +30,14 @@
     </div>
 
     <div>
-      <p class="font-bold">Moving time</p>
+      <p class="font-bold">Activity</p>
       <div class="w-fit whitespace-nowrap py-3">
         <AppOptions :options="[
           { text: 'Laatste 7 dagen', value: '7' },
           { text: 'Laatste 30 dagen', value: '30' },
         ]" v-model="selectedOption" @change="handleOptionChange" />
       </div>
-      <div class="flex w-full bg-blue-6 h-max justify-center items-center text-center">
+      <div class="flex w-full bg-black-8 h-max justify-center items-center text-center rounded-md">
         <canvas v-if="userData.activitiesCount > 0" id="myChart" class="w-full h-full"></canvas>
         <p v-else class="text-center py-20">Geen activiteiten gevonden</p>
       </div>
@@ -193,26 +193,31 @@ const func_set_chart = () => {
     myChart.destroy();
   }
   if (!userData.value.activitiesData || userData.value.activitiesData.length === 0) {
-
     return;
   }
 
   const activitiesData = userData.value.activitiesData.reduce((acc, item) => {
-    const date = new Date(item.activityDate).toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' });
+    const date = new Date(item.activityDate).toLocaleDateString('nl-NL', {
+      day: '2-digit',
+      month: '2-digit'
+    });
     acc[date] = (acc[date] || 0) + item.activityScore;
     return acc;
   }, {});
 
-  //for loop to get last 7 days and add 0 to the array if the date is not in the array
+  // for loop to get last selected days and add 0 to the array if the date is not in the array
   const activitiesDataArray = [];
   for (let i = 0; i < selectedOption.value; i++) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    const formattedDate = date.toLocaleDateString('nl-NL', { weekday: 'short', month: 'short', day: 'numeric' });
+    const formattedDate = date.toLocaleDateString('nl-NL', {
+      day: '2-digit',
+      month: '2-digit'
+    });
 
     const obj = {
-      date: new Date(formattedDate),
-      dateString: formattedDate,
+      date: date,
+      dateString: formattedDate.replace(/\//g, '/'), // Zorgt ervoor dat het formaat correct blijft als "21/01"
       score: activitiesData[formattedDate] || 0
     }
 
@@ -227,19 +232,42 @@ const func_set_chart = () => {
       labels: activitiesDataArray.map(item => item.dateString),
       datasets: [{
         label: 'Activity Score',
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: '#00AAB0',
+        borderColor: '#00AAB0',
         data: activitiesDataArray.map(item => item.score)
       }]
     },
     options: {
       responsive: true,
+      layout: {
+        padding: {
+          left: 20,  // Voeg padding toe aan de linkerkant
+          right: 20, // Voeg padding toe aan de rechterkant
+          top: 20,   // Voeg padding toe aan de bovenkant
+          bottom: 20 // Voeg padding toe aan de onderkant
+        }
+      },
       scales: {
+        x: {
+          grid: {
+            display: false,
+            drawBorder: false  // Verwijdert de baseline op de x-as
+          },
+          ticks: {
+            display: true  // Labels blijven zichtbaar
+          }
+        },
         y: {
-          beginAtZero: true
+          beginAtZero: true,
+          grid: {
+            color: '#e6e6e6', // Roze kleur voor de gridlines
+            drawBorder: false  // Verwijdert de baseline op de y-as
+          }
         }
       }
     }
   });
 }
+
 </script>
+
