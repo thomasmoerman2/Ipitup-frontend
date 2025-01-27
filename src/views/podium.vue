@@ -223,6 +223,13 @@ const fetchFilteredLeaderboard = async () => {
             parsedAvatar: parseAvatar(winner?.avatar),
           }));
 
+      console.log("Podium winners data:", podiumWinners.value.map(winner => ({
+        position: podiumWinners.value.indexOf(winner) + 1,
+        userId: winner.userId,
+        firstname: winner.firstname,
+        avatar: winner.avatar
+      })));
+
       // Toon de top 10 spelers behalve de podiumwinnaars
       leaderboardData.value = data.slice(3, 10);
 
