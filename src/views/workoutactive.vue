@@ -379,19 +379,24 @@ const initPoseDetection = () => {
         .split("/")
         .filter((segment) => segment)
         .pop();
-      if (lastSegment === "1") {
-        detectPushUp(results.poseLandmarks);
-      } else if (lastSegment === "2") {
-        detectPullUp(results.poseLandmarks);
-      } else if (lastSegment === "3") {
-        detectCore(results.poseLandmarks);
-      } else if (lastSegment === "4") {
-        detectSquats(results.poseLandmarks);
-      } else if (lastSegment === "5") {
-        detectBalance(results.poseLandmarks);
+
+      if (predictions.value[1].probability > 0.7) {
+        console.log("Not in position");
+      } else {
+        console.log("In position");
+
+        if (lastSegment === "1") {
+          detectPushUp(results.poseLandmarks);
+        } else if (lastSegment === "2") {
+          detectPullUp(results.poseLandmarks);
+        } else if (lastSegment === "3") {
+          detectCore(results.poseLandmarks);
+        } else if (lastSegment === "4") {
+          detectSquats(results.poseLandmarks);
+        } else if (lastSegment === "5") {
+          detectBalance(results.poseLandmarks);
+        }
       }
-    } else {
-      console.log("no pose detected");
     }
   });
 
@@ -469,7 +474,7 @@ const detectBalance = (landmarks) => {
 
 const detectSquats = (landmarks) => {
   if (!isWorkoutActive.value) return;
-  console.log("SQUAtS DETECTED");
+  console.log("SQUATS DETECTED");
   const leftHip = landmarks[23];
   const rightHip = landmarks[24];
   const leftKnee = landmarks[25];
@@ -486,6 +491,7 @@ const detectSquats = (landmarks) => {
 
   const currentTime = Date.now();
   console.log(avgKneeAngle);
+
   // Check if person is in squat position (knees bent around 90 degrees)
   if (
     avgKneeAngle <= 100 && // Allow some flexibility around 90 degrees
@@ -494,12 +500,12 @@ const detectSquats = (landmarks) => {
     currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
   ) {
     isInDownPosition.value = true;
+    score.value++; // Increment score once when entering squat position
   }
   // Check if person has returned to standing position
-  else if (avgKneeAngle > 10 && isInDownPosition.value) {
-    score.value++;
-    isInDownPosition.value = false;
-    lastRepTime.value = currentTime;
+  else if (avgKneeAngle > 100 && isInDownPosition.value) {
+    isInDownPosition.value = false; // Reset the down position
+    lastRepTime.value = currentTime; // Update the last rep time
   }
 };
 
@@ -606,8 +612,8 @@ const detectPullUp = (landmarks) => {
   const nose = landmarks[0];
   const leftWrist = landmarks[15];
   const rightWrist = landmarks[16];
-  const leftFeet = landmarks[27];
-  const rightFeet = landmarks[28];
+  const leftFeet = landmarks[23];
+  const rightFeet = landmarks[24];
   const avgWristHeight = (leftWrist.y + rightWrist.y) / 2;
   const currentTime = Date.now();
 
@@ -649,31 +655,33 @@ const detectPullUp = (landmarks) => {
     showPopup.value = true;
   }
 };
+let currentThreshhold;
+let onePassingTime = false;
 
 // Modified detectPushUp function with cooldown
 const detectPushUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
-
   const leftShoulder = landmarks[11];
   const leftWrist = landmarks[15];
 
-  // Calculate the distance between left shoulder and left wrist
-  const distance = calculateDistance(leftShoulder, leftWrist);
+  if (!onePassingTime) {
+    currentThreshhold = (leftWrist.y - leftShoulder.y) / 2;
+    onePassingTime = true;
+  }
 
-  // Define thresholds
-  const CLOSE_THRESHOLD = 0.08; // Threshold for "really close"
-  const STRETCH_THRESHOLD = 0.11; // Threshold for "arms stretched out"
-
+  const CLOSE_THRESHOLD = leftWrist.y - currentThreshhold; // Threshold for "really close"
+  console.log("CLOSE_THRESHOLD", CLOSE_THRESHOLD.toFixed(2));
+  console.log("leftShoulder.y", leftShoulder.y.toFixed(2));
   const currentTime = Date.now();
 
   // Check if arms are stretched out
-  if (distance > STRETCH_THRESHOLD) {
+  if (leftShoulder.y < CLOSE_THRESHOLD) {
     isInDownPosition.value = false; // Reset the down position
   }
 
   // Increment score if the distance is below the close threshold, arms were stretched out, and cooldown has passed
   if (
-    distance < CLOSE_THRESHOLD &&
+    leftShoulder.y > CLOSE_THRESHOLD &&
     !isInDownPosition.value &&
     currentTime - lastPushUpScoreTime.value > PUSH_UP_COOLDOWN
   ) {
@@ -682,14 +690,6 @@ const detectPushUp = (landmarks) => {
     lastPushUpScoreTime.value = currentTime; // Update the last score time
     console.log("Push-up detected: left shoulder and wrist are close!");
   }
-};
-
-// Add this helper function to calculate distance
-const calculateDistance = (pointA, pointB) => {
-  const dx = pointA.x - pointB.x;
-  const dy = pointA.y - pointB.y;
-  const dz = pointA.z - pointB.z;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
 // Modified restart function to include get ready countdown
