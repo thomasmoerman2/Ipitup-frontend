@@ -106,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppIcon from '@/components/App/Icon.vue';
 import AppOptions from '@/components/App/Options.vue';
@@ -144,112 +144,161 @@ const hat = ref('none');
 const hatColor = ref('white');
 const accessory = ref('none');
 
+
+// Functie om avatar gegevens op te halen
+const fetchAvatar = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const token = Cookies.get('authToken');
+
+    if (!userId || !token) {
+      throw new Error('User ID or token not found in cookies');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch avatar');
+    }
+
+    const data = await response.json();
+    console.log('Fetched avatar:', data.avatar);
+
+    if (data.avatar) {
+      const avatarParts = data.avatar.split('|');
+      skin.value = avatarParts[0] || 'light';
+      body.value = avatarParts[1] || 'chest';
+      eye.value = avatarParts[2] || 'normal-eyes';
+      eyebrows.value = avatarParts[3] || 'none';
+      mouth.value = avatarParts[4] || 'grin';
+      lipColor.value = avatarParts[5] || 'red';
+      hair.value = avatarParts[6] || 'none';
+      hairColor.value = avatarParts[7] || 'brown';
+      facialHair.value = avatarParts[8] || 'none';
+      clothing.value = avatarParts[9] || 'none';
+      clothingColor.value = avatarParts[10] || 'white';
+      hat.value = avatarParts[11] || 'none';
+      hatColor.value = avatarParts[12] || 'white';
+      accessory.value = avatarParts[13] || 'none';
+    }
+  } catch (error) {
+    console.error('Error fetching avatar:', error.message);
+  }
+};
+
+onMounted(fetchAvatar);
+
 // Options definitions
 const skinOptions = [
-    { text: 'Light', value: 'light' },
-    { text: 'Yellow', value: 'yellow' },
-    { text: 'Brown', value: 'brown' },
-    { text: 'Dark', value: 'dark' },
-    { text: 'Red', value: 'red' },
-    { text: 'Black', value: 'black' }
+    { text: 'Licht', value: 'light' },
+    { text: 'Geel', value: 'yellow' },
+    { text: 'Bruin', value: 'brown' },
+    { text: 'Donker', value: 'dark' },
+    { text: 'Rood', value: 'red' },
+    { text: 'Zwart', value: 'black' }
 ];
 
 const bodyOptions = [
     { text: 'Man', value: 'chest' },
-    { text: 'Woman', value: 'breasts' }
+    { text: 'vrouw', value: 'breasts' },
+    { text: 'X', value: 'chest' }
 ];
 
 const eyeOptions = [
-    { text: 'Normal', value: 'normal-eyes' },
+    { text: 'Normaal', value: 'normal-eyes' },
     { text: 'Content', value: 'content-eyes' },
-    { text: 'Happy', value: 'happy-eyes' },
-    { text: 'Heart', value: 'heart-eyes' },
-    { text: 'Twitch', value: 'left-twitch-eyes' },
-    { text: 'Simple', value: 'simple-eyes' },
-    { text: 'Squint', value: 'squint-eyes' },
-    { text: 'Wink', value: 'wink' }
+    { text: 'Blij', value: 'happy-eyes' },
+    { text: 'Hart', value: 'heart-eyes' },
+    { text: 'Trillend', value: 'left-twitch-eyes' },
+    { text: 'Simpel', value: 'simple-eyes' },
+    { text: 'Scheel', value: 'squint-eyes' },
+    { text: 'Knipoog', value: 'wink' }
 ];
 
 const eyebrowOptions = [
     { text: 'None', value: 'none' },
-    { text: 'Normal', value: 'normal' },
-    { text: 'Serious', value: 'serious' },
-    { text: 'Lowered', value: 'left-lowered' },
-    { text: 'Angry', value: 'angry' },
-    { text: 'Concerned', value: 'concerned' }
+    { text: 'Normaal', value: 'normal' },
+    { text: 'Serieus', value: 'serious' },
+    { text: 'Laag', value: 'left-lowered' },
+    { text: 'Boos', value: 'angry' },
+    { text: 'Bezorgd', value: 'concerned' }
 ];
 
 const mouthOptions = [
-    { text: 'Grin', value: 'grin' },
-    { text: 'Lips', value: 'lips' },
-    { text: 'Sad', value: 'sad' },
-    { text: 'Serious', value: 'serious' },
+    { text: 'Grijns', value: 'grin' },
+    { text: 'Lippen', value: 'lips' },
+    { text: 'Droevig', value: 'sad' },
+    { text: 'Serieus', value: 'serious' },
     { text: 'Open', value: 'open' },
-    { text: 'Tongue', value: 'tongue' }
+    { text: 'Tong', value: 'tongue' }
 ];
 
 const lipColorOptions = [
-    { text: 'Red', value: 'red' },
-    { text: 'Purple', value: 'purple' },
-    { text: 'Pink', value: 'pink' },
-    { text: 'Green', value: 'green' }
+    { text: 'Rood', value: 'red' },
+    { text: 'Paars', value: 'purple' },
+    { text: 'Roze', value: 'pink' },
+    { text: 'Groen', value: 'green' }
 ];
 
 const hairOptions = [
     { text: 'None', value: 'none' },
     { text: 'Afro', value: 'afro' },
-    { text: 'Balding', value: 'balding' },
+    { text: 'Kaal', value: 'balding' },
     { text: 'Bob', value: 'bob' },
-    { text: 'Bun', value: 'bun' },
+    { text: 'Knot', value: 'bun' },
     { text: 'Buzz', value: 'buzz' },
-    { text: 'Long', value: 'long' },
+    { text: 'Lang', value: 'long' },
     { text: 'Pixie', value: 'pixie' },
-    { text: 'Short', value: 'short' }
+    { text: 'Kort', value: 'short' }
 ];
 
 const hairColorOptions = [
-    { text: 'Blonde', value: 'blonde' },
-    { text: 'Orange', value: 'orange' },
-    { text: 'Black', value: 'black' },
-    { text: 'White', value: 'white' },
-    { text: 'Brown', value: 'brown' },
-    { text: 'Blue', value: 'blue' },
-    { text: 'Pink', value: 'pink' }
+    { text: 'Blond', value: 'blonde' },
+    { text: 'Oranje', value: 'orange' },
+    { text: 'Zwart', value: 'black' },
+    { text: 'Wit', value: 'white' },
+    { text: 'Bruin', value: 'brown' },
+    { text: 'Blauw', value: 'blue' },
+    { text: 'Roze', value: 'pink' }
 ];
 
 const facialHairOptions = [
     { text: 'None', value: 'none' },
-    { text: 'Stubble', value: 'stubble' },
-    { text: 'Beard', value: 'medium-beard' }
+    { text: 'Gestoppeld', value: 'stubble' },
+    { text: 'Baard', value: 'medium-beard' }
 ];
 
 const clothingOptions = [
     { text: 'None', value: 'none' },
-    { text: 'Shirt', value: 'shirt' },
-    { text: 'Dress', value: 'dress' },
-    { text: 'V-Neck', value: 'v-neck' },
-    { text: 'Dress Shirt', value: 'dress-shirt' },
+    { text: 'T-shirt', value: 'shirt' },
+    { text: 'Jurk', value: 'dress' },
+    { text: 'V-hals', value: 'v-neck' },
+    { text: 'Stropdas', value: 'dress-shirt' },
 ];
 
 const colorOptions = [
-    { text: 'White', value: 'white' },
-    { text: 'Blue', value: 'blue' },
-    { text: 'Black', value: 'black' },
-    { text: 'Green', value: 'green' },
-    { text: 'Red', value: 'red' }
+    { text: 'Wit', value: 'white' },
+    { text: 'Blauw', value: 'blue' },
+    { text: 'Zwart', value: 'black' },
+    { text: 'Groen', value: 'green' },
+    { text: 'Rood', value: 'red' }
 ];
 
 const hatOptions = [
     { text: 'None', value: 'none' },
-    { text: 'Beanie', value: 'beanie' },
-    { text: 'Turban', value: 'turban' }
+    { text: 'Muts', value: 'beanie' },
+    { text: 'Tulband', value: 'turban' }
 ];
 
 const accessoryOptions = [
     { text: 'None', value: 'none' },
-    { text: 'Round', value: 'round-glasses' },
-    { text: 'Tiny', value: 'tiny-glasses' },
-    { text: 'Shades', value: 'shades' }
+    { text: 'Rond', value: 'round-glasses' },
+    { text: 'Klein', value: 'tiny-glasses' },
+    { text: 'Zonnebril', value: 'shades' }
 ];
 
 

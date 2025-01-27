@@ -5,7 +5,7 @@
     </div>
     <div class="flex flex-col relative size-full">
       <p class="font-bold text-[.875rem]">Doe zo verder!</p>
-      <p class="text-[.75rem]">Je bent al aan 18 non-stop's! nog 4 te gaan.</p>
+      <p class="text-[.75rem]">Je bent al {{ dailyStreak }} dagen non-stop bezig.</p>
     </div>
   </div>
   <div class=" flex w-full h-max gap-1 items-center bg-blue-6 p-2 rounded-full" v-else>
@@ -68,6 +68,8 @@ const exercises = ref([]);
 const shouldAnimate = ref(false);
 const userActivities = ref([]);
 const isFavorite = ref([]);
+const dailyStreak = ref(0);
+
 
 // Wanneer de component wordt gemount, check of de gebruiker is ingelogd
 onMounted(async () => {
@@ -129,9 +131,19 @@ const fetchUserActivities = async () => {
 
     const data = await response.json();
 
+    console.log("Gebruikersdata ontvangen:", data); // Controleer hier of dailyStreak aanwezig is
+
+    if (data.dailyStreak !== undefined && data.dailyStreak !== null) {
+      dailyStreak.value = data.dailyStreak;
+    } else {
+      console.warn("Geen dailyStreak ontvangen in API-respons");
+    }
+
+
     if (data && data.exercises && Array.isArray(data.exercises) && data.exercises.length > 0) {
       userActivities.value = data.exercises.slice(0, 3);
     }
+
 
     // Controleer of we minder dan 3 activiteiten hebben en vul aan met random oefeningen
     if (userActivities.value.length < 3) {
