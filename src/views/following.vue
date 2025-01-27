@@ -8,7 +8,7 @@
 
     <AppToggle name="followType" v-model="selectedTab" type="radio" :items="['Volgend', 'Volgers']" @update:modelValue="handleTabChange" />
 
-    <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @input="set_searchQuery" />
+    <AppInput placeholder="Search" type="text" icon="search" v-model="searchQuery" @update:modelValue="set_searchQuery" />
 
     <div class="flex flex-col gap-4">
       <div v-for="user in filteredResults" :key="String(user.id)" class="flex items-center justify-between">

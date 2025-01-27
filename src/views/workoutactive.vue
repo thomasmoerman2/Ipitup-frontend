@@ -1,56 +1,35 @@
 <template>
-  <video
-    ref="video"
-    autoplay
-    playsinline
-    muted
-    :class="{ 'camera-flipped': isFrontCamera }"
-  ></video>
+  <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-  <p
-    :key="score"
-    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
-  >
+  <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
     {{ score }}
   </p>
 
   <!-- Show countdown only for pushups -->
-  <p
-    v-if="
-      $route.path.includes('1') ||
-      $route.path.includes('3') ||
-      $route.path.includes('4') ||
-      $route.path.includes('5')
-    "
-    class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
-  >
+  <p v-if="
+    $route.path.includes('1') ||
+    $route.path.includes('3') ||
+    $route.path.includes('4') ||
+    $route.path.includes('5')
+  " class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold">
     {{ countdown }}
   </p>
 
   <!-- Display hold time -->
 
   <!-- Add popup -->
-  <div
-    v-if="showPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
       <p>Completed Workout</p>
       <p>{{ score }}</p>
       <div class="flex gap-4 justify-center">
-        <button
-          @click="restartWorkout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
+        <button @click="restartWorkout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
           Restart
         </button>
-        <RouterLink
-          to="/workout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
+        <RouterLink to="/workout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
           Terug naar menu
         </RouterLink>
       </div>
@@ -58,10 +37,7 @@
   </div>
 
   <!-- Add get ready popup -->
-  <div
-    v-if="showGetReadyPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showGetReadyPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
       <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
@@ -70,10 +46,7 @@
   </div>
 
   <!-- Add explanation modal -->
-  <div
-    v-if="showExplanationModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showExplanationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
       <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
       <p class="text-6xl font-bold mb-4">{{ explanationCountdown }}</p>
@@ -99,10 +72,7 @@
           moment, then switch legs.
         </p>
       </div>
-      <button
-        @click="skipExplanation"
-        class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-      >
+      <button @click="skipExplanation" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
         Skip
       </button>
     </div>
@@ -110,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated } from "vue";
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 
@@ -166,6 +136,14 @@ let explanationTimer;
 
 // Add this with other refs at the top of the file
 const lastKneePosition = ref("none"); // Track which knee was last raised
+
+// Add this function to stop the camera
+const stopCamera = () => {
+  if (currentStream.value) {
+    currentStream.value.getTracks().forEach(track => track.stop());
+    currentStream.value = null;
+  }
+};
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -244,7 +222,7 @@ onMounted(async () => {
       }
     }, 1000);
   } catch (error) {
-    console.error("Initialization error:", error);
+    //
   }
 });
 
@@ -285,7 +263,7 @@ const initModel = async () => {
     maxPredictions = model.getTotalClasses();
     modelLoaded.value = true;
   } catch (error) {
-    console.error("Model initialization error:", error);
+    //
     // You might want to show this error to the user
   }
 };
@@ -304,7 +282,7 @@ const predict = async () => {
       };
     }
   } catch (error) {
-    console.error("Prediction error:", error);
+    //
   }
 };
 
@@ -328,9 +306,11 @@ const startCamera = async () => {
       initPoseDetection();
     };
   } catch (error) {
-    console.error("Camera error:", error);
+    //
   }
 };
+
+let ctx = null;
 
 const toggleCamera = async () => {
   isFrontCamera.value = !isFrontCamera.value;
@@ -340,7 +320,7 @@ const toggleCamera = async () => {
 
 // Pose detection
 const initPoseDetection = () => {
-  const ctx = canvas.value.getContext("2d");
+  ctx = canvas.value.getContext("2d");
   canvas.value.width = video.value.videoWidth;
   canvas.value.height = video.value.videoHeight;
 
@@ -381,9 +361,9 @@ const initPoseDetection = () => {
         .pop();
 
       if (predictions.value[1].probability > 0.7) {
-        console.log("Not in position");
+        //
       } else {
-        console.log("In position");
+        //
 
         if (lastSegment === "1") {
           detectPushUp(results.poseLandmarks);
@@ -431,24 +411,24 @@ const detectBalance = (landmarks) => {
 
   // Check if knees are up
   if (leftKneeAngle > 60) {
-    console.log("LEFT KNEES UP");
+    //
     IsLeftKneeUp.value = true;
   }
   if (rightKneeAngle > 60) {
-    console.log("RIGHT KNEES UP");
+    //
     IsRightKneeUp.value = true;
   }
 
   // Check if standing straight
   if (avgKneeAngle < 20) {
-    console.log("STANDING STRAIGHT");
+    //
     if (isStandingStraight.value === 0) {
       isStandingStraight.value = 1;
-      console.log(isStandingStraight.value);
+      //
     }
     if (isStandingStraight.value === 1) {
       isStandingStraight.value = 2;
-      console.log(isStandingStraight.value);
+      //
     }
   }
 
@@ -474,7 +454,7 @@ const detectBalance = (landmarks) => {
 
 const detectSquats = (landmarks) => {
   if (!isWorkoutActive.value) return;
-  console.log("SQUATS DETECTED");
+  //
   const leftHip = landmarks[23];
   const rightHip = landmarks[24];
   const leftKnee = landmarks[25];
@@ -490,7 +470,7 @@ const detectSquats = (landmarks) => {
   const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
 
   const currentTime = Date.now();
-  console.log(avgKneeAngle);
+  //
 
   // Check if person is in squat position (knees bent around 90 degrees)
   if (
@@ -553,7 +533,7 @@ const detectCore = (landmarks) => {
     lastKneePosition.value !== "left" &&
     currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
   ) {
-    console.log("Left knee raise detected!");
+    //
     score.value++;
     lastRepTime.value = currentTime;
     lastKneePosition.value = "left";
@@ -564,7 +544,7 @@ const detectCore = (landmarks) => {
     lastKneePosition.value !== "right" &&
     currentTime - lastRepTime.value > MIN_TIME_BETWEEN_REPS
   ) {
-    console.log("Right knee raise detected!");
+    //
     score.value++;
     lastRepTime.value = currentTime;
     lastKneePosition.value = "right";
@@ -593,17 +573,17 @@ let isStuck = false;
 let CurrentLeftFeet;
 let CurrentRightFeet;
 const StuckPosition = (leftFeet, rightFeet) => {
-  // console.log(rightFeet);
+  //
   if (!isStuck) {
     isStuck = true;
 
     CurrentLeftFeet = leftFeet;
     CurrentRightFeet = rightFeet;
-    console.log("CurrentLeftFeet", CurrentLeftFeet.toFixed(2));
-    console.log("CurrentRightFeet", CurrentRightFeet.toFixed(2));
+    //
+    //
   } else {
-    // console.log("CurrentRightFeet", CurrentRightFeet.toFixed(2));
-    // console.log("CurrentLeftFeet", CurrentLeftFeet.toFixed(2));
+    //
+    //
   }
 };
 const detectPullUp = (landmarks) => {
@@ -633,7 +613,7 @@ const detectPullUp = (landmarks) => {
     (leftFeetDifference > MOVEMENT_THRESHOLD ||
       rightFeetDifference > MOVEMENT_THRESHOLD)
   ) {
-    console.log("PULL-UP DETECTED!");
+    //
     isInDownPosition.value = true;
     lastRepTime.value = currentTime;
 
@@ -642,7 +622,7 @@ const detectPullUp = (landmarks) => {
       score.value++;
     }, 1000);
   } else if (nose.y > avgWristHeight && isInDownPosition.value) {
-    console.log("↓ Reset position - user lowered down");
+    //
     isInDownPosition.value = false;
 
     // Clear the interval when user lowers down
@@ -670,8 +650,8 @@ const detectPushUp = (landmarks) => {
   }
 
   const CLOSE_THRESHOLD = leftWrist.y - currentThreshhold; // Threshold for "really close"
-  console.log("CLOSE_THRESHOLD", CLOSE_THRESHOLD.toFixed(2));
-  console.log("leftShoulder.y", leftShoulder.y.toFixed(2));
+  //
+  //
   const currentTime = Date.now();
 
   // Check if arms are stretched out
@@ -688,7 +668,7 @@ const detectPushUp = (landmarks) => {
     score.value++;
     isInDownPosition.value = true; // Set the down position
     lastPushUpScoreTime.value = currentTime; // Update the last score time
-    console.log("Push-up detected: left shoulder and wrist are close!");
+    //
   }
 };
 
@@ -758,6 +738,9 @@ onUnmounted(() => {
   if (holdInterval) {
     clearInterval(holdInterval);
   }
+  stopCamera();
+  ctx = null;
+  model = null;
 });
 
 const skipExplanation = () => {
@@ -800,6 +783,20 @@ const skipExplanation = () => {
     }
   }, 1000);
 };
+
+// Add lifecycle hooks
+onDeactivated(() => {
+  stopCamera();
+  ctx.destroy();
+  model = null;
+  pose = null;
+});
+
+onActivated(async () => {
+  if (!currentStream.value) {
+    await startCamera();
+  }
+});
 </script>
 
 <style scoped>
@@ -837,6 +834,7 @@ canvas {
     opacity: 0;
     transform: translate(-50%, -50%) scale(1.7);
   }
+
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
