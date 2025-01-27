@@ -130,15 +130,6 @@ const handleSave = async () => {
   }
 };
 
-const fetch_policies = async () => {
-  const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
-  const data = await response.json();
-  console.log("data ->", data);
-  policies.value = data;
-}
-
-fetch_policies();
-
 // Add auth check on mount
 onMounted(() => {
   if (!Cookies.get("authToken")) {

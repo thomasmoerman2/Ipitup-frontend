@@ -46,47 +46,6 @@ const hideNavigation = computed(() => route.meta.hideNavigation);
 
 const activeNotification = ref(null);
 
-// Check website status
-const checkWebsiteStatus = async () => {
-  try {
-    const response = await fetch('https://data.tm-dev.be/ipitup/api/status');
-    const data = await response.json();
-
-    if (data) {
-      const currentTime = new Date();
-      const onlineDate = new Date(data.date_online);
-      const offlineDate = new Date(data.date_offline);
-
-      if (offlineDate > currentTime) {
-        isOffline.value = false;
-      } else {
-        if (onlineDate < currentTime) {
-          isOffline.value = false;
-        } else {
-          isOffline.value = true;
-          if (data.offline_page.startsWith('http')) {
-            try {
-              const offlineResponse = await fetch(data.offline_page);
-              offlineContent.value = await offlineResponse.text();
-            } catch (error) {
-              offlineContent.value = 'Site is currently offline. Please try again later.';
-            }
-          } else {
-            // Use the content directly if it's not a URL
-            offlineContent.value = data.offline_page;
-          }
-        }
-      }
-    }
-  } catch (error) {
-  }
-};
-
-// Start periodic check
-onMounted(() => {
-  checkWebsiteStatus();
-  setInterval(checkWebsiteStatus, 30000); // Check every 30 seconds instead of 5
-});
 
 const handleTouchStart = (e) => {
   if (window.scrollY === 0) {
@@ -128,41 +87,6 @@ const handleTouchEnd = async () => {
 const handleLoadingComplete = () => {
   isLoading.value = false;
 };
-
-const fetch_config_notifications = async () => {
-  try {
-    const response = await fetch('https://data.tm-dev.be/ipitup/api/notifications');
-    const data = await response.json();
-
-    if (data && data.message) {
-      // Only check dates if they exist in the config
-      if (data.date_published && data.date_deleted) {
-        const currentDate = new Date();
-        const publishedDate = new Date(data.date_published);
-        const deletedDate = new Date(data.date_deleted);
-
-        // Check if the dates are valid
-        if (!isNaN(publishedDate.getTime()) && !isNaN(deletedDate.getTime())) {
-          if (currentDate >= publishedDate && currentDate <= deletedDate) {
-            activeNotification.value = data;
-          } else {
-            activeNotification.value = null;
-          }
-        }
-      } else {
-        // If no dates are specified, show the notification
-        activeNotification.value = data;
-      }
-    } else {
-      activeNotification.value = null;
-    }
-  } catch (error) {
-    activeNotification.value = null;
-  }
-}
-
-fetch_config_notifications();
-setInterval(fetch_config_notifications, 1000);
 </script>
 
 <style>

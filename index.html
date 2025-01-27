@@ -5,41 +5,10 @@
   <meta charset="UTF-8">
   <link rel="icon" href="https://data.tm-dev.be/ipitup/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Loading - Alternative Ipitup">
-  <meta name="keywords" content="Ipitup, Alternative Ipitup, Ipitup experience">
+  <meta name="description" content="Make Your Move - Alternative Ipitup">
+  <meta name="keywords" content="Ipitup, Alternative Ipitup, Ipitup experience, Make Your Move  ">
   <meta name="author" content="Your Name">
-  <title>Loading - Alternative Ipitup</title>
-  <script>
-    const updateSEO = async () => {
-      try {
-        const response = await fetch('https://data.tm-dev.be/ipitup/api/seo',
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*",
-            },
-          }
-        );
-        const data = await response.json();
-
-        // Update meta tags
-        document.querySelector('meta[name="description"]').content = data.description;
-        document.querySelector('meta[name="keywords"]').content = data.keywords;
-        document.querySelector('meta[name="author"]').content = data.author;
-        document.title = data.title;
-
-        // Update favicon
-        const favicon = document.querySelector('link[rel="icon"]');
-        if (favicon && data.favicon) {
-          favicon.href = data.favicon;
-        }
-      } catch (error) {
-        console.error('Failed to update SEO:', error);
-      }
-    }
-    updateSEO();
-  </script>
+  <title>Make Your Move - Alternative Ipitup</title>
 </head>
 
 <body>

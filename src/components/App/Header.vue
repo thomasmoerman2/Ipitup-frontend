@@ -44,14 +44,6 @@ const pageTitle = computed(() => {
     return routeNames[segments[0]] || segments[0];
 });
 
-const fetch_web_config = async () => {
-    const response = await fetch(`https://data.tm-dev.be/ipitup/config.json`);
-    const data = await response.json();
-    if (data.values.notifInterval) {
-        webConfigNotif.value = data.values.notifInterval;
-    }
-};
-
 const fetch_notifications = async () => {
     try {
         await fetch_web_config();
@@ -100,11 +92,6 @@ const fetch_notifications = async () => {
         notifications.value = [];
     }
 }
-
-watch(webConfigNotif, () => {
-    clearInterval(intNotif.value);
-    intNotif.value = setInterval(fetch_notifications, webConfigNotif.value);
-});
 
 onMounted(() => {
     fetch_notifications();
