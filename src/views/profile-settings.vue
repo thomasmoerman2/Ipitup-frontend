@@ -16,9 +16,9 @@
   </div>
 
   <form class="flex flex-col gap-5" @submit.prevent="handleSave">
-    <AppInput label="Voornaam" placeholder="Voornaam" v-model="formData.firstname" :value="formData.firstname" :disabled="isLoading" />
-    <AppInput label="Achternaam" placeholder="Achternaam" v-model="formData.lastname" :value="formData.lastname" :disabled="isLoading" />
-    <AppInput label="E-mail" placeholder="E-mail" v-model="formData.email" :value="formData.email" :disabled="isLoading" />
+    <AppInput label="Voornaam" placeholder="Voornaam" v-model="formData.firstname" :disabled="isLoading" />
+    <AppInput label="Achternaam" placeholder="Achternaam" v-model="formData.lastname" :disabled="isLoading" />
+    <AppInput label="E-mail" placeholder="E-mail" v-model="formData.email" :disabled="isLoading" />
     <AppButton text="Wijzigingen opslaan" version="primary" icon="false" type="submit" :disabled="isLoading" />
   </form>
 
@@ -77,6 +77,9 @@ const handleSave = async () => {
     const authToken = Cookies.get("authToken");
     const userId = Cookies.get("userId");
 
+    // logs formData
+    console.log("formData ->", formData.value);
+
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/user/${userId}`,
       {
@@ -108,10 +111,6 @@ const handleSave = async () => {
       "success"
     );
 
-    // Reload page after successful update
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
   } catch (error) {
     console.error("Save error:", error);
     notification.value?.addNotification(

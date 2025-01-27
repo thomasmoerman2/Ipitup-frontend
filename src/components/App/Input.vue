@@ -28,7 +28,7 @@ const props = defineProps({
         type: String,
         default: 'Placeholder'
     },
-    value: {
+    modelValue: {
         type: String,
         default: ''
     },
@@ -42,14 +42,14 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['input', 'change', 'update:value']);
+const emit = defineEmits(['input', 'change', 'update:modelValue']);
 
 const showPassword = ref(false);
-const inputValue = ref(props.value);
+const inputValue = ref(props.modelValue);
 const inputId = ref(`input_${Date.now()}_${Math.random()}`);
 
 // Watch for external value changes
-watch(() => props.value, (newValue) => {
+watch(() => props.modelValue, (newValue) => {
     inputValue.value = newValue;
 });
 
@@ -68,13 +68,13 @@ const func_input = (event) => {
     const newValue = event.target.value;
     inputValue.value = newValue;
     emit('input', newValue);
-    emit('update:value', newValue); // For v-model support
+    emit('update:modelValue', newValue); // For v-model support
 };
 
 const func_change = (event) => {
     const newValue = event.target.value;
     inputValue.value = newValue;
     emit('change', newValue);
-    emit('update:value', newValue); // For v-model support
+    emit('update:modelValue', newValue); // For v-model support
 };
 </script>
