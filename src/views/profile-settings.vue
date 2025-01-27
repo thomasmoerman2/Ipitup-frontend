@@ -32,14 +32,36 @@
   </div>
   <div class="flex flex-col gap-3">
     <strong>Account verwijderen</strong>
-    <p class="text-sm text-black-100">
+    <input
+      v-if="showDeleteInput"
+      v-model="deleteConfirmation"
+      type="text"
+      placeholder="Typ 'verwijder' om te bevestigen"
+      class="p-2 border border-gray-300 rounded-md"
+    />
+    <p v-if="showDeleteInput" class="text-sm text-black-100">
       <strong class="text-purple-102 uppercase">Opgelet!</strong> Account
       verwijderen is een eindige actie. Door deze actie te starten, wordt uw
       account permanent verwijderd en kunnen alle gegevens die aan uw account
       zijn gekoppeld, worden verwijderd. Dit kan niet worden teruggedraaid.
     </p>
-    <AppButton text="Account verwijderen" version="4" icon="false" />
+    <AppButton
+      text="Bevestig verwijdering"
+      v-if="showDeleteInput"
+      :disabled="deleteConfirmation !== 'verwijder'"
+      version="4"
+      icon="false"
+      @click="handleAccountDeletion"
+    />
+    <AppButton
+      text="Account verwijderen"
+      version="4"
+      icon="false"
+      @click="showDeleteInput = true"
+      v-if="!showDeleteInput"
+    />
   </div>
+
   <div class="flex flex-wrap gap-3">
     <AppButton v-for="policy in policies" :key="policy.id" :text="policy.name" :link="policy.url" version="link" icon="false" />
   </div>
@@ -62,6 +84,10 @@ const notification = ref(null);
 const isLoading = ref(false);
 const userId = Cookies.get("userId") || "";
 const policies = ref([]);
+const deleteConfirmation = ref("");
+const showDeleteInput = ref(false);
+
+
 // Form data with initial values from cookies
 const formData = ref({
   firstname: Cookies.get("userFirstname") || "",
@@ -229,4 +255,65 @@ const toggleAccountStatus = async () => {
     isLoading.value = false;
   }
 };
+
+
+const handleAccountDeletion = async () => {
+  if (deleteConfirmation.value !== "verwijder") {
+    notification.value?.addNotification(
+      "Fout",
+      "Je moet 'verwijder' typen om door te gaan",
+      "error"
+    );
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    const authToken = Cookies.get("authToken");
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/user/delete`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to delete account");
+    }
+
+    // Verwijder cookies en stuur naar de homepagina
+    Cookies.remove("authToken");
+    Cookies.remove("userId");
+    Cookies.remove("userFirstname");
+    Cookies.remove("userLastname");
+    Cookies.remove("userEmail");
+    Cookies.remove("accountStatus");
+    Cookies.remove("isAdmin");
+
+    notification.value?.addNotification(
+      "Account verwijderd",
+      "Je account is succesvol verwijderd",
+      "success"
+    );
+
+    router.push("/");
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    notification.value?.addNotification(
+      "Verwijderen mislukt",
+      "Er ging iets mis bij het verwijderen van je account",
+      "error"
+    );
+  } finally {
+    isLoading.value = false;
+    showDeleteInput.value = false;
+    deleteConfirmation.value = "";
+  }
+};
+
+
 </script>
