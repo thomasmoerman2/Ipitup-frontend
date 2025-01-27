@@ -32,34 +32,15 @@
   </div>
   <div class="flex flex-col gap-3">
     <strong>Account verwijderen</strong>
-    <input
-      v-if="showDeleteInput"
-      v-model="deleteConfirmation"
-      type="text"
-      placeholder="Typ 'verwijder' om te bevestigen"
-      class="p-2 border border-gray-300 rounded-md"
-    />
+    <input v-if="showDeleteInput" v-model="deleteConfirmation" type="text" placeholder="Typ 'verwijder' om te bevestigen" class="p-2 border border-gray-300 rounded-md" />
     <p v-if="showDeleteInput" class="text-sm text-black-100">
       <strong class="text-purple-102 uppercase">Opgelet!</strong> Account
       verwijderen is een eindige actie. Door deze actie te starten, wordt uw
       account permanent verwijderd en kunnen alle gegevens die aan uw account
       zijn gekoppeld, worden verwijderd. Dit kan niet worden teruggedraaid.
     </p>
-    <AppButton
-      text="Bevestig verwijdering"
-      v-if="showDeleteInput"
-      :disabled="deleteConfirmation !== 'verwijder'"
-      version="4"
-      icon="false"
-      @click="handleAccountDeletion"
-    />
-    <AppButton
-      text="Account verwijderen"
-      version="4"
-      icon="false"
-      @click="showDeleteInput = true"
-      v-if="!showDeleteInput"
-    />
+    <AppButton text="Bevestig verwijdering" v-if="showDeleteInput" :disabled="deleteConfirmation !== 'verwijder'" version="4" icon="false" @click="handleAccountDeletion" />
+    <AppButton text="Account verwijderen" version="4" icon="false" @click="showDeleteInput = true" v-if="!showDeleteInput" />
   </div>
 
   <div class="flex flex-wrap gap-3">
@@ -152,8 +133,8 @@ const handleSave = async () => {
 const fetch_policies = async () => {
   const response = await fetch('https://data.tm-dev.be/ipitup/config.json');
   const data = await response.json();
-  console.log("data.policies ->", data.policies);
-  policies.value = data.policies;
+  console.log("data ->", data);
+  policies.value = data;
 }
 
 fetch_policies();
