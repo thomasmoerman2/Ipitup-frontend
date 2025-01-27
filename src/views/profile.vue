@@ -30,7 +30,7 @@
     </div>
 
     <div>
-      <p class="font-bold">Activity</p>
+      <p class="font-bold">Activiteit</p>
       <div class="w-fit whitespace-nowrap py-3">
         <AppOptions :options="[
           { text: 'Laatste 7 dagen', value: '7' },
