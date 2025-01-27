@@ -216,24 +216,24 @@ const fetchFilteredLeaderboard = async () => {
       const userRank = userIndex + 1;
 
       // Update het podium met de top 3 winnaars
-      podiumWinners.value =
-        data.length >= 3
-          ? [
-            { ...data[1], parsedAvatar: await parseAvatar(data[1].avatar) }, // Tweede plaats
-            { ...data[0], parsedAvatar: await parseAvatar(data[0].avatar) }, // Eerste plaats
-            { ...data[2], parsedAvatar: await parseAvatar(data[2].avatar) }, // Derde plaats
-          ]
-          : data.slice(0, 3).map((winner) => ({
-            ...winner,
-            parsedAvatar: parseAvatar(winner?.avatar),
-          }));
+      podiumWinners.value = data.length >= 3
+      ? [
+          { ...data[1], parsedAvatar: parseAvatar(data[1]?.avatar) || {} }, // Tweede plaats
+          { ...data[0], parsedAvatar: parseAvatar(data[0]?.avatar) || {} }, // Eerste plaats
+          { ...data[2], parsedAvatar: parseAvatar(data[2]?.avatar) || {} }, // Derde plaats
+        ]
+      : data.slice(0, 3).map((winner) => ({
+          ...winner,
+          parsedAvatar: parseAvatar(winner?.avatar) || {},
+        }));
 
-      console.log("Podium winners data:", podiumWinners.value.map(winner => ({
-        position: podiumWinners.value.indexOf(winner) + 1,
-        userId: winner.userId,
-        firstname: winner.firstname,
-        avatar: winner.avatar
-      })));
+    console.log("Podium winners data:", podiumWinners.value.map(winner => ({
+      position: podiumWinners.value.indexOf(winner) + 1,
+      userId: winner.userId,
+      firstname: winner.firstname,
+      skin: winner.parsedAvatar.skin
+    })));
+
 
       // Toon de top 10 spelers behalve de podiumwinnaars
       leaderboardData.value = data.slice(3, 10);
@@ -314,7 +314,6 @@ const parseAvatar = (avatarString) => {
   }
 
   const avatarParts = avatarString.split('|');
-
   return {
     skin: avatarParts[0] || 'light',
     body: avatarParts[1] || 'chest',
@@ -332,6 +331,7 @@ const parseAvatar = (avatarString) => {
     accessory: avatarParts[13] || 'none',
   };
 };
+
 
 onMounted(() => {
   fetchFilteredLeaderboard();

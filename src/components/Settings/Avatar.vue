@@ -99,5 +99,10 @@ watch(() => props.id, (newId, oldId) => {
     }
 });
 
+watch(() => avatarData, (newVal) => {
+  console.log('Updated avatar data:', newVal);
+}, { deep: true });
+
+
 onMounted(loadAvatar);
 </script>

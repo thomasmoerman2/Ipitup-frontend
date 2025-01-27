@@ -313,7 +313,7 @@ const saveAvatarFetch = async () => {
 
         // Maak de string met avatar instellingen
         const avatarString = [
-            skin.value,
+            "light",
             body.value,
             eye.value,
             eyebrows.value,
