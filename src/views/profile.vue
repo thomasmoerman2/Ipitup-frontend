@@ -25,7 +25,7 @@
 
     <div class="flex justify-around w-full">
       <ProfileInfo icon="Award" text="Badges" :amount="isLoading ? 'Laden...' : String(userData.badgeCount)" />
-      <ProfileInfo icon="RefreshCw" text="Oefeningen" :amount="isLoading ? 'Laden...' : String(userData.activitiesCount)" />
+      <ProfileInfo icon="RefreshCw" text="Oefeningen" :amount="isLoading ? 'Laden...' : String(userData.totalActivitiesCount)" />
       <ProfileInfo icon="Gem" text="Punten" :amount="isLoading ? 'Laden...' : String(userData.totalscore)" />
     </div>
 
@@ -88,20 +88,42 @@ const userData = ref({
 const handleOptionChange = (option) => {
   selectedOption.value = option;
 
-  fetchUserActivitiesCount();
+  fetchUserActivitiesGraph();
 };
 
 onMounted(async () => {
   if (!Cookies.get('authToken')) {
     router.push('/login');
   } else {
-    await fetchUserTotalScore();
-    await fetchUserActivitiesCount();
-    await fetchUserBadges();
+    await fetchUserProfileStats();
+    await fetchUserActivitiesGraph();
     await fetchUserFollowers();
     await fetchUserFollowing();
   }
 });
+
+const fetchUserBadges = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/badge/user/${userId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch badges');
+    }
+    const data = await response.json();
+
+    if (data && Array.isArray(data.badges)) {
+      userBadges.value = data.badges;
+      userData.value.badgeCount = data.count || 0;  // Gebruik de count uit de API-respons
+      Cookies.set('badgeCount', data.count || 0, { expires: 1 });  // Sla op en vernieuw cookie
+    } else {
+      userData.value.badgeCount = 0;  // Zet op 0 als er geen badges zijn
+    }
+  } catch (error) {
+    console.error('Error fetching badges:', error);
+    userData.value.badgeCount = 0; // Zorg ervoor dat het niet undefined blijft
+  }
+};
+
 
 const fetchUserTotalScore = async () => {
   try {
@@ -117,7 +139,31 @@ const fetchUserTotalScore = async () => {
   }
 };
 
-const fetchUserActivitiesCount = async () => {
+const fetchUserTotalActivities = async () => {
+  try {
+    const userId = Cookies.get('userId');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/total/${userId}`);
+    const data = await response.json();
+    if (data) {
+      Cookies.set('totalActivitiesCount', data.count || 0, { expires: 1 }); // Sla altijd op en vernieuw cookie
+      userData.value.totalActivitiesCount = data.count || 0;
+    }
+  } catch (error) {
+
+  }
+};
+
+const fetchUserProfileStats = async () => {
+  try {
+    await fetchUserBadges();
+    await fetchUserTotalActivities();
+    await fetchUserTotalScore();
+  } catch (error) {
+
+  }
+};
+
+const fetchUserActivitiesGraph = async () => {
   try {
     const userId = Cookies.get('userId');
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/user/total/${userId}/${selectedOption.value}`);
@@ -141,22 +187,9 @@ const fetchUserActivitiesCount = async () => {
   }
 };
 
-const fetchUserBadges = async () => {
-  try {
-    const userId = Cookies.get('userId');
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/badge/user/${userId}`);
-    const data = await response.json();
 
-    if (data && Array.isArray(data.badges)) {
-      userBadges.value = data.badges;
-      userData.value.badgeCount = data.length ? data.length : 0;
-    } else {
 
-    }
-  } catch (error) {
 
-  }
-};
 
 const fetchUserFollowers = async () => {
   try {
