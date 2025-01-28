@@ -1,108 +1,56 @@
 <template>
-  <video
-    ref="video"
-    autoplay
-    playsinline
-    muted
-    :class="{ 'camera-flipped': isFrontCamera }"
-  ></video>
+  <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-  <p
-    :key="score"
-    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
-  >
+  <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
     {{ score }}
   </p>
 
   <!-- Show countdown only for pushups -->
-  <p
-    v-if="
-      $route.path.includes('1') ||
-      $route.path.includes('3') ||
-      $route.path.includes('4') ||
-      $route.path.includes('5')
-    "
-    class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
-  >
-    {{ countdown }}
+  <p class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold">
+    {{ exerciseData.exerciseTime }}
   </p>
 
   <!-- Display hold time -->
 
   <!-- Add popup -->
-  <div
-    v-if="showPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
       <p>Completed Workout</p>
       <p>{{ score }}</p>
       <div class="flex gap-4 justify-center">
-        <button
-          @click="restartWorkout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
+        <button @click="restartWorkout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
           Restart
         </button>
-        <RouterLink
-          to="/workout"
-          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-        >
+        <button @click="fetchPostData" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
           Terug naar menu
-        </RouterLink>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Add get ready popup -->
-  <div
-    v-if="showGetReadyPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showGetReadyPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
       <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
-      <p class="mb-4">Prepare for your push-up challenge</p>
+      <p class="mb-4">Prepare for your {{ exerciseData.exerciseName }}</p>
     </div>
   </div>
 
   <!-- Add explanation modal -->
-  <div
-    v-if="showExplanationModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-  >
+  <div v-if="showExplanationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
       <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
       <p class="text-6xl font-bold mb-4">{{ explanationCountdown }}</p>
       <div class="mb-4">
-        <p v-if="$route.path.includes('1')" class="mb-2">
-          Get into a plank position with your arms straight. Lower your body
-          until your chest nearly touches the ground, then push back up.
-        </p>
-        <p v-else-if="$route.path.includes('2')" class="mb-2">
-          Hang from the bar with your palms facing away. Pull yourself up until
-          your chin is above the bar, then lower back down.
-        </p>
-        <p v-else-if="$route.path.includes('3')" class="mb-2">
-          Lie on your back with knees bent. Lift your knees towards your chest
-          alternately while keeping your core engaged.
-        </p>
-        <p v-else-if="$route.path.includes('4')" class="mb-2">
-          Stand with feet shoulder-width apart. Lower your body by bending your
-          knees, keeping your back straight, then return to standing.
-        </p>
-        <p v-else-if="$route.path.includes('5')" class="mb-2">
-          Stand on one leg, lift your other knee up to hip level, hold for a
-          moment, then switch legs.
+        <p class="mb-2">
+          {{ exerciseData.exerciseInstructions }}
         </p>
       </div>
-      <button
-        @click="skipExplanation"
-        class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
-      >
+      <button @click="skipExplanation" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
         Skip
       </button>
     </div>
@@ -111,6 +59,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute } from 'vue-router';
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import Cookies from "js-cookie";
@@ -120,7 +69,25 @@ const currentStream = ref(null);
 const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
-const countdown = ref(30);
+
+
+const dateStart = ref(Date.now());
+const exerciseData = ref({});
+const exerciseId = ref(useRoute().params.exercise);
+
+//fetch exercise data
+async function fetch_exercise_data() {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercise/${exerciseId.value}`)
+  const data = await response.json()
+  exerciseData.value = data
+}
+
+fetch_exercise_data()
+
+console.log("exerciseData ->", exerciseData.value);
+
+
+const countdown = ref(exerciseData.value.exerciseTime);
 
 const predictions = ref([
   { className: "", probability: 0 },
@@ -172,9 +139,27 @@ const lastKneePosition = ref("none"); // Track which knee was last raised
 let lastPoseDetectionTime = 0;
 const POSE_DETECTION_INTERVAL = 100; // in milliseconds
 
+// Add location refs with other refs at the top
+const userLocation = ref(null);
+
 // Lifecycle hooks
 onMounted(async () => {
   try {
+    // Get user location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          userLocation.value = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }
+
     const tfScript = document.createElement("script");
     tfScript.src =
       "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
@@ -227,11 +212,9 @@ onMounted(async () => {
               .split("/")
               .filter((segment) => segment)
               .pop();
+            console.log("lastSegment ->", exerciseData.value.exerciseType);
             if (
-              lastSegment === "1" ||
-              lastSegment === "3" ||
-              lastSegment === "4" ||
-              lastSegment === "5"
+              exerciseData.value.exerciseType != "1"
             ) {
               countdown.value = 30;
               countdownInterval = setInterval(() => {
@@ -391,15 +374,15 @@ const initPoseDetection = () => {
         .filter((segment) => segment)
         .pop();
 
-      if (lastSegment === "1") {
+      if (exerciseData.value.exerciseType === "push") {
         detectPushUp(results.poseLandmarks);
-      } else if (lastSegment === "2") {
+      } else if (exerciseData.value.exerciseType === "pull") {
         detectPullUp(results.poseLandmarks);
-      } else if (lastSegment === "3") {
+      } else if (exerciseData.value.exerciseType === "core") {
         detectCore(results.poseLandmarks);
-      } else if (lastSegment === "4") {
+      } else if (exerciseData.value.exerciseType === "balance") {
         detectBalance(results.poseLandmarks);
-      } else if (lastSegment === "5") {
+      } else if (exerciseData.value.exerciseType === "squats") {
         detectSquats(results.poseLandmarks);
       }
     }
@@ -637,7 +620,7 @@ const detectPullUp = (landmarks) => {
     (leftFeetDifference > MOVEMENT_THRESHOLD ||
       rightFeetDifference > MOVEMENT_THRESHOLD)
   ) {
-    console.log("PULL-UP DETECTED!");
+    console.log("PULL DETECTED!");
     isInDownPosition.value = true;
     lastRepTime.value = currentTime;
 
@@ -655,7 +638,7 @@ const detectPullUp = (landmarks) => {
       pullUpInterval.value = null;
     }
 
-    // Trigger popup when pull-up is completed
+    // Trigger popup when pull is completed
     showPopup.value = true;
   }
 };
@@ -703,7 +686,7 @@ const restartWorkout = async () => {
   showPopup.value = false;
   showGetReadyPopup.value = true;
   getReadyCountdown.value = 5;
-  score.value = 0;
+  score.value += 1;
 
   const path = window.location.pathname;
   const lastSegment = path
@@ -711,15 +694,6 @@ const restartWorkout = async () => {
     .filter((segment) => segment)
     .pop();
 
-  // Only set countdown for specific exercises (not pull-ups)
-  if (
-    lastSegment === "1" || // pushups
-    lastSegment === "3" || // core
-    lastSegment === "4" || // squats
-    lastSegment === "5" // balance
-  ) {
-    countdown.value = 30;
-  }
 
   // Start with get ready countdown again
   isWorkoutActive.value = false;
@@ -731,12 +705,9 @@ const restartWorkout = async () => {
       showGetReadyPopup.value = false;
       isWorkoutActive.value = true;
 
-      // Start main workout countdown only for specific exercises (not pull-ups)
+      // Start main workout countdown only for specific exercises (not pulls)
       if (
-        lastSegment === "1" || // pushups
-        lastSegment === "3" || // core
-        lastSegment === "4" || // squats
-        lastSegment === "5" // balance
+        exerciseData.value.exerciseType != "pull"
       ) {
         countdownInterval = setInterval(() => {
           if (countdown.value > 0) {
@@ -783,12 +754,8 @@ const skipExplanation = () => {
         .filter((segment) => segment)
         .pop();
       if (
-        lastSegment === "1" ||
-        lastSegment === "3" ||
-        lastSegment === "4" ||
-        lastSegment === "5"
+        exerciseData.value.exerciseType != "pull"
       ) {
-        countdown.value = 30;
         countdownInterval = setInterval(() => {
           if (countdown.value > 0) {
             countdown.value--;
@@ -805,30 +772,34 @@ const skipExplanation = () => {
 
 const fetchPostData = async () => {
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/activity/add`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: Cookies.get("userId"), // You'll need to get the actual userId from your auth system
-          activityScore: score.value,
-          activityDuration: 30, // Duration in seconds - you may want to track actual duration
-          activityDate: new Date().toISOString(),
-          locationId: null, // Optional
-          exerciseId: null, // Optional - you may want to set this based on the exercise type
-        }),
+    if (score.value > 0 && Cookies.get("userId")) {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/activity/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: Cookies.get("userId"),
+            activityScore: score.value,
+            activityDuration: Date.now() - dateStart.value,
+            activityDate: new Date().toISOString(),
+            location: userLocation.value,
+            exerciseId: exerciseId.value,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      console.log("Activity saved:", data);
+    } else {
+
     }
-
-    const data = await response.json();
-    console.log("Activity saved:", data);
   } catch (error) {
     console.error("Error saving activity:", error);
   }
@@ -870,6 +841,7 @@ canvas {
     opacity: 0;
     transform: translate(-50%, -50%) scale(1.7);
   }
+
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
