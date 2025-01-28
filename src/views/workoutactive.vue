@@ -1,35 +1,56 @@
 <template>
-  <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
+  <video
+    ref="video"
+    autoplay
+    playsinline
+    muted
+    :class="{ 'camera-flipped': isFrontCamera }"
+  ></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-  <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
+  <p
+    :key="score"
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-60 text-8xl font-bold score-pop"
+  >
     {{ score }}
   </p>
 
   <!-- Show countdown only for pushups -->
-  <p v-if="
-    $route.path.includes('1') ||
-    $route.path.includes('3') ||
-    $route.path.includes('4') ||
-    $route.path.includes('5')
-  " class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold">
+  <p
+    v-if="
+      $route.path.includes('1') ||
+      $route.path.includes('3') ||
+      $route.path.includes('4') ||
+      $route.path.includes('5')
+    "
+    class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
+  >
     {{ countdown }}
   </p>
 
   <!-- Display hold time -->
 
   <!-- Add popup -->
-  <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showPopup"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
       <p>Completed Workout</p>
       <p>{{ score }}</p>
       <div class="flex gap-4 justify-center">
-        <button @click="restartWorkout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+        <button
+          @click="restartWorkout"
+          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+        >
           Restart
         </button>
-        <button @click="fetchPostData" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+        <button
+          @click="fetchPostData"
+          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+        >
           Terug naar menu
         </button>
       </div>
@@ -37,7 +58,10 @@
   </div>
 
   <!-- Add get ready popup -->
-  <div v-if="showGetReadyPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showGetReadyPopup"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
       <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
@@ -46,7 +70,10 @@
   </div>
 
   <!-- Add explanation modal -->
-  <div v-if="showExplanationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showExplanationModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
       <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
       <p class="text-6xl font-bold mb-4">{{ explanationCountdown }}</p>
@@ -72,7 +99,10 @@
           moment, then switch legs.
         </p>
       </div>
-      <button @click="skipExplanation" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+      <button
+        @click="skipExplanation"
+        class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+      >
         Skip
       </button>
     </div>
@@ -859,7 +889,8 @@ canvas {
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  transform: rotateY(180deg);
+  /* Remove the default flip */
+  /* transform: rotateY(180deg); */
 }
 
 .camera-flipped {
