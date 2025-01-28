@@ -1,7 +1,11 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8">
+  <div
+    class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8"
+  >
     <!-- Main content -->
-    <div class="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
+    <div
+      class="flex-1 flex flex-col items-center justify-center w-full max-w-sm"
+    >
       <!-- App intro -->
       <div class="flex flex-col items-center gap-4 mb-12">
         <h1 class="text-4xl font-bold text-blue-54 animate-fade-in">
@@ -17,8 +21,15 @@
         <div class="relative w-full flex items-center justify-center">
           <!-- Animated workout icon -->
           <div class="flex flex-col items-center gap-2">
-            <div class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg">
-              <AppIcon name="Dumbbell" :size="32" color="text-white" class="animate-bounce-slow" />
+            <div
+              class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg"
+            >
+              <AppIcon
+                name="Dumbbell"
+                :size="32"
+                color="text-white"
+                class="animate-bounce-slow"
+              />
             </div>
             <p class="text-2xl font-bold text-blue-54">
               {{ Math.round(loadingProgress) }}%
@@ -29,7 +40,10 @@
         <!-- Loading status -->
         <div class="flex flex-col items-center gap-4">
           <div class="w-48 h-1.5 bg-blue-12 rounded-full overflow-hidden">
-            <div class="h-full bg-blue-54 transition-all duration-700 ease-out" :style="{ width: `${loadingProgress}%` }"></div>
+            <div
+              class="h-full bg-blue-54 transition-all duration-700 ease-out"
+              :style="{ width: `${loadingProgress}%` }"
+            ></div>
           </div>
           <div class="h-12 text-center">
             <transition name="fade" mode="out-in">
@@ -51,14 +65,29 @@
       </div>
 
       <!-- Only show buttons when there's an error, offline option needed, or for skipping -->
-      <div v-if="retryCount > 0 || showSkipOption" class="flex flex-col gap-4 mt-4">
-        <button v-if="showOfflineOption || retryCount > 0" @click="handleContinueOffline" class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
+      <div
+        v-if="retryCount > 0 || showSkipOption"
+        class="flex flex-col gap-4 mt-4"
+      >
+        <button
+          v-if="showOfflineOption || retryCount > 0"
+          @click="handleContinueOffline"
+          class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300"
+        >
           Doorgaan zonder internet
-          <span class="block text-xs">Sommige functies zullen niet beschikbaar zijn</span>
+          <span class="block text-xs"
+            >Sommige functies zullen niet beschikbaar zijn</span
+          >
         </button>
-        <button v-if="!loadingComplete" @click="handleSkipLoading" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
+        <button
+          v-if="!loadingComplete"
+          @click="handleSkipLoading"
+          class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300"
+        >
           Loading overslaan
-          <span class="block text-xs">Beperkte functionaliteit beschikbaar</span>
+          <span class="block text-xs"
+            >Beperkte functionaliteit beschikbaar</span
+          >
         </button>
       </div>
     </div>
@@ -66,12 +95,26 @@
     <!-- Logos -->
     <div class="flex flex-col items-center gap-4">
       <strong class="text-xs text-black-60">Powered by</strong>
-      <div class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl">
-        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
-          <img src="/logo/howest.png" alt="Howest" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
+      <div
+        class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl"
+      >
+        <div
+          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
+        >
+          <img
+            src="/logo/howest.png"
+            alt="Howest"
+            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
+          />
         </div>
-        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
-          <img src="/logo/sport-beweging.png" alt="Sport Beweging" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
+        <div
+          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
+        >
+          <img
+            src="/logo/sport-beweging.png"
+            alt="Sport Beweging"
+            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
+          />
         </div>
       </div>
     </div>
@@ -116,7 +159,7 @@ const retryCount = ref(0);
 const retryCountdown = ref(0);
 let retryInterval = null;
 
-localStorage.removeItem('animationPlayed')
+localStorage.removeItem("animationPlayed");
 
 const clearAllCookies = () => {
   Cookies.remove("authToken");
@@ -135,7 +178,10 @@ const clearAllCookies = () => {
 };
 const validateToken = async () => {
   const authToken = Cookies.get("authToken");
-  console.log("Checking auth token:", authToken ? "Token exists" : "No token found");
+  console.log(
+    "Checking auth token:",
+    authToken ? "Token exists" : "No token found"
+  );
   if (!authToken) {
     console.log("No auth token found, validation failed");
     return false;
@@ -161,7 +207,6 @@ const validateToken = async () => {
 
     //fetch user data
     const userId = Cookies.get("userId");
-    console.log("User ID:", userId);
     const userDataResponse = await fetch(
       `${import.meta.env.VITE_API_URL}/api/user/${userId}`
     );
@@ -173,8 +218,6 @@ const validateToken = async () => {
       console.log("Cookies cleared due to invalid user data format");
       return false;
     }
-
-    console.log("User data:", userData);
 
     try {
       Cookies.set("userId", userData.userId);
@@ -244,7 +287,10 @@ const startLoading = async () => {
     showOfflineOption.value = false;
 
     // Check if we're already in offline/limited mode
-    if (localStorage.getItem('goOffline') === 'true' || localStorage.getItem('skipLoading') === 'true') {
+    if (
+      localStorage.getItem("goOffline") === "true" ||
+      localStorage.getItem("skipLoading") === "true"
+    ) {
       targetProgress.value = 100;
       animateProgress();
       return;
@@ -282,7 +328,10 @@ const startLoading = async () => {
             "error"
           );
           localStorage.setItem("goOffline", "true");
-          localStorage.setItem("offlineModeStartTime", new Date().toISOString());
+          localStorage.setItem(
+            "offlineModeStartTime",
+            new Date().toISOString()
+          );
           localStorage.setItem("lastError", "Server niet bereikbaar");
           return;
         } else {
@@ -502,7 +551,6 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-
   0%,
   100% {
     transform: translateY(-5%);
