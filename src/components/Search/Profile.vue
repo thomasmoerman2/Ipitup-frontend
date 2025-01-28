@@ -2,7 +2,7 @@
   <RouterLink :to="`/user/${id}`" class="flex items-center justify-between h-max">
     <div class="flex items-center">
       <div class="w-16 h-10 flex items-center justify-center mb-4">
-        <Beanhead v-bind="{ mask: true, ...parseAvatar(avatar) }" />
+        <Beanhead v-bind="{ mask: true, ...parseAvatar(avatar) }" class="w-full h-full translate-y-0 translate-x-0" />
       </div>
       <p class="font-bold">{{ fullname }}</p>
     </div>

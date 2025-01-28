@@ -8,7 +8,7 @@
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Avatar Preview -->
         <div class="w-full bg-white flex justify-center items-start sticky top-0 z-[55]">
-            <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" />
+            <Beanhead v-bind="{ mask: true, skin, body, eye, eyebrows, mouth, lipColor, hair, hairColor, facialHair, clothing, clothingColor, hat, hatColor, accessory }" class="w-full h-full translate-y-0 translate-x-0" />
         </div>
 
         <!-- Customization Panel -->
@@ -147,47 +147,47 @@ const accessory = ref('none');
 
 // Functie om avatar gegevens op te halen
 const fetchAvatar = async () => {
-  try {
-    const userId = Cookies.get('userId');
-    const token = Cookies.get('authToken');
+    try {
+        const userId = Cookies.get('userId');
+        const token = Cookies.get('authToken');
 
-    if (!userId || !token) {
-      throw new Error('User ID or token not found in cookies');
+        if (!userId || !token) {
+            throw new Error('User ID or token not found in cookies');
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch avatar');
+        }
+
+        const data = await response.json();
+        console.log('Fetched avatar:', data.avatar);
+
+        if (data.avatar) {
+            const avatarParts = data.avatar.split('|');
+            skin.value = avatarParts[0] || 'light';
+            body.value = avatarParts[1] || 'chest';
+            eye.value = avatarParts[2] || 'normal-eyes';
+            eyebrows.value = avatarParts[3] || 'none';
+            mouth.value = avatarParts[4] || 'grin';
+            lipColor.value = avatarParts[5] || 'red';
+            hair.value = avatarParts[6] || 'none';
+            hairColor.value = avatarParts[7] || 'brown';
+            facialHair.value = avatarParts[8] || 'none';
+            clothing.value = avatarParts[9] || 'none';
+            clothingColor.value = avatarParts[10] || 'white';
+            hat.value = avatarParts[11] || 'none';
+            hatColor.value = avatarParts[12] || 'white';
+            accessory.value = avatarParts[13] || 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching avatar:', error.message);
     }
-
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch avatar');
-    }
-
-    const data = await response.json();
-    console.log('Fetched avatar:', data.avatar);
-
-    if (data.avatar) {
-      const avatarParts = data.avatar.split('|');
-      skin.value = avatarParts[0] || 'light';
-      body.value = avatarParts[1] || 'chest';
-      eye.value = avatarParts[2] || 'normal-eyes';
-      eyebrows.value = avatarParts[3] || 'none';
-      mouth.value = avatarParts[4] || 'grin';
-      lipColor.value = avatarParts[5] || 'red';
-      hair.value = avatarParts[6] || 'none';
-      hairColor.value = avatarParts[7] || 'brown';
-      facialHair.value = avatarParts[8] || 'none';
-      clothing.value = avatarParts[9] || 'none';
-      clothingColor.value = avatarParts[10] || 'white';
-      hat.value = avatarParts[11] || 'none';
-      hatColor.value = avatarParts[12] || 'white';
-      accessory.value = avatarParts[13] || 'none';
-    }
-  } catch (error) {
-    console.error('Error fetching avatar:', error.message);
-  }
 };
 
 onMounted(fetchAvatar);

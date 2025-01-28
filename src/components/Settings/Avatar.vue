@@ -1,7 +1,7 @@
 <template>
     <div class="w-[10rem] h-[10rem] flex items-center justify-center relative">
         <div v-if="avatarData" class="w-full h-full flex items-center justify-center">
-            <component :is="BeanheadRaw" :key="'beanhead_' + props.id + '_' + instanceId + '_' + avatarData.skin" :mask="true" v-bind="avatarData" />
+            <component :is="BeanheadRaw" :key="'beanhead_' + props.id + '_' + instanceId + '_' + avatarData.skin" :mask="true" v-bind="avatarData" class="w-full h-full translate-y-0 translate-x-0" />
         </div>
         <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center drop-shadow-md justify-center absolute bottom-3 right-6">
             <AppIcon name="pen" color="text-blue-108" :size="14" />
@@ -100,7 +100,7 @@ watch(() => props.id, (newId, oldId) => {
 });
 
 watch(() => avatarData, (newVal) => {
-  console.log('Updated avatar data:', newVal);
+    console.log('Updated avatar data:', newVal);
 }, { deep: true });
 
 
