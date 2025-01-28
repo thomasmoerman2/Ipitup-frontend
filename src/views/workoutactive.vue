@@ -1,43 +1,67 @@
 <template>
-  <video ref="video" autoplay playsinline muted :class="{ 'camera-flipped': isFrontCamera }"></video>
+  <video
+    ref="video"
+    autoplay
+    playsinline
+    muted
+    :class="{ 'camera-flipped': isFrontCamera }"
+  ></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
 
-  <p :key="score" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop">
+  <p
+    :key="score"
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
+  >
     {{ score }}
   </p>
 
   <!-- Show countdown only for pushups -->
-  <p v-if="
-    $route.path.includes('1') ||
-    $route.path.includes('3') ||
-    $route.path.includes('4') ||
-    $route.path.includes('5')
-  " class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold">
+  <p
+    v-if="
+      $route.path.includes('1') ||
+      $route.path.includes('3') ||
+      $route.path.includes('4') ||
+      $route.path.includes('5')
+    "
+    class="absolute top-8 left-1/2 transform -translate-x-1/2 z-[9998] text-blue-60 text-4xl font-bold"
+  >
     {{ countdown }}
   </p>
 
   <!-- Display hold time -->
 
   <!-- Add popup -->
-  <div v-if="showPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showPopup"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Time's Up!</h2>
       <p>Completed Workout</p>
       <p>{{ score }}</p>
       <div class="flex gap-4 justify-center">
-        <button @click="restartWorkout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+        <button
+          @click="restartWorkout"
+          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+        >
           Restart
         </button>
-        <RouterLink to="/workout" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+        <button
+          @click="fetchPostData"
+          class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+        >
           Terug naar menu
-        </RouterLink>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Add get ready popup -->
-  <div v-if="showGetReadyPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showGetReadyPopup"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
       <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
@@ -46,7 +70,10 @@
   </div>
 
   <!-- Add explanation modal -->
-  <div v-if="showExplanationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+  <div
+    v-if="showExplanationModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+  >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
       <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
       <p class="text-6xl font-bold mb-4">{{ explanationCountdown }}</p>
@@ -72,7 +99,10 @@
           moment, then switch legs.
         </p>
       </div>
-      <button @click="skipExplanation" class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30">
+      <button
+        @click="skipExplanation"
+        class="bg-blue-60 text-white px-4 py-2 rounded hover:bg-blue-30"
+      >
         Skip
       </button>
     </div>
@@ -82,14 +112,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted, onActivated, onDeactivated } from "vue";
 import { Pose } from "@mediapipe/pose";
+import { useRoute } from "vue-router";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-
+import Cookies from "js-cookie";
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
 const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
-const countdown = ref(30);
+const dateStart = ref(Date.now());
 
 const predictions = ref([
   { className: "", probability: 0 },
@@ -132,15 +163,34 @@ const PUSH_UP_COOLDOWN = 1000; // 1 second cooldown
 // Add new refs at the top with other refs
 const showExplanationModal = ref(true);
 const explanationCountdown = ref(10);
+const userLocation = ref(null);
 let explanationTimer;
 
 // Add this with other refs at the top of the file
 const lastKneePosition = ref("none"); // Track which knee was last raised
 
+const exerciseData = ref({});
+const exerciseId = ref(useRoute().params.exercise);
+
+//fetch exercise data
+async function fetch_exercise_data() {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/exercise/${exerciseId.value}`
+  );
+  const data = await response.json();
+  exerciseData.value = data;
+}
+
+fetch_exercise_data();
+
+console.log("exerciseData ->", exerciseData.value);
+
+const countdown = ref(exerciseData.value.exerciseTime);
+
 // Add this function to stop the camera
 const stopCamera = () => {
   if (currentStream.value) {
-    currentStream.value.getTracks().forEach(track => track.stop());
+    currentStream.value.getTracks().forEach((track) => track.stop());
     currentStream.value = null;
   }
 };
@@ -148,6 +198,20 @@ const stopCamera = () => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          userLocation.value = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+      console.log("userLocation ->", userLocation.value);
+    }
     const tfScript = document.createElement("script");
     tfScript.src =
       "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
@@ -200,12 +264,7 @@ onMounted(async () => {
               .split("/")
               .filter((segment) => segment)
               .pop();
-            if (
-              lastSegment === "1" ||
-              lastSegment === "3" ||
-              lastSegment === "4" ||
-              lastSegment === "5"
-            ) {
+            if (lastSegment != "2") {
               countdown.value = 30;
               countdownInterval = setInterval(() => {
                 if (countdown.value > 0) {
@@ -596,14 +655,14 @@ const detectPullUp = (landmarks) => {
   const rightFeet = landmarks[24];
   const avgWristHeight = (leftWrist.y + rightWrist.y) / 2;
   const currentTime = Date.now();
-
+  const dateStart = ref(Date.now());
   // Store initial feet position
   StuckPosition(leftFeet.y, rightFeet.y);
 
   // Calculate how much the feet have moved from initial position
   const leftFeetDifference = Math.abs(leftFeet.y - CurrentLeftFeet);
   const rightFeetDifference = Math.abs(rightFeet.y - CurrentRightFeet);
-  const MOVEMENT_THRESHOLD = 0.07; // Adjust this value based on testing
+  const MOVEMENT_THRESHOLD = 0.03; // Adjust this value based on testing
 
   if (
     nose.y < avgWristHeight &&
@@ -681,7 +740,6 @@ const restartWorkout = async () => {
   showPopup.value = false;
   showGetReadyPopup.value = true;
   getReadyCountdown.value = 5;
-  score.value = 0;
 
   const path = window.location.pathname;
   const lastSegment = path
@@ -797,6 +855,40 @@ onActivated(async () => {
     await startCamera();
   }
 });
+const fetchPostData = async () => {
+  console.log("Log");
+  try {
+    if (score.value > 0 && Cookies.get("userId")) {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/activities/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: Cookies.get("userId"),
+            activityScore: score.value,
+            activityDuration: Date.now() - dateStart.value,
+            activityDate: new Date().toISOString(),
+            locationId: 3,
+            exerciseId: exerciseData.value.exerciseId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Activity saved:", data);
+    } else {
+    }
+  } catch (error) {
+    console.error("Error saving activity:", error);
+  }
+};
 </script>
 
 <style scoped>
