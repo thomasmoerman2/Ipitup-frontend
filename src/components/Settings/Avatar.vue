@@ -1,7 +1,7 @@
 <template>
     <div class="w-[10rem] h-[10rem] flex items-center justify-center relative">
         <div v-if="avatarData" class="w-full h-full flex items-center justify-center">
-            <component :is="BeanheadRaw" :key="'beanhead_' + props.id + '_' + instanceId + '_' + avatarData.skin" :mask="true" v-bind="avatarData" />
+            <component :is="BeanheadRaw" :key="'beanhead_' + props.id + '_' + instanceId + '_' + avatarData.skin" :mask="true" v-bind="avatarData" data-id="1" ref="beanheadComponent" />
         </div>
         <div v-if="edit === 'true'" class="rounded-full bg-blue-18 w-6 h-6 flex items-center drop-shadow-md justify-center absolute bottom-3 right-6">
             <AppIcon name="pen" color="text-blue-108" :size="14" />
@@ -19,6 +19,52 @@ const BeanheadRaw = markRaw(Beanhead);
 
 const instanceId = Date.now() + '_' + Math.random();
 
+// Add ref to component
+const beanheadComponent = ref(null);
+
+const exportAsSvg = async () => {
+    if (beanheadComponent.value) {
+        const svgElement = beanheadComponent.value.$el;
+        if (svgElement && svgElement.tagName === 'svg') {
+            // Force multiple reflows and ensure styles are computed
+            svgElement.getBoundingClientRect();
+            window.getComputedStyle(svgElement).getPropertyValue('transform');
+
+            // Wait a tiny bit to ensure rendering
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Clone the SVG to avoid modifying the original
+            const clonedSvg = svgElement.cloneNode(true);
+
+            // Set explicit width and height
+            clonedSvg.setAttribute('width', '160');
+            clonedSvg.setAttribute('height', '160');
+            clonedSvg.setAttribute('viewBox', '0 0 160 160');
+
+            // Ensure all child elements are visible
+            const allElements = clonedSvg.getElementsByTagName('*');
+            for (let el of allElements) {
+                if (el.style) {
+                    el.style.display = el.style.display || 'inherit';
+                    el.style.visibility = el.style.visibility || 'visible';
+                }
+            }
+
+            // Force reflow on clone
+            clonedSvg.getBoundingClientRect();
+            window.getComputedStyle(clonedSvg).getPropertyValue('transform');
+
+            return clonedSvg.outerHTML;
+        }
+    }
+    return null;
+};
+
+// Expose the export method
+defineExpose({
+    exportAsSvg
+});
+
 const props = defineProps({
     edit: {
         type: String,
@@ -31,7 +77,7 @@ const props = defineProps({
     },
 });
 
-const avatarData = reactive({});
+const avatarData = ref({});
 
 const loadAvatar = async () => {
     try {
@@ -45,11 +91,8 @@ const loadAvatar = async () => {
         if (userData.avatar) {
             const avatarParts = userData.avatar.split('|');
 
-            // Clear existing data first
-            Object.keys(avatarData).forEach(key => delete avatarData[key]);
-
-            // Set new data
-            Object.assign(avatarData, {
+            // Set new data directly
+            avatarData.value = {
                 skin: avatarParts[0] || 'light',
                 body: avatarParts[1] || 'chest',
                 eye: avatarParts[2] || 'normal-eyes',
@@ -64,16 +107,13 @@ const loadAvatar = async () => {
                 hat: avatarParts[11] || 'none',
                 hatColor: avatarParts[12] || 'white',
                 accessory: avatarParts[13] || 'none'
-            });
+            };
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
 
-        // Clear existing data first
-        Object.keys(avatarData).forEach(key => delete avatarData[key]);
-
-        // Set default data
-        Object.assign(avatarData, {
+        // Set default data directly
+        avatarData.value = {
             skin: 'light',
             body: 'chest',
             eye: 'normal-eyes',
@@ -88,7 +128,7 @@ const loadAvatar = async () => {
             hat: 'none',
             hatColor: 'white',
             accessory: 'none'
-        });
+        };
     }
 };
 
@@ -100,7 +140,7 @@ watch(() => props.id, (newId, oldId) => {
 });
 
 watch(() => avatarData, (newVal) => {
-  console.log('Updated avatar data:', newVal);
+    console.log('Updated avatar data:', newVal);
 }, { deep: true });
 
 
