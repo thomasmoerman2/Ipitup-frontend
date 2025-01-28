@@ -16,7 +16,6 @@ const route = useRoute();
 const audio = new Audio('/sounds/notification.mp3');
 const intNotif = ref(null);
 
-const webConfigNotif = ref(1000);
 
 const props = defineProps({
     meta: {
@@ -46,7 +45,6 @@ const pageTitle = computed(() => {
 
 const fetch_notifications = async () => {
     try {
-        await fetch_web_config();
         const userId = Cookies.get('userId');
         const authToken = Cookies.get('authToken');
 
@@ -94,8 +92,8 @@ const fetch_notifications = async () => {
 }
 
 onMounted(() => {
-    fetch_notifications();
-    intNotif.value = setInterval(fetch_notifications, webConfigNotif.value);
+    intNotif.value = setInterval(fetch_notifications, 6000);
 });
+fetch_notifications();
 
 </script>

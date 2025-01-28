@@ -73,7 +73,6 @@ const func_toggle = () => {
 const fetch_notifications_asreaded = async () => {
     const userId = Cookies.get('userId');
     const notifications = props.messages.map(notification => notification.notificationId);
-    console.log("notifications ID ->", notifications);
 
     if (userId) {
         console.log("userId ->", userId);
@@ -84,7 +83,6 @@ const fetch_notifications_asreaded = async () => {
                 Authorization: `Bearer ${Cookies.get('authToken')}`
             }
         });
-        console.log("response ->", response);
         arrMessages.value.length = 0;
     }
 }

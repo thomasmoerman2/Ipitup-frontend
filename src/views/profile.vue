@@ -33,8 +33,8 @@
       <p class="font-bold">Activiteit</p>
       <div class="w-fit whitespace-nowrap py-3">
         <AppOptions :options="[
-          { text: 'Laatste 7 dagen', value: '7' },
-          { text: 'Laatste 30 dagen', value: '30' },
+          { text: '7 dagen', value: '7' },
+          { text: '30 dagen', value: '30' },
         ]" v-model="selectedOption" @change="handleOptionChange" />
       </div>
       <div class="flex w-full bg-black-8 h-max justify-center items-center text-center rounded-md">
@@ -304,4 +304,3 @@ const func_set_chart = () => {
 }
 
 </script>
-
