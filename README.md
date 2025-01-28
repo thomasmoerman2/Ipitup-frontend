@@ -90,3 +90,4 @@ Om een georganiseerde en efficiënte samenwerking binnen ons team te garanderen,
 - Respecteer de branch-hiërarchie en werkprocessen.
 
 Door deze workflow te volgen, kunnen we efficiënt samenwerken en de kwaliteit van onze code waarborgen.
+
