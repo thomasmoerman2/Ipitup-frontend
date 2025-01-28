@@ -4,7 +4,7 @@
     autoplay
     playsinline
     muted
-    :class="{ 'camera-flipped': isFrontCamera }"
+    :class="({ 'camera-flipped': isFrontCamera }, 'cammie')"
   ></video>
   <canvas ref="canvas" :class="{ 'camera-flipped': isFrontCamera }"></canvas>
   <button class="camera-toggle" @click="toggleCamera">Switch Camera</button>
@@ -62,10 +62,12 @@
     v-if="showGetReadyPopup"
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
   >
-    <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg text-center z-[9999]">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
       <p class="text-6xl font-bold mb-4">{{ getReadyCountdown }}</p>
-      <p class="mb-4">Prepare for your push-up challenge</p>
+      <p class="mb-4">
+        Prepare for your {{ exerciseData.exerciseName }} challenge
+      </p>
     </div>
   </div>
 
@@ -75,29 +77,31 @@
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
   >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-      <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
-      <p class="text-6xl font-bold mb-4">{{ explanationCountdown }}</p>
+      <h2 class="text-2xl font-bold mb-4">
+        Fitness Oefening:
+        {{ exerciseData.exerciseName }}
+      </h2>
+      <p class="text-6xl font-bold mb-4">
+        {{ explanationCountdown }}
+      </p>
       <div class="mb-4">
-        <p v-if="$route.path.includes('1')" class="mb-2">
-          Get into a plank position with your arms straight. Lower your body
-          until your chest nearly touches the ground, then push back up.
-        </p>
-        <p v-else-if="$route.path.includes('2')" class="mb-2">
-          Hang from the bar with your palms facing away. Pull yourself up until
-          your chin is above the bar, then lower back down.
-        </p>
-        <p v-else-if="$route.path.includes('3')" class="mb-2">
-          Lie on your back with knees bent. Lift your knees towards your chest
-          alternately while keeping your core engaged.
-        </p>
-        <p v-else-if="$route.path.includes('4')" class="mb-2">
-          Stand with feet shoulder-width apart. Lower your body by bending your
-          knees, keeping your back straight, then return to standing.
-        </p>
-        <p v-else-if="$route.path.includes('5')" class="mb-2">
-          Stand on one leg, lift your other knee up to hip level, hold for a
-          moment, then switch legs.
-        </p>
+        <video autoplay playsinline loop muted>
+          <source
+            v-if="exerciseData.exerciseType == 'Push'"
+            src="/Push.mp4"
+            type="video/mp4"
+          />
+          <source
+            v-else-if="exerciseData.exerciseType == 'Pull'"
+            src="/Pull.mp4"
+            type="video/mp4"
+          />
+          <source
+            v-else-if="exerciseData.exerciseType == 'Squats'"
+            src="/Squat.mp4"
+            type="video/mp4"
+          />
+        </video>
       </div>
       <button
         @click="skipExplanation"
@@ -133,12 +137,6 @@ const predictions = ref([
 const isInDownPosition = ref(false);
 const MIN_TIME_BETWEEN_REPS = 500;
 const lastRepTime = ref(Date.now());
-
-// Teachable Machine model configuration
-const URL = "/my_model/";
-let model = null;
-let maxPredictions = 0;
-const modelLoaded = ref(false);
 
 // Add countdown logic
 let countdownInterval;
@@ -189,6 +187,9 @@ console.log("exerciseData ->", exerciseData.value);
 
 const countdown = ref(exerciseData.value.exerciseTime);
 
+// Add this ref to store the animation frame ID
+let poseAnimationFrameId = null;
+
 // Add this function to stop the camera
 const stopCamera = () => {
   if (currentStream.value) {
@@ -200,31 +201,6 @@ const stopCamera = () => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
-    const tfScript = document.createElement("script");
-    tfScript.src =
-      "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
-
-    const tmScript = document.createElement("script");
-    tmScript.src =
-      "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js";
-
-    const loadScripts = new Promise((resolve, reject) => {
-      tfScript.onload = () => {
-        document.head.appendChild(tmScript);
-      };
-
-      tmScript.onload = () => {
-        resolve();
-      };
-
-      tfScript.onerror = (error) => reject(error);
-      tmScript.onerror = (error) => reject(error);
-    });
-
-    document.head.appendChild(tfScript);
-    await loadScripts;
-
-    await initModel();
     await startCamera();
 
     // Start with explanation modal
@@ -272,66 +248,6 @@ onMounted(async () => {
     //
   }
 });
-
-// Modified initModel function
-const initModel = async () => {
-  try {
-    // Wait for window.tmImage to be available
-
-    let attempts = 0;
-    while (!window.tmImage && attempts < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      attempts++;
-    }
-
-    if (!window.tmImage) {
-      throw new Error("Teachable Machine library not loaded");
-    }
-
-    const modelURL = `${URL}model.json`;
-    const metadataURL = `${URL}metadata.json`;
-
-    // Verify files exist before loading
-    try {
-      const modelResponse = await fetch(modelURL);
-      const metadataResponse = await fetch(metadataURL);
-
-      if (!modelResponse.ok) {
-        throw new Error(`Model file not found: ${modelURL}`);
-      }
-      if (!metadataResponse.ok) {
-        throw new Error(`Metadata file not found: ${metadataURL}`);
-      }
-    } catch (error) {
-      throw new Error(`Failed to fetch model files: ${error.message}`);
-    }
-
-    model = await window.tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
-    modelLoaded.value = true;
-  } catch (error) {
-    //
-    // You might want to show this error to the user
-  }
-};
-
-const predict = async () => {
-  if (!modelLoaded.value || !model || !video.value) {
-    return;
-  }
-
-  try {
-    const prediction = await model.predict(video.value);
-    for (let i = 0; i < maxPredictions; i++) {
-      predictions.value[i] = {
-        className: prediction[i].className,
-        probability: prediction[i].probability.toFixed(2),
-      };
-    }
-  } catch (error) {
-    //
-  }
-};
 
 const startCamera = async () => {
   if (currentStream.value) {
@@ -388,7 +304,7 @@ const initPoseDetection = () => {
     ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
     ctx.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height);
 
-    if (results.poseLandmarks && modelLoaded.value) {
+    if (results.poseLandmarks) {
       drawConnectors(ctx, results.poseLandmarks, Pose.CONNECTIONS, {
         color: "lime",
         lineWidth: 4,
@@ -398,42 +314,42 @@ const initPoseDetection = () => {
         lineWidth: 2,
       });
 
-      // First check position with Teachable Machine
-      await predict();
-
       const path = window.location.pathname;
       const lastSegment = path
         .split("/")
         .filter((segment) => segment)
         .pop();
 
-      if (predictions.value[1].probability > 0.7) {
-        //
-      } else {
-        //
-
-        if (lastSegment === "1") {
-          detectPushUp(results.poseLandmarks);
-        } else if (lastSegment === "2") {
-          detectPullUp(results.poseLandmarks);
-        } else if (lastSegment === "3") {
-          detectCore(results.poseLandmarks);
-        } else if (lastSegment === "4") {
-          detectSquats(results.poseLandmarks);
-        } else if (lastSegment === "5") {
-          detectBalance(results.poseLandmarks);
-        }
+      if (lastSegment === "1") {
+        detectPushUp(results.poseLandmarks);
+      } else if (lastSegment === "2") {
+        detectPullUp(results.poseLandmarks);
+      } else if (lastSegment === "3") {
+        detectCore(results.poseLandmarks);
+      } else if (lastSegment === "4") {
+        detectBalance(results.poseLandmarks);
+      } else if (lastSegment === "5") {
+        detectSquats(results.poseLandmarks);
       }
     }
   });
 
   const detectPose = async () => {
     await pose.send({ image: video.value });
-    requestAnimationFrame(detectPose);
+    poseAnimationFrameId = requestAnimationFrame(detectPose);
   };
 
   detectPose();
 };
+
+// Add this function to stop pose detection
+const stopPoseDetection = () => {
+  if (poseAnimationFrameId) {
+    cancelAnimationFrame(poseAnimationFrameId);
+    poseAnimationFrameId = null;
+  }
+};
+
 const IsLeftKneeUp = ref(false);
 const IsRightKneeUp = ref(false);
 const isStandingStraight = ref(0);
@@ -769,6 +685,7 @@ const restartWorkout = async () => {
             clearInterval(countdownInterval);
             isWorkoutActive.value = false;
             showPopup.value = true;
+            stopPoseDetection(); // Stop pose detection when workout is finished
           }
         }, 1000);
       }
@@ -786,7 +703,6 @@ onUnmounted(() => {
   }
   stopCamera();
   ctx = null;
-  model = null;
 });
 
 const skipExplanation = () => {
@@ -834,7 +750,6 @@ const skipExplanation = () => {
 onDeactivated(() => {
   stopCamera();
   ctx.destroy();
-  model = null;
   pose = null;
 });
 
@@ -871,8 +786,25 @@ const fetchPostData = async () => {
 
       const data = await response.json();
       console.log("Activity saved:", data);
+
+      //fetch updateUserDailyStreak
+      const updateUserDailyStreakResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/user/dailystreak/${Cookies.get(
+          "userId"
+        )}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("authToken")}`,
+          },
+        }
+      );
+
+      const updateUserDailyStreakData =
+        await updateUserDailyStreakResponse.json();
+      console.log("updateUserDailyStreakData ->", updateUserDailyStreakData);
       router.push("/workout");
-    } else {
     }
   } catch (error) {
     console.error("Error saving activity:", error);
@@ -881,7 +813,7 @@ const fetchPostData = async () => {
 </script>
 
 <style scoped>
-video,
+.cammie,
 canvas {
   position: fixed;
   top: 0;
