@@ -121,7 +121,7 @@ import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 import Cookies from "js-cookie";
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
-const score = ref(50);
+const score = ref(0);
 const video = ref(null);
 const canvas = ref(null);
 const dateStart = ref(Date.now());
@@ -804,8 +804,8 @@ const fetchPostData = async () => {
       const updateUserDailyStreakData =
         await updateUserDailyStreakResponse.json();
       console.log("updateUserDailyStreakData ->", updateUserDailyStreakData);
-      router.push("/workout");
     }
+    router.push("/workout");
   } catch (error) {
     console.error("Error saving activity:", error);
   }
