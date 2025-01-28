@@ -11,7 +11,7 @@
 
   <p
     :key="score"
-    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] text-blue-60 text-8xl font-bold score-pop"
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-60 text-8xl font-bold score-pop"
   >
     {{ score }}
   </p>
@@ -60,7 +60,7 @@
   <!-- Add get ready popup -->
   <div
     v-if="showGetReadyPopup"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
   >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4">Get Ready!</h2>
@@ -72,7 +72,7 @@
   <!-- Add explanation modal -->
   <div
     v-if="showExplanationModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
   >
     <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
       <h2 class="text-2xl font-bold mb-4">How to do this exercise</h2>
@@ -886,7 +886,8 @@ canvas {
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  transform: rotateY(180deg);
+  /* Remove the default flip */
+  /* transform: rotateY(180deg); */
 }
 
 .camera-flipped {
