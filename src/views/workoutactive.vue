@@ -198,20 +198,6 @@ const stopCamera = () => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          userLocation.value = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-        }
-      );
-      console.log("userLocation ->", userLocation.value);
-    }
     const tfScript = document.createElement("script");
     tfScript.src =
       "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js";
