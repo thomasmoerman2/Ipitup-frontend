@@ -113,6 +113,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Pose } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import Cookies from "js-cookie";
 
 const isFrontCamera = ref(false);
 const currentStream = ref(null);
@@ -166,6 +167,10 @@ let explanationTimer;
 
 // Add this with other refs at the top of the file
 const lastKneePosition = ref("none"); // Track which knee was last raised
+
+// Throttle the pose detection to reduce load
+let lastPoseDetectionTime = 0;
+const POSE_DETECTION_INTERVAL = 100; // in milliseconds
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -358,6 +363,12 @@ const initPoseDetection = () => {
   });
 
   pose.onResults(async (results) => {
+    const currentTime = Date.now();
+    if (currentTime - lastPoseDetectionTime < POSE_DETECTION_INTERVAL) {
+      return;
+    }
+    lastPoseDetectionTime = currentTime;
+
     ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
     ctx.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height);
 
@@ -380,22 +391,16 @@ const initPoseDetection = () => {
         .filter((segment) => segment)
         .pop();
 
-      if (predictions.value[1].probability > 0.7) {
-        console.log("Not in position");
-      } else {
-        console.log("In position");
-
-        if (lastSegment === "1") {
-          detectPushUp(results.poseLandmarks);
-        } else if (lastSegment === "2") {
-          detectPullUp(results.poseLandmarks);
-        } else if (lastSegment === "3") {
-          detectCore(results.poseLandmarks);
-        } else if (lastSegment === "4") {
-          detectSquats(results.poseLandmarks);
-        } else if (lastSegment === "5") {
-          detectBalance(results.poseLandmarks);
-        }
+      if (lastSegment === "1") {
+        detectPushUp(results.poseLandmarks);
+      } else if (lastSegment === "2") {
+        detectPullUp(results.poseLandmarks);
+      } else if (lastSegment === "3") {
+        detectCore(results.poseLandmarks);
+      } else if (lastSegment === "4") {
+        detectBalance(results.poseLandmarks);
+      } else if (lastSegment === "5") {
+        detectSquats(results.poseLandmarks);
       }
     }
   });
@@ -410,7 +415,6 @@ const initPoseDetection = () => {
 const IsLeftKneeUp = ref(false);
 const IsRightKneeUp = ref(false);
 const isStandingStraight = ref(0);
-const BalanceCompleted = ref("false");
 
 const detectBalance = (landmarks) => {
   if (!isWorkoutActive.value) return;
@@ -658,11 +662,11 @@ const detectPullUp = (landmarks) => {
 let currentThreshhold;
 let onePassingTime = false;
 
-// Modified detectPushUp function with cooldown
 const detectPushUp = (landmarks) => {
   if (!isWorkoutActive.value) return;
   const leftShoulder = landmarks[11];
   const leftWrist = landmarks[15];
+  const leftHip = landmarks[23];
 
   if (!onePassingTime) {
     currentThreshhold = (leftWrist.y - leftShoulder.y) / 2;
@@ -670,8 +674,6 @@ const detectPushUp = (landmarks) => {
   }
 
   const CLOSE_THRESHOLD = leftWrist.y - currentThreshhold; // Threshold for "really close"
-  console.log("CLOSE_THRESHOLD", CLOSE_THRESHOLD.toFixed(2));
-  console.log("leftShoulder.y", leftShoulder.y.toFixed(2));
   const currentTime = Date.now();
 
   // Check if arms are stretched out
@@ -799,6 +801,37 @@ const skipExplanation = () => {
       }
     }
   }, 1000);
+};
+
+const fetchPostData = async () => {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/activity/add`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: Cookies.get("userId"), // You'll need to get the actual userId from your auth system
+          activityScore: score.value,
+          activityDuration: 30, // Duration in seconds - you may want to track actual duration
+          activityDate: new Date().toISOString(),
+          locationId: null, // Optional
+          exerciseId: null, // Optional - you may want to set this based on the exercise type
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Activity saved:", data);
+  } catch (error) {
+    console.error("Error saving activity:", error);
+  }
 };
 </script>
 
