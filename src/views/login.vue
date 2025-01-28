@@ -140,7 +140,6 @@ const handleLogin = async () => {
       throw new Error('Failed to set user data')
     }
 
-    console.log('Login successful, isAdmin:', data.isAdmin)
     router.push('/')
   } catch (error) {
     console.error('Login error:', error)

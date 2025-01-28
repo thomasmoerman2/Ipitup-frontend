@@ -112,13 +112,11 @@ const fetchFilteredLeaderboard = async () => {
     }
   }
 
-  console.log('API request:', params.toString());
 
   try {
     // Voer de API-aanroep uit om de leaderboard-gegevens op te halen
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/filter?${params.toString()}`);
     let data = await response.json();
-    console.log('Leaderboard API response:', data);
 
     if (!response.ok) {
       throw new Error(data.message || 'Failed to fetch leaderboard data');
@@ -155,7 +153,6 @@ const fetchFilteredLeaderboard = async () => {
 
       // Als de gebruiker niet in de top 10 staat, haal zijn/haar gegevens apart op
       if (userIndex === -1) {
-        console.log(`User ${userId} not in Top 10 of leaderboard, fetching user score.`);
 
         try {
           let userData;
@@ -163,7 +160,6 @@ const fetchFilteredLeaderboard = async () => {
             // Haal de gebruikersscore op voor een specifieke locatie
             const locationIds = filters.value.locations.join(',');
             const locationResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/leaderboard/location/${filters.value.locations[0]}/user/${userId}`);
-            console.log('API personal totalLocationScore:', locationResponse);
             if (!locationResponse.ok) {
               throw new Error(`No data found for user ${userId} at location`);
             }
@@ -205,7 +201,6 @@ const fetchFilteredLeaderboard = async () => {
 
         // Sorteer opnieuw om de toegevoegde gebruiker correct te plaatsen
         data = await data.sort((a, b) => (b.totalLocationScore || b.totalScore) - (a.totalLocationScore || a.totalScore));
-        console.log('API personal added:', data);
         // Zoek opnieuw naar de huidige gebruiker
         userIndex = data.findIndex((player) => Number(player.userId) === userId);
       }
@@ -224,7 +219,6 @@ const fetchFilteredLeaderboard = async () => {
           parsedAvatar: parseAvatar(winner?.avatar) || {},
         }));
 
-    console.log("Podium winners data:", podiumWinners.value.map(winner => ({
       position: podiumWinners.value.indexOf(winner) + 1,
       userId: winner.userId,
       firstname: winner.firstname,
@@ -235,7 +229,6 @@ const fetchFilteredLeaderboard = async () => {
       // Toon de top 10 spelers behalve de podiumwinnaars
       leaderboardData.value = data.slice(3, 10);
 
-      console.log("leaderboardData ->", podiumWinners.value);
 
       // Als de gebruiker niet in de top 10 staat, voeg hem toe met zijn rang
       if (userIndex >= 10) {

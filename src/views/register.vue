@@ -120,7 +120,6 @@ const handleRegister = async () => {
     // Then set user data
     try {
       //logs data received from server
-      console.log("Data received from server:", data);
 
       Cookies.set("userId", data.body.userId)
       Cookies.set("userFirstname", data.body.firstname)

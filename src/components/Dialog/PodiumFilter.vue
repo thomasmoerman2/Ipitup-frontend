@@ -108,7 +108,6 @@ const toggleCity = (city) => {
 
 
 const applyFilters = () => {
-  console.log("Selected location IDs:", selectedCities.value.map(selected => selected.locationId));
   emit('updateFilters', {
     locations: selectedCities.value.map(selected => selected.locationId),
     minAge: ageRange.value[0],

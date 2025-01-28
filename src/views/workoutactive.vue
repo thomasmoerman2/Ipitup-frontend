@@ -183,7 +183,6 @@ async function fetch_exercise_data() {
 
 fetch_exercise_data();
 
-console.log("exerciseData ->", exerciseData.value);
 
 const countdown = ref(exerciseData.value.exerciseTime);
 
@@ -759,7 +758,6 @@ onActivated(async () => {
   }
 });
 const fetchPostData = async () => {
-  console.log("Log");
   try {
     if (score.value > 0 && Cookies.get("userId")) {
       const response = await fetch(
@@ -785,7 +783,6 @@ const fetchPostData = async () => {
       }
 
       const data = await response.json();
-      console.log("Activity saved:", data);
 
       //fetch updateUserDailyStreak
       const updateUserDailyStreakResponse = await fetch(
@@ -803,7 +800,6 @@ const fetchPostData = async () => {
 
       const updateUserDailyStreakData =
         await updateUserDailyStreakResponse.json();
-      console.log("updateUserDailyStreakData ->", updateUserDailyStreakData);
     }
     router.push("/workout");
   } catch (error) {

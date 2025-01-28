@@ -1,11 +1,7 @@
 <template>
-  <div
-    class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8"
-  >
+  <div class="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-blue-6 to-white px-4 overflow-hidden py-8">
     <!-- Main content -->
-    <div
-      class="flex-1 flex flex-col items-center justify-center w-full max-w-sm"
-    >
+    <div class="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
       <!-- App intro -->
       <div class="flex flex-col items-center gap-4 mb-12">
         <h1 class="text-4xl font-bold text-blue-54 animate-fade-in">
@@ -21,15 +17,8 @@
         <div class="relative w-full flex items-center justify-center">
           <!-- Animated workout icon -->
           <div class="flex flex-col items-center gap-2">
-            <div
-              class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg"
-            >
-              <AppIcon
-                name="Dumbbell"
-                :size="32"
-                color="text-white"
-                class="animate-bounce-slow"
-              />
+            <div class="w-24 h-24 bg-blue-54 rounded-full flex items-center justify-center shadow-lg">
+              <AppIcon name="Dumbbell" :size="32" color="text-white" class="animate-bounce-slow" />
             </div>
             <p class="text-2xl font-bold text-blue-54">
               {{ Math.round(loadingProgress) }}%
@@ -40,10 +29,7 @@
         <!-- Loading status -->
         <div class="flex flex-col items-center gap-4">
           <div class="w-48 h-1.5 bg-blue-12 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-blue-54 transition-all duration-700 ease-out"
-              :style="{ width: `${loadingProgress}%` }"
-            ></div>
+            <div class="h-full bg-blue-54 transition-all duration-700 ease-out" :style="{ width: `${loadingProgress}%` }"></div>
           </div>
           <div class="h-12 text-center">
             <transition name="fade" mode="out-in">
@@ -65,29 +51,14 @@
       </div>
 
       <!-- Only show buttons when there's an error, offline option needed, or for skipping -->
-      <div
-        v-if="retryCount > 0 || showSkipOption"
-        class="flex flex-col gap-4 mt-4"
-      >
-        <button
-          v-if="showOfflineOption || retryCount > 0"
-          @click="handleContinueOffline"
-          class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300"
-        >
+      <div v-if="retryCount > 0 || showSkipOption" class="flex flex-col gap-4 mt-4">
+        <button v-if="showOfflineOption || retryCount > 0" @click="handleContinueOffline" class="bg-blue-54 text-white py-2 px-4 rounded hover:bg-blue-60 transition duration-300">
           Doorgaan zonder internet
-          <span class="block text-xs"
-            >Sommige functies zullen niet beschikbaar zijn</span
-          >
+          <span class="block text-xs">Sommige functies zullen niet beschikbaar zijn</span>
         </button>
-        <button
-          v-if="!loadingComplete"
-          @click="handleSkipLoading"
-          class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300"
-        >
+        <button v-if="!loadingComplete" @click="handleSkipLoading" class="bg-white text-blue-54 border border-blue-54 py-2 px-4 rounded hover:bg-blue-50 transition duration-300">
           Loading overslaan
-          <span class="block text-xs"
-            >Beperkte functionaliteit beschikbaar</span
-          >
+          <span class="block text-xs">Beperkte functionaliteit beschikbaar</span>
         </button>
       </div>
     </div>
@@ -95,26 +66,12 @@
     <!-- Logos -->
     <div class="flex flex-col items-center gap-4">
       <strong class="text-xs text-black-60">Powered by</strong>
-      <div
-        class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl"
-      >
-        <div
-          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
-        >
-          <img
-            src="/logo/howest.png"
-            alt="Howest"
-            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
-          />
+      <div class="flex items-center justify-center flex-wrap gap-8 px-4 max-w-2xl">
+        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
+          <img src="/logo/howest.png" alt="Howest" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
         </div>
-        <div
-          class="flex items-center justify-center w-24 bg-white rounded-lg p-2"
-        >
-          <img
-            src="/logo/sport-beweging.png"
-            alt="Sport Beweging"
-            class="max-h-full max-w-full object-contain hover:scale-105 transition-transform"
-          />
+        <div class="flex items-center justify-center w-24 bg-white rounded-lg p-2">
+          <img src="/logo/sport-beweging.png" alt="Sport Beweging" class="max-h-full max-w-full object-contain hover:scale-105 transition-transform" />
         </div>
       </div>
     </div>
@@ -178,17 +135,11 @@ const clearAllCookies = () => {
 };
 const validateToken = async () => {
   const authToken = Cookies.get("authToken");
-  console.log(
-    "Checking auth token:",
-    authToken ? "Token exists" : "No token found"
-  );
   if (!authToken) {
-    console.log("No auth token found, validation failed");
     return false;
   }
 
   try {
-    console.log("Validating token with backend...");
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify`, {
       method: "GET",
       headers: {
@@ -197,13 +148,10 @@ const validateToken = async () => {
     });
 
     if (!response.ok) {
-      console.log("Token validation failed, clearing cookies...");
       clearAllCookies();
-      console.log("Cookies cleared due to token validation failure");
       return false;
     }
 
-    console.log("isAdmin:", Cookies.get("isAdmin"));
 
     //fetch user data
     const userId = Cookies.get("userId");
@@ -215,7 +163,6 @@ const validateToken = async () => {
     if (!userData || typeof userData !== "object") {
       console.error("Invalid user data format received");
       clearAllCookies();
-      console.log("Cookies cleared due to invalid user data format");
       return false;
     }
 
@@ -227,20 +174,16 @@ const validateToken = async () => {
       Cookies.set("accountStatus", userData.accountStatus);
       Cookies.set("isAdmin", userData.isAdmin || false);
       Cookies.set("userLeaderboardScore", userData.totalScore);
-      console.log("User data updated successfully");
     } catch (error) {
       console.error("Failed to update user data:", error);
       clearAllCookies();
-      console.log("Cookies cleared due to user data update failure");
       return false;
     }
 
-    console.log("Token validation successful");
     return true;
   } catch (error) {
     console.error("Token validation error:", error.message);
     clearAllCookies();
-    console.log("Cookies cleared due to token validation error");
     return false;
   }
 };
@@ -310,7 +253,6 @@ const startLoading = async () => {
           throw new Error(`Health check failed: ${healthCheck.status}`);
         }
         healthCheckSuccess = true;
-        console.log("Health check successful");
         // Immediately show success
         targetProgress.value = 50;
         animateProgress();
@@ -343,14 +285,12 @@ const startLoading = async () => {
     if (!healthCheckSuccess) return;
 
     // Start token validation immediately
-    console.log("Starting token validation...");
     targetProgress.value = 75;
     animateProgress();
 
     try {
       const isValidToken = await validateToken();
       if (!isValidToken) {
-        console.log("Token validation failed, showing offline option");
         if (loadingTimeout) clearTimeout(loadingTimeout);
         showOfflineOption.value = true;
         targetProgress.value = 100;
@@ -551,6 +491,7 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateY(-5%);

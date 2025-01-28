@@ -64,7 +64,6 @@ const fetchUsers = async () => {
 
     const data = await response.json();
     results.value = data;
-    console.log("results.value ->", results.value);
   } catch (error) {
     console.error('Error fetching users:', error);
     results.value = [];

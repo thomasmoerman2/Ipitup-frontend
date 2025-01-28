@@ -154,8 +154,6 @@ const fetchUserData = async () => {
     }
     const data = await response.json();
     userData.value = data;
-    console.log("userData ->", userData.value);
-    console.log("Fetched exercises:", userData.value?.exercises);
 
     if (userData.value.accountStatus === 0 || userData.value.isFollowing) {
       leaderboardPosition.value = [
@@ -237,7 +235,6 @@ const fetchUnfollowUser = async () => {
         "followingId": route.params.id,
       }),
     });
-    console.log("response ->", response);
 
     if (response.ok) {
       userData.value.isFollowing = false;

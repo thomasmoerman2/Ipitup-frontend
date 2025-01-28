@@ -35,7 +35,6 @@ const checkAuth = () => {
     const hasAuth = Cookies.get('authToken');
     if (hasAuth !== userAuthenticated.value) {
         userAuthenticated.value = hasAuth;
-        console.log('Auth state changed:', hasAuth);
     }
 }
 

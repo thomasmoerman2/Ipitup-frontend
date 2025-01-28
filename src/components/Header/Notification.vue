@@ -75,7 +75,6 @@ const fetch_notifications_asreaded = async () => {
     const notifications = props.messages.map(notification => notification.notificationId);
 
     if (userId) {
-        console.log("userId ->", userId);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${userId}/read`, {
             method: 'PUT',
             headers: {

@@ -80,7 +80,6 @@ const searchProfiles = async (firstname, lastname) => {
         }
 
         const data = await response.json();
-        console.log("data ->", data);
         profiles.value = data.body;
     } catch (error) {
         console.error('Error fetching profiles:', error);

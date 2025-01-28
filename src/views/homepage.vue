@@ -76,7 +76,6 @@ onMounted(async () => {
     isLoggedIn.value = true;
     await fetchUserActivities();
   } else {
-    console.log("Gebruiker is niet ingelogd, ophalen van random oefeningen.");
     await fetch_3_exercises();
   }
 });
@@ -88,7 +87,6 @@ const fetch_3_exercises = async () => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/exercises/random?count=3`);
     const data = await response.json();
-    console.log("Fetched exercises:", data);
 
     if (Array.isArray(data) && data.length > 0) {
       exercises.value = data.map(ex => ({
@@ -130,7 +128,6 @@ const fetchUserActivities = async () => {
 
     const data = await response.json();
 
-    console.log("Gebruikersdata ontvangen:", data); // Controleer hier of dailyStreak aanwezig is
 
     if (data.dailyStreak !== undefined && data.dailyStreak !== null) {
       dailyStreak.value = data.dailyStreak;

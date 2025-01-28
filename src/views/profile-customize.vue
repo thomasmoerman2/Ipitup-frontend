@@ -166,7 +166,7 @@ const fetchAvatar = async () => {
         }
 
         const data = await response.json();
-        console.log('Fetched avatar:', data.avatar);
+        
 
         if (data.avatar) {
             const avatarParts = data.avatar.split('|');
@@ -341,7 +341,7 @@ const saveAvatarFetch = async () => {
         });
 
         const data = await response.json();
-        console.log('Avatar saved:', data);
+        
         router.back();
     } catch (error) {
         console.error('Error saving avatar:', error.message);

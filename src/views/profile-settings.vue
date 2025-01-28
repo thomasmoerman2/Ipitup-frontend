@@ -167,7 +167,6 @@ const handleLogout = async () => {
   try {
     isLoading.value = true;
     const authToken = Cookies.get("authToken");
-    console.log("authToken ->", authToken);
 
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/user/logout`,

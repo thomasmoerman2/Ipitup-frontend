@@ -25,15 +25,10 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const handleClick = () => {
-  console.log("handleClick");
-  console.log("props.version ->", props.version);
   if (props.link) {
-    console.log("props.link ->", props.link);
     if (!props.link.startsWith("/")) {
-      console.log("open in new tab");
       window.open(props.link, '_blank');
     } else {
-      console.log("open in router");
       router.push(props.link);
     }
   }

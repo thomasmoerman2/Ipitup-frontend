@@ -40,7 +40,6 @@ const loadAvatar = async () => {
         if (!response.ok) throw new Error('Failed to fetch avatar');
 
         const userData = await response.json();
-        console.log('Loading avatar for ID:', props.id, userData);
 
         if (userData.avatar) {
             const avatarParts = userData.avatar.split('|');
@@ -100,7 +99,6 @@ watch(() => props.id, (newId, oldId) => {
 });
 
 watch(() => avatarData, (newVal) => {
-    console.log('Updated avatar data:', newVal);
 }, { deep: true });
 
 

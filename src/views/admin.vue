@@ -465,7 +465,6 @@ const submitForm = async () => {
             }
         }
 
-        console.log('Submitting to:', `${apiPath}/api/${endpoint}`, 'Method:', method, 'Data:', data)
 
         const response = await fetch(`${apiPath}/api/${endpoint}`, {
             method: method,
@@ -550,19 +549,16 @@ const prepareFormData = () => {
             break
     }
 
-    console.log('Prepared form data:', data)
     return data
 }
 
 const editItem = (item) => {
-    console.log('Editing item:', item)
     selectedItem.value = { ...item }  // Make a copy of the item
     formData.value = { ...item }
     showEditModal.value = true
 }
 
 const confirmDelete = (item) => {
-    console.log('Selected item for deletion:', item)
     selectedItem.value = { ...item }  // Make a copy of the item
     showDeleteModal.value = true
 }
